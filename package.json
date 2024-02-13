@@ -1,7 +1,7 @@
 {
-  "name": "airlock",
+  "name": "moonbase",
   "version": "0.0.1",
-  "description": "",
+  "description": "Server for OrbitDB, libp2p, and IPFS",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
@@ -13,7 +13,7 @@
     "start:es": "node --es-module-specifier-resolution=node dist/index.js",
     "bs": "tsc && node dist/server.js --trace-deprecation --trace-warnings"
   },
-  "author": "boyroywax",
+  "author": "d3conomy",
   "license": "ISC",
   "devDependencies": {
     "@types/express": "4.17.21",
