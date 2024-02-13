@@ -1,0 +1,9 @@
+services:
+  airlock:
+    container_name: moonbase-v0.0.1
+    image: moonbase:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
