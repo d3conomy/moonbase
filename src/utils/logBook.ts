@@ -55,7 +55,7 @@ interface ILogBook {
     clear: () => void;
     getAll: () => Map<number, ILogEntry>;
     getWorkerHistory: (workerId: string) => Map<number, ILogEntry>;
-    getJobHistory: (processId: string) => Map<number, ILogEntry>;
+    getProcessHistory: (processId: string) => Map<number, ILogEntry>;
     getLastEntries: (count: number) => Map<number, ILogEntry>;
 }
 
@@ -167,7 +167,7 @@ class LogBook implements ILogBook {
      * @returns Map<number, ILogEntry> - A map of the history for the job
      * @description Returns a map of the history for the job
      */
-    public getJobHistory(processId: string): Map<number, LogEntry> {
+    public getProcessHistory(processId: string): Map<number, LogEntry> {
         const jobHistory: Map<number, LogEntry> = new Map<number, LogEntry>();
         this.history.forEach((entry, key) => {
             if (entry.processId === processId) {

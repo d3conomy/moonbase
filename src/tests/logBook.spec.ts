@@ -39,7 +39,12 @@ describe('LogBook', () => {
         });
     });
 
-
-
+    it('should log a debug', () => {
+        logger({
+            level: LogLevel.DEBUG,
+            message: 'This is a debug message',
+            component: Component.SYSTEM
+        });
+    });
     
 });

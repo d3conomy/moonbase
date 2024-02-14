@@ -20,10 +20,17 @@ import {
     ICommandCall
 } from './command';
 
+import {
+    Component,
+    createWorkerId
+} from '../utils';
+
+
 
 type WorkerProcess = Libp2p | Helia | typeof OrbitDb | typeof Database
 
 interface IWorker {
+    type: Component
     workerId?: string
     process: WorkerProcess
     commands: Array<ICommandCall>
@@ -33,16 +40,20 @@ interface IWorker {
 class Worker
     implements IWorker
 {
-    id: string
+    type: Component
+    workerId: string
     process: WorkerProcess
     commands: Array<ICommandCall>
     history: Array<ICommand>
 
     constructor(
-        process: WorkerProcess,
-        id?: string
+        type: Component,
+        process?: WorkerProcess,
+        id?: string,
+        commands?: Array<ICommandCall>,
     ) {
-        this.id = id ? id : process.constructor.name
+        this.type = type
+        this.workerId = id ? id : createWorkerId(type)
         this.process = process
         this.commands = new Array<ICommandCall>()
         this.history = new Array<ICommand>()
