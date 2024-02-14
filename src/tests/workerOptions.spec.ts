@@ -1,27 +1,39 @@
 import { expect } from 'chai';
 
-import { WorkerOptions, DefaultWorkerOptions } from '../db/workerOptions';
-import { Component } from '../utils';
+import {
+    WorkerOptions
+} from '../db/workerOptions.js';
+
+import {
+    Component
+} from '../utils/constants.js';
 
 describe('WorkerOptions', () => {
-    describe('DefaultWorkerOptions', () => {
+    describe('DefaultWorkerOptions:LIBP2P', () => {
         it('should create an instance with the provided options', () => {
             const options = {
-                type: Component.SYSTEM,
+                type: Component.LIBP2P,
                 workerId: 'worker1',
-                process: 'WorkerProcess',
-
-                dependencies: ['Dependency1', 'Dependency2'],
             };
 
-            const workerOptions = new DefaultWorkerOptions(options);
+            const workerOptions = new WorkerOptions(options);
 
             expect(workerOptions.type).equal(options.type);
             expect(workerOptions.workerId).equal(options.workerId);
-            expect(workerOptions.process).equal(options.process);
-            expect(workerOptions.processOptions).equal(options.processOptions);
-            expect(workerOptions.dependencies).equal(options.dependencies);
         });
+    });
 
+    describe('DefaultWorkerOptions:IPFS', () => {
+        it('should create an instance with the provided options', () => {
+            const options = {
+                type: Component.IPFS,
+                workerId: 'worker2',
+            };
+
+            const workerOptions = new WorkerOptions(options);
+
+            expect(workerOptions.type).equal(options.type);
+            expect(workerOptions.workerId).equal(options.workerId);
+        });
     });
 });

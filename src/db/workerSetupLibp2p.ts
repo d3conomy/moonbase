@@ -18,8 +18,8 @@ import { mdns } from '@libp2p/mdns'
 import { mplex } from '@libp2p/mplex'
 import { Libp2p, Libp2pOptions, createLibp2p } from 'libp2p'
 
-import { ILibp2pWorkerOptions, IWorkerOptions, WorkerOptions, WorkerProcessOptions } from './workerOptions'
-import { Component, LogLevel, logger } from '../utils'
+import { ILibp2pWorkerOptions, IWorkerOptions, WorkerOptions, WorkerProcessOptions } from './workerOptions.js'
+import { Component, LogLevel, logger } from '../utils/index.js'
 
 
 const defaultBootstrapConfig: any = {

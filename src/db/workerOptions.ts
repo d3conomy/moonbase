@@ -104,7 +104,7 @@ class WorkerOptions
             logger({
                 level: LogLevel.WARN,
                 component: Component.SYSTEM,
-                message: `WorkerOptions: ${this.workerId} has both process and processOptions defined.` +
+                message: `WorkerOptions: ${this.workerId} has both process and processOptions defined.\n` +
                          `Defaults to using the defined process.  Removing processOptions to avoid conflicts.`
             });
             this.processOptions = undefined;
@@ -114,7 +114,7 @@ class WorkerOptions
             logger({
                 level: LogLevel.INFO,
                 component: Component.SYSTEM,
-                message: `WorkerOptions: ${this.workerId} has no process or processOptions defined.` +
+                message: `WorkerOptions: ${this.workerId} has no process or processOptions defined.\n` +
                          `Defaults to the default worker options.`
             });
             this.processOptions = this.getDefaults().options;
@@ -186,6 +186,11 @@ class WorkerOptions
                 dependency.workerId !== this.workerId
             ) {
                 verified.push(dependency);
+                logger({
+                    level: LogLevel.INFO,
+                    component: Component.SYSTEM,
+                    message: `WorkerOptions: ${this.workerId} has a valid dependency: ${dependency.workerId}.`
+                });
             }
             else {
                 logger({
@@ -197,13 +202,6 @@ class WorkerOptions
         });
 
         this.dependencies = verified;
-
-        logger({
-            level: LogLevel.INFO,
-            component: Component.SYSTEM,
-            workerId: this.workerId,
-            message: `WorkerOptions: Worker has verified dependencies.`
-        });
     }
 }
 

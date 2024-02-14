@@ -18,7 +18,7 @@ import {
     ICommand,
     ICommandProperties,
     ICommandCall
-} from './command';
+} from './command.js';
 
 import {
     Component,
@@ -26,9 +26,18 @@ import {
     ResponseCode,
     createWorkerId,
     logger
-} from '../utils';
-import { createLibp2pProcess } from './workerSetupLibp2p';
-import { DefaultWorkerOptions, IWorkerOptions, WorkerOptions, WorkerProcessOptions, ILibp2pWorkerOptions } from './workerOptions';
+} from '../utils/index.js';
+
+import {
+    createLibp2pProcess
+} from './workerSetupLibp2p.js';
+
+import {
+    IWorkerOptions,
+    WorkerOptions, 
+    WorkerProcessOptions,
+    ILibp2pWorkerOptions
+} from './workerOptions.js';
 
 
 
@@ -62,13 +71,52 @@ class Worker
     }: WorkerOptions) {
         this.type = type
         this.workerId = workerId
-        this.process = process
-        this.processOptions = processOptions
+        
+        if (processOptions && process) {
+            logger({
+                level: LogLevel.WARN,
+                workerId: this.workerId,
+                message: `Worker cannot have both process and processOptions.` +
+                         `The Process will be used and the options discarded.`
+            })
+            this.process = process
+        }
+
+        if (processOptions && !process) {
+            this.process = this.createProcess(processOptions)
+        }
+
 
 
 
         this.commands = new Array<ICommandCall>()
         this.history = new Array<ICommand>()
+    }
+
+    private createProcess(processOptions: WorkerProcessOptions): WorkerProcess {
+        let process: WorkerProcess;
+        switch (this.type) {
+            case Component.LIBP2P:
+                process = createLibp2pProcess(processOptions as ILibp2pWorkerOptions)
+                break
+            // case Component.IPFS:
+            //     process = createHelia(processOptions)
+            //     break
+            // case Component.ORBITDB:
+            //     process = createOrbitDb(processOptions)
+            //     break
+            // case Component.DATABASE:
+            //     process = createOrbitDb(processOptions)
+            //     break
+            default:
+                logger({
+                    level: LogLevel.ERROR,
+                    workerId: this.workerId,
+                    message: `Worker type not recognized.`
+                })
+                break
+        }
+        return process
     }
 }
 

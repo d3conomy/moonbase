@@ -3,17 +3,17 @@ export {
     ResponseCode,
     Component,
     WorkStatus
-} from './constants';
+} from './constants.js';
 
 export {
     createRandomId,
     createWorkerId,
     createProcessId
-} from './id';
+} from './id.js';
 
 export {
     logger,
     logBookManager,
     getLogBook
-} from './logBook';
+} from './logBook.js';
 
