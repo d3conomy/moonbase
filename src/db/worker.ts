@@ -24,7 +24,7 @@ import {
 type WorkerProcess = Libp2p | Helia | typeof OrbitDb | typeof Database
 
 interface IWorker {
-    id?: string
+    workerId?: string
     process: WorkerProcess
     commands: Array<ICommandCall>
     history: Array<ICommand>

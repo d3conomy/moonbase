@@ -29,11 +29,10 @@ enum WorkStatus {
     INIT = 'init',
     STARTED = 'started',
     PENDING = 'pending',
-    FINISHED = 'finished',
+    COMPLETED = 'completed',
     STOPPED = 'stopped',
     ERROR = 'error',
-    WARNING = 'warning',
-    DONE = 'done'
+    WARNING = 'warning'
 }
 
 export {

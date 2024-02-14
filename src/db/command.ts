@@ -84,7 +84,7 @@ interface ICommandResponse<T> {
 
 
 interface ICommand {
-    jobId?: string
+    processId?: string
     call: ICommandCall
     output?: ICommandResponse<any>
 
@@ -92,14 +92,14 @@ interface ICommand {
 }
 
 class Command {
-    jobId: string
+    processId: string
     call: ICommandCall
     output: ICommandResponse<any>
 
     constructor(
         call: ICommandCall
     ) {
-        this.jobId = createRandomId()
+        this.processId = createRandomId()
         this.call = call
         this.output = {
             status: WorkStatus.PENDING,
@@ -109,7 +109,23 @@ class Command {
     }
 
     execute(): ICommandResponse<any> {
-        return this.output
+        let dataOutput: any;
+        this.call.process(...this.call.args, this.call.kwargs).then( (data: any) => {
+            dataOutput = data
+        }).catch( (error: any) => {
+            try{
+                dataOutput = this.call.process
+            }catch(e){
+                dataOutput = error
+            }
+        });
+        
+        return {
+            data: dataOutput,
+            status: WorkStatus.COMPLETED,
+            responseCode: ResponseCode.SUCCESS,
+            message: `[${this.processId}] Command executed: ${this.call.action}`
+        }
     }
 }
 
