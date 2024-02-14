@@ -16,7 +16,10 @@ import { ipnsValidator } from 'ipns/validator'
 import { ipnsSelector } from 'ipns/selector'
 import { mdns } from '@libp2p/mdns'
 import { mplex } from '@libp2p/mplex'
-import { Libp2pOptions } from 'libp2p'
+import { Libp2p, Libp2pOptions, createLibp2p } from 'libp2p'
+
+import { ILibp2pWorkerOptions, IWorkerOptions, WorkerOptions, WorkerProcessOptions } from './workerOptions'
+import { Component, LogLevel, logger } from '../utils'
 
 
 const defaultBootstrapConfig: any = {
@@ -93,6 +96,27 @@ const defaultLibp2pOptions: Libp2pOptions = {
     }
 }
 
+const createLibp2pProcess = (
+    options: ILibp2pWorkerOptions
+): Libp2p => {
+    let process: any;
+    
+    createLibp2p(options.libp2pOptions)
+        .then((libp2p: Libp2p) => {
+            process = libp2p;
+        })
+        .catch((error: any) => {
+            logger({
+                level: LogLevel.ERROR,
+                component: Component.LIBP2P,
+                message: `Error creating libp2p process: ${error}`
+            });
+        });
+
+    return process;
+}
+
 export {
-    defaultLibp2pOptions
+    defaultLibp2pOptions,
+    createLibp2pProcess
 }

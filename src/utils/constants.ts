@@ -1,9 +1,9 @@
 enum Component {
-    DB = 'db',
-    IPFS = 'ipfs',
-    LIBP2P = 'libp2p',
-    ORBITDB = 'orbitdb',
-    SYSTEM = 'system'
+    DB = 'OpenDb',
+    IPFS = 'IPFS',
+    LIBP2P = 'Libp2p',
+    ORBITDB = 'OrbitDb',
+    SYSTEM = 'System'
 }
 
 enum LogLevel {

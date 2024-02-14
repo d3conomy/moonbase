@@ -22,8 +22,13 @@ import {
 
 import {
     Component,
-    createWorkerId
+    LogLevel,
+    ResponseCode,
+    createWorkerId,
+    logger
 } from '../utils';
+import { createLibp2pProcess } from './workerSetupLibp2p';
+import { DefaultWorkerOptions, IWorkerOptions, WorkerOptions, WorkerProcessOptions, ILibp2pWorkerOptions } from './workerOptions';
 
 
 
@@ -32,7 +37,8 @@ type WorkerProcess = Libp2p | Helia | typeof OrbitDb | typeof Database
 interface IWorker {
     type: Component
     workerId?: string
-    process: WorkerProcess
+    process?: WorkerProcess
+    processOptions?: WorkerProcessOptions
     commands: Array<ICommandCall>
     history: Array<ICommand>
 }
@@ -42,19 +48,25 @@ class Worker
 {
     type: Component
     workerId: string
-    process: WorkerProcess
+    process?: WorkerProcess
+    processOptions? : WorkerProcessOptions
     commands: Array<ICommandCall>
     history: Array<ICommand>
 
-    constructor(
-        type: Component,
-        process?: WorkerProcess,
-        id?: string,
-        commands?: Array<ICommandCall>,
-    ) {
+    constructor({
+        type,
+        workerId,
+        process,
+        processOptions,
+        dependencies,
+    }: WorkerOptions) {
         this.type = type
-        this.workerId = id ? id : createWorkerId(type)
+        this.workerId = workerId
         this.process = process
+        this.processOptions = processOptions
+
+
+
         this.commands = new Array<ICommandCall>()
         this.history = new Array<ICommand>()
     }

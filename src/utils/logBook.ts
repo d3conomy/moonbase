@@ -11,6 +11,8 @@ interface ILogEntry {
     message: string;
     workerId?: string;
     processId?: string;
+
+    print: () => void;
 }
 
 class LogEntry
@@ -42,12 +44,37 @@ class LogEntry
         this.message = message;
         this.workerId = workerId;
         this.processId = processId;
+
+        this.print();
+    }
+
+    public print = (): void => {
+        const timestamp = this.timestamp.toUTCString();
+        const output = `[${timestamp}] ${this.message}`;
+        
+        switch (this.level) {
+            case LogLevel.ERROR:
+                console.error(output);
+                break;
+            case LogLevel.WARN:
+                console.warn(output);
+                break;
+            case LogLevel.INFO:
+                console.info(output);
+                break;
+            case LogLevel.DEBUG:
+                console.debug(output);
+                break;
+            default:
+                console.log(output);
+                break;
+        }
     }
 }
 
 interface ILogBook {
     name: string;
-    history: Map<number, ILogEntry>;
+    entries: Map<number, ILogEntry>;
 
     add: (entry: ILogEntry) => void;
     get: (id: number) => ILogEntry;
@@ -65,13 +92,15 @@ interface ILogBook {
  * @implements ILogBook
  * @description A class to manage an individual log book
  */
-class LogBook implements ILogBook {
+class LogBook
+    implements ILogBook
+{
     public name: string;
-    public history: Map<number, LogEntry>;
+    public entries: Map<number, LogEntry>;
 
     public constructor(name: string) {
         this.name = name
-        this.history = new Map<number, LogEntry>();
+        this.entries = new Map<number, LogEntry>();
     }
 
     /**
@@ -81,8 +110,8 @@ class LogBook implements ILogBook {
      * @description Adds an entry to the log book
      */
     public add(entry: LogEntry):  void {
-        const counter = this.history.size + 1;
-        this.history.set(counter, entry);
+        const counter = this.entries.size + 1;
+        this.entries.set(counter, entry);
     }
 
     /**
@@ -92,7 +121,7 @@ class LogBook implements ILogBook {
      * @description Gets an entry from the log book
      */
     public get(entryId: number): LogEntry {
-        const entry: LogEntry | undefined = this.history.get(entryId);
+        const entry: LogEntry | undefined = this.entries.get(entryId);
         if (entry) {
             return entry;
         }
@@ -108,7 +137,7 @@ class LogBook implements ILogBook {
      * @description Deletes an entry from the log book
      */
     public delete(entryId: number): void {
-        this.history.delete(entryId);
+        this.entries.delete(entryId);
     }
 
     /**
@@ -117,7 +146,7 @@ class LogBook implements ILogBook {
      * @description Returns a map of all the entries
      */
     public getAll(): Map<number, ILogEntry> {
-        return this.history;
+        return this.entries;
     }
 
     /**
@@ -126,7 +155,7 @@ class LogBook implements ILogBook {
      * @description Clears the entire log book
      */
     public clear(): void {
-        this.history = new Map<number, LogEntry>();
+        this.entries = new Map<number, LogEntry>();
     }
 
     /**
@@ -136,7 +165,7 @@ class LogBook implements ILogBook {
      */
     public getLastEntries(count: number = 1): Map<number, LogEntry> {
         const lastEntries: Map<number, LogEntry> = new Map<number, LogEntry>();
-        const historyArray = Array.from(this.history);
+        const historyArray = Array.from(this.entries);
         const lastEntriesArray = historyArray.slice(-count);
         lastEntriesArray.forEach((entry) => {
             lastEntries.set(entry[0], entry[1]);
@@ -153,7 +182,7 @@ class LogBook implements ILogBook {
      */
     public getWorkerHistory(workerId: string): Map<number, LogEntry> {
         const workerHistory: Map<number, LogEntry> = new Map<number, LogEntry>();
-        this.history.forEach((entry, key) => {
+        this.entries.forEach((entry, key) => {
             if (entry.workerId === workerId) {
                 workerHistory.set(key, entry);
             }
@@ -169,7 +198,7 @@ class LogBook implements ILogBook {
      */
     public getProcessHistory(processId: string): Map<number, LogEntry> {
         const jobHistory: Map<number, LogEntry> = new Map<number, LogEntry>();
-        this.history.forEach((entry, key) => {
+        this.entries.forEach((entry, key) => {
             if (entry.processId === processId) {
                 jobHistory.set(key, entry);
             }
@@ -220,14 +249,14 @@ class LogBooksManager
 
     /**
      * @function get
-     * @param logBookName  : LogBookNames - The name of the log book to get
+     * @param name  : LogBookNames - The name of the log book to get
      * @returns LogBook - The log book
      * @description Gets a log book from the collection
      */
     public get(
-        logBookName: Component
+        name: Component
     ): LogBook {
-        const logBook: LogBook | undefined = this.books.get(logBookName);
+        const logBook: LogBook | undefined = this.books.get(name);
         if (logBook) {
             return logBook;
         }
@@ -238,14 +267,14 @@ class LogBooksManager
 
     /**
      * @function delete
-     * @param logBookName : LogBookNames - The name of the log book to delete
+     * @param name : LogBookNames - The name of the log book to delete
      * @returns void
      * @description Deletes a log book from the collection
      */
     public delete(
-        logBookName: Component
+        name: Component
     ) {
-        this.books.delete(logBookName);
+        this.books.delete(name);
     }
 
     /**
@@ -267,7 +296,7 @@ class LogBooksManager
     public getAllEntries() {
         const allEntries: Map<string, LogBook> = new Map<string, LogBook>();
         for (const logBook of this.books) {
-            for (const entry of logBook[1].history) {
+            for (const entry of logBook[1].entries) {
                 const entryKey = `${logBook[0]}-${entry[0]}`;
                 allEntries.set(entryKey, logBook[1]);
             }
@@ -295,33 +324,16 @@ const logger = ({
     workerId?: string
 }) => { 
     const logBook = logBookManager.get(component ? component : Component.SYSTEM);
-    const entry: LogEntry = {
+    const entry: LogEntry = new LogEntry({
         level: level ? level : LogLevel.INFO,
         code: code ? code : ResponseCode.UNKNOWN,
-        timestamp: new Date(),
         message: message,
         workerId: workerId,
         processId: processId
-    }
+    })
     logBook.add(entry);
     
-    switch (level) {
-        case LogLevel.ERROR:
-            console.error(`[${entry.timestamp.toUTCString()}] [${component ? component : 'SYSTEM'}] ${message}`);
-            break;
-        case LogLevel.WARN:
-            console.warn(`[${entry.timestamp.toUTCString()}] [${component ? component : 'SYSTEM'}] ${message}`);
-            break;
-        case LogLevel.INFO:
-            console.info(`[${entry.timestamp.toUTCString()}] [${component ? component : 'SYSTEM'}] ${message}`);
-            break;
-        case LogLevel.DEBUG:
-            console.debug(`[${entry.timestamp.toUTCString()}] [${component ? component : 'SYSTEM'}] ${message}`);
-            break;
-        default:
-            console.log(`[${entry.timestamp.toUTCString()}] [${component ? component : 'SYSTEM'}] ${message}`);
-            break;
-    }
+
 }
 
     
