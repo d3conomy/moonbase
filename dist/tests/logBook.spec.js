@@ -1,20 +1,9 @@
-import {
-    LogLevel,
-    Component
-} from '../utils/constants.js';
-
-import {
-    logger
-} from '../utils/logBook.js';
-
-
-
+import { LogLevel, Component } from '../utils/constants.js';
+import { logger } from '../utils/logBook.js';
 describe('LogBook', () => {
-
     beforeEach(() => {
         // runs before each test in this block
     });
-
     it('should log an error', () => {
         logger({
             level: LogLevel.ERROR,
@@ -22,7 +11,6 @@ describe('LogBook', () => {
             component: Component.SYSTEM
         });
     });
-
     it('should log a warning', () => {
         logger({
             level: LogLevel.WARN,
@@ -30,7 +18,6 @@ describe('LogBook', () => {
             component: Component.SYSTEM
         });
     });
-
     it('should log an info', () => {
         logger({
             level: LogLevel.INFO,
@@ -38,8 +25,4 @@ describe('LogBook', () => {
             component: Component.SYSTEM
         });
     });
-
-
-
-    
 });

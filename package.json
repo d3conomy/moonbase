@@ -6,13 +6,9 @@
   "types": "dist/index.d.ts",
   "type": "module",
   "scripts": {
-
-    "start:tsc": "ts-node src/index.ts",
-    "build": "tsc",
-    "test": "tsc && mocha -r ts-node/register 'dist/src/**/*.spec.js'",
-    "start": "build && node dist/index.js",
-    "start:es": "node --es-module-specifier-resolution=node dist/index.js",
-    "bs": "tsc && node dist/server.js --trace-deprecation --trace-warnings"
+    "build": "rm -r dist && tsc",
+    "test": "rm -r 'dist' && tsc && mocha -r ts-node/register 'dist/tests/**/*.spec.js'",
+    "start": "tsc && node dist/server.js --trace-deprecation --trace-warnings"
   },
   "author": "d3conomy",
   "license": "ISC",
