@@ -15,21 +15,23 @@ import {
 } from '@orbitdb/core';
 
 import {
+    CommandProperties,
     ICommand,
-    ICommandProperties,
-    ICommandCall
+    ICommandProperties
 } from './command.js';
 
 import {
     Component,
     LogLevel,
     ResponseCode,
+    WorkStatus,
+    createProcessId,
     createWorkerId,
     logger
 } from '../utils/index.js';
 
 import {
-    createLibp2pProcess
+    createLibp2pProcess, executeLibp2pCommand
 } from './workerSetupLibp2p.js';
 
 import {
@@ -38,7 +40,7 @@ import {
     WorkerProcessOptions,
     ILibp2pWorkerOptions
 } from './workerOptions.js';
-import { libp2pCommands } from './commandsLibp2p.js';
+import { libp2pCommands } from './workerSetupLibp2p.js';
 
 
 
@@ -49,7 +51,8 @@ interface IWorker {
     workerId?: string
     process?: WorkerProcess
     processOptions?: WorkerProcessOptions
-    commands: Array<ICommandCall>
+    proessExecutor?: any
+    commands: Array<ICommandProperties>
     history: Array<ICommand>
 }
 
@@ -60,7 +63,8 @@ class Worker
     workerId: string
     process?: WorkerProcess
     processOptions? : WorkerProcessOptions
-    commands: Array<ICommandCall>
+    processExecutor?: any
+    commands: Array<ICommandProperties>
     history: Array<ICommand>
 
     constructor({
@@ -72,7 +76,7 @@ class Worker
     }: WorkerOptions) {
         this.type = type
         this.workerId = workerId
-        this.commands = new Array<ICommandCall>()
+        this.commands = new Array<ICommandProperties>()
         this.processOptions = processOptions
         this.process = process
         
@@ -96,34 +100,44 @@ class Worker
         }
 
         if (this.processOptions && !this.process) {
-            const { process, commands } = this.create(this.processOptions)
-            this.process = process
-            this.commands = commands
+            this.create(this.processOptions).then( ({process, commands, executor}) => {
+                this.process = process
+                this.commands = commands
+                this.processExecutor = executor
+            });
+            // this.process = process
+            // this.commands = commands
+            // this.processExecutor = executor
         }
         logger({
             level: LogLevel.INFO,
             workerId: this.workerId,
-            message: `Worker created.`
+            message: `Worker created.\n` +
+                    `Type: ${this.type}\n` +
+                    `WorkerId: ${this.workerId}` +
+                    `Process: ${this.process}`
         
         })
 
         this.history = new Array<ICommand>()
     }
 
-    private create(
+    private async create(
         processOptions: WorkerProcessOptions
-    ): {
+    ): Promise<{
         process: WorkerProcess,
-        commands: Array<ICommandCall>
-    }{
+        commands: Array<ICommandProperties>
+        executor: any
+    }>{
         let process: WorkerProcess;
-        let commands: Array<ICommandCall> = new Array<ICommandCall>();
+        let commands: Array<ICommandProperties> = new Array<ICommandProperties>();
+        let executor: any = undefined;
         switch (this.type) {
             case Component.LIBP2P:
-                process = createLibp2pProcess(processOptions as ILibp2pWorkerOptions)
-                commands = libp2pCommands({
-                    worker: process as Libp2p,
-                });
+                process = await createLibp2pProcess(processOptions as ILibp2pWorkerOptions);
+                console.log(process)
+                commands = libp2pCommands();
+                executor = executeLibp2pCommand;
                 break
             // case Component.IPFS:
             //     process = createHelia(processOptions)
@@ -144,8 +158,71 @@ class Worker
         }
         return {
             process,
-            commands
+            commands,
+            executor
         }
+    }
+
+    public execute(
+        action: string,
+        args?: Array<string>,
+        kwargs?: Map<string, string>,
+        timeout?: number
+    ): ICommand {
+        let response: ICommand = {
+            processId: createProcessId(
+                this.type,
+                this.workerId
+            ),
+            process: {
+                action,
+                args,
+                kwargs,
+                timeout
+            }
+        }
+        if (!this.process) {
+            response.output = {
+                status: WorkStatus.ERROR,
+                responseCode: ResponseCode.NOT_FOUND,
+                message: `Worker process not found.`
+            }
+            this.history.push(response)
+            return response
+        }
+        if (!this.commands.find((c) => c.action === action)) {
+            response.output = {
+                status: WorkStatus.ERROR,
+                responseCode: ResponseCode.NOT_FOUND,
+                message: `Command not found.`
+            }
+            this.history.push(response)
+            return response
+        }
+        try {
+            this.processExecutor(
+                this.process,
+                {
+                    action,
+                    args,
+                    kwargs,
+                    timeout
+                },
+                response.processId,
+                this.workerId
+            ).then((result: any) => {
+                response.output = result
+                this.history.push(response)
+            });
+        } catch (error) {
+            response.output = {
+                status: WorkStatus.ERROR,
+                responseCode: ResponseCode.INTERNAL_SERVER_ERROR,
+                message: `Error executing command: ${error}`
+            }
+            this.history.push(response)
+        }
+        return response
     }
 }
 

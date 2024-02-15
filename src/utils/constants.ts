@@ -15,6 +15,7 @@ enum LogLevel {
 
 enum ResponseCode {
     SUCCESS = 200,
+    FAILURE = 300,
     BAD_REQUEST = 400,
     UNAUTHORIZED = 401,
     FORBIDDEN = 403,

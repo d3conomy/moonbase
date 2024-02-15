@@ -17,9 +17,12 @@ import { ipnsSelector } from 'ipns/selector'
 import { mdns } from '@libp2p/mdns'
 import { mplex } from '@libp2p/mplex'
 import { Libp2p, Libp2pOptions, createLibp2p } from 'libp2p'
+import { Libp2pStatus } from '@libp2p/interface'
 
 import { ILibp2pWorkerOptions, IWorkerOptions, WorkerOptions, WorkerProcessOptions } from './workerOptions.js'
-import { Component, LogLevel, logger } from '../utils/index.js'
+import { Component, LogLevel, ResponseCode, WorkStatus, logger } from '../utils/index.js'
+import { ICommand, ICommandProperties, ICommandResponse } from './command.js'
+import { multiaddr } from '@multiformats/multiaddr'
 
 
 const defaultBootstrapConfig: any = {
@@ -98,12 +101,18 @@ const defaultLibp2pOptions: Libp2pOptions = {
 
 const createLibp2pProcess = (
     options: ILibp2pWorkerOptions
-): Libp2p => {
-    let process: any;
+): any => {
+    let process: Libp2p | undefined = undefined;
     
-    createLibp2p(options.libp2pOptions)
+    createLibp2p(options.libp2pOptions as Libp2pOptions)
         .then((libp2p: Libp2p) => {
-            process = libp2p;
+            logger({
+                level: LogLevel.INFO,
+                component: Component.LIBP2P,
+                message: `Libp2p process created.\n` + 
+                        `PeerId: ${libp2p.peerId.toString()}\n`
+            });
+            return libp2p;
         })
         .catch((error: any) => {
             logger({
@@ -112,11 +121,109 @@ const createLibp2pProcess = (
                 message: `Error creating libp2p process: ${error}`
             });
         });
-
     return process;
+}
+
+const libp2pCommands = (): Array<ICommandProperties> => {
+    let commands: Array<ICommandProperties> = new Array<ICommandProperties>();
+
+    commands.push({
+        action: 'start'
+    }, {
+        action: 'stop'
+    }, {
+        action: 'dial',
+        args: ['peerId']
+    }, {
+        action: 'getPeers'
+    }, {
+        action: 'peerId'
+    }, {
+        action: 'getStatus'
+    });
+
+    return commands;
+}
+
+const executeLibp2pCommand = async (
+    processId: string,
+    worker: Libp2p,
+    command: ICommandProperties,
+    workerId: string
+): Promise<ICommand> => {
+    let result: any;
+    let responseCode: ResponseCode = ResponseCode.FAILURE;
+    switch (command.action) {
+        case 'start':
+            await worker.start();
+            result = worker.status;
+            if (result === 'started' || result === 'starting') {
+                responseCode = ResponseCode.SUCCESS;
+            } else {
+                responseCode = ResponseCode.FAILURE;
+            }
+            break;
+        case 'stop':
+            await worker.stop();
+            result = worker.status;
+            if (result === 'stopped' || result === 'stopping') {
+                responseCode = ResponseCode.SUCCESS;
+            } else {
+                responseCode = ResponseCode.FAILURE;
+            }
+            break;
+        case 'dial':
+            if (!command.args || command.args.length < 1) {
+                logger({
+                    level: LogLevel.ERROR,
+                    component: Component.LIBP2P,
+                    message: `Dial command requires a multiaddr argument.`
+                });
+                break;
+            }
+            result = await worker.dial(multiaddr(command.args[0]));
+            responseCode = ResponseCode.SUCCESS;
+            break;
+        case 'getPeers':
+            result = worker.getPeers();
+            responseCode = ResponseCode.SUCCESS;
+            break;
+        case 'peerId':
+            result = worker.peerId.toString();
+            responseCode = ResponseCode.SUCCESS;
+            break;
+        case 'getStatus':
+            result = worker.status;
+            responseCode = ResponseCode.SUCCESS;
+            break;
+        default:
+            logger({
+                level: LogLevel.ERROR,
+                component: Component.LIBP2P,
+                processId: processId,
+                message: `Command not recognized: ${command.action}`
+            });
+            break;
+    }
+    logger({
+        level: LogLevel.INFO,
+        code: responseCode,
+        component: Component.LIBP2P,
+        workerId: workerId,
+        processId: processId,
+        message: `Command: ${command.action} executed.\n` +
+                 `Result: ${result}`
+    });
+    return {
+        processId,
+        process: command,
+        output: result
+    } as ICommand;
 }
 
 export {
     defaultLibp2pOptions,
-    createLibp2pProcess
+    createLibp2pProcess,
+    libp2pCommands,
+    executeLibp2pCommand
 }

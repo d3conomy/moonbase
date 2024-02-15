@@ -32,8 +32,15 @@ describe('Worker', () => {
         expect(worker.process).to.be.undefined;
     });
 
+    it('should have a peerId', () => {
+        worker = new Worker(workerOptions);
+        console.log(worker.execute('peerId'));
+        expect(worker.execute('peerId').output?.data).to.be.a('string');
+    });
+
     afterEach(() => {
-        // worker.process?.stop();
+
+        worker.execute('stop');
     });
 
 });
