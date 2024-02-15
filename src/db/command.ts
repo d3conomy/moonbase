@@ -1,12 +1,12 @@
 import {
     createRandomId
-} from "../utils"
+} from "../utils/index.js"
 
 import {
     LogLevel,
     ResponseCode,
     WorkStatus
-} from "../utils/constants"
+} from "../utils/constants.js"
 
 import {
     logger
@@ -59,13 +59,19 @@ class CommandCall
     kwargs: Map<string, string>
     timeout: number
 
-    constructor(
+    constructor({
+        process,
+        action,
+        args,
+        kwargs,
+        timeout
+    }: {
         process: any,
         action: string,
         args?: Array<string>,
         kwargs?: Map<string, string>,
         timeout?: number
-    ) {
+    }) {
         this.process = process
         this.action = action
         this.args = args ? args : new Array<string>()

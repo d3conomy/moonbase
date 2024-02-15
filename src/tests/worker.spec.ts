@@ -2,30 +2,38 @@ import { Libp2p } from '@libp2p/interface';
 import { expect } from 'chai';
 
 import { Worker, IWorker, WorkerProcess } from '../db/worker.js';
-import { Component } from '../utils/index.js';
+import { Component, LogLevel, logger } from '../utils/index.js';
 import { WorkerOptions } from '../db/workerOptions.js';
 
 describe('Worker', () => {
-    let worker: Worker;
+
     let workerOptions = new WorkerOptions({
         type: Component.LIBP2P,
-        workerId: 'worker1'
+        workerId: 'worker100'
     });
+    let worker: Worker;
 
     beforeEach(() => {
-        worker = new Worker(workerOptions);
+        
     });
 
     it('should have the correct type', () => {
+        worker = new Worker(workerOptions);
         expect(worker.type).equals(Component.LIBP2P);
     });
 
     it('should have the correct workerId', () => {
-        expect(worker.workerId).equals('worker1');
+        worker = new Worker(workerOptions);
+        expect(worker.workerId).equals('worker100');
+    });
+
+    it('should have an empty process', () => {
+        worker = new Worker(workerOptions);
+        expect(worker.process).to.be.undefined;
     });
 
     afterEach(() => {
-        worker.process?.stop();
+        // worker.process?.stop();
     });
 
 });
