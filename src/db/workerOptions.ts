@@ -18,10 +18,9 @@ import {
 
 import {
     IWorker,
-    Worker,
-    WorkerProcess
+    Worker
 } from './worker.js';
-import { defaultLibp2pOptions } from './workerSetupLibp2p.js';
+import { IWorkerProcess, defaultLibp2pOptions } from './workerSetupLibp2p.js';
 import { MemoryBlockstore } from 'blockstore-core';
 import { MemoryDatastore } from 'datastore-core';
 
@@ -63,7 +62,7 @@ interface IOpenDbWorkerOptions
 interface IWorkerOptions {
     type: Component;
     workerId: string;
-    process?: WorkerProcess;
+    process?: IWorkerProcess;
     processOptions?: WorkerProcessOptions;
     dependencies?: Array<IWorker>;
 }
@@ -73,7 +72,7 @@ class WorkerOptions
 {
     public type: Component;
     public workerId: string;
-    public process?: WorkerProcess;
+    public process?: IWorkerProcess;
     public processOptions?: WorkerProcessOptions;
     public dependencies?: Array<Worker>;
 
@@ -86,7 +85,7 @@ class WorkerOptions
     }: {
         type: Component,
         workerId?: string,
-        process?: WorkerProcess,
+        process?: IWorkerProcess,
         processOptions?: WorkerProcessOptions,
         dependencies?: Array<Worker>
     }) {

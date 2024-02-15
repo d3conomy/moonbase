@@ -1,7 +1,7 @@
 import { Libp2p } from '@libp2p/interface';
 import { expect } from 'chai';
 
-import { Worker, IWorker, WorkerProcess } from '../db/worker.js';
+import { Worker, IWorker } from '../db/worker.js';
 import { Component, LogLevel, logger } from '../utils/index.js';
 import { WorkerOptions } from '../db/workerOptions.js';
 
