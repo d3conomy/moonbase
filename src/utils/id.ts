@@ -1,3 +1,4 @@
+import { OrbitDbOptions } from "../db/setupOrbitDb";
 import { Component } from "./constants";
 
 const createRandomId = () => {
@@ -11,6 +12,7 @@ const createWorkerId = (type: Component) => {
 const createProcessId = (type: Component, worker: string) => {
     return `${type}-${worker}-${createRandomId()}`;
 }
+
 
 export {
     createRandomId,
