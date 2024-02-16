@@ -1,14 +1,11 @@
-import {
-    OrbitDb
-} from '@orbitdb/core';
 import { Component, createCommandId } from '../utils/index.js';
-import { ProcessTypes } from './node.js';
+import { Node, ProcessTypes } from './node.js';
 
 class Command {
     public nodeId: string;
     public id: string;
     public type: Component;
-    public call: string;
+    public action: string;
     public kwargs?: Map<string, any>;
     public output?: any;
 
@@ -16,19 +13,19 @@ class Command {
         nodeId,
         id,
         type,
-        call,
+        action,
         kwargs
     }: {
         nodeId: string,
         id?: string,
         type: Component,
-        call: string,
+        action: string,
         kwargs?: Map<string, any>
     }) {
         this.nodeId = nodeId;
-        this.id = id ? id : createCommandId(nodeId);
+        this.id = id ? id : createCommandId(nodeId, action);
         this.type = type;
-        this.call = call;
+        this.action = action;
         this.kwargs = kwargs ? kwargs : new Map<string, any>();
     }
 
@@ -37,15 +34,14 @@ class Command {
     }
 }
 
+interface INodeCommands {
+    process: ProcessTypes;
+    available: Array<Command>;
 
-const runCommand = async (command: Command, process: ProcessTypes) => {
-    const output = await process[command.call](...Array.from(command.kwargs?.values() ? Array.from(command.kwargs.values()) : []));
-    command.setOutput(output);
+    execute(command: Command): Promise<any>;
 }
-
-
 
 export {
     Command,
-    runCommand
+    INodeCommands,
 }

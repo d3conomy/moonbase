@@ -1,9 +1,10 @@
 import { OrbitDb } from '@orbitdb/core';
-import { Command, runCommand } from '../db/commands.js';
+import { Command } from '../db/commands.js';
 import { ProcessTypes } from '../db/node.js';
-import { Component } from '../utils/constants.js';
+import { Component, LogLevel } from '../utils/constants.js';
 import { expect } from 'chai';
 import { Manager } from '../db/manager.js';
+import { logger } from '../utils/logBook.js';
 
 describe('Command', () => {
     let command: Command;
@@ -14,7 +15,7 @@ describe('Command', () => {
         command = new Command({
             nodeId: 'node1',
             type: Component.LIBP2P,
-            call: 'peerInfo',
+            action: 'peerInfo',
             kwargs: new Map<string, any>()
         });
     });
@@ -23,7 +24,7 @@ describe('Command', () => {
         expect(command.nodeId).to.be.equal('node1');
         expect(command.id).to.be.not.null;
         expect(command.type).to.be.equal(Component.LIBP2P);
-        expect(command.call).to.be.equal('peerInfo');
+        expect(command.action).to.be.equal('peerInfo');
         // expect(command.kwargs).to.equal(new Map<string, any>());
     });
 
@@ -31,5 +32,26 @@ describe('Command', () => {
         command.setOutput('output1');
         expect(command.output).to.be.not.null;
     });
-});
+
+    it('should execute the command', async () => {
+        const manager = new Manager();
+        manager.createNode({
+            id: 'node1',
+            type: Component.LIBP2P
+        });
+        const node = manager.getNode('node1');
+        expect(node).to.be.not.null;
+        while (!node?.process) {
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
+        const result = await node?.execute(command);
+            command.setOutput(result);
+            logger({
+                level: LogLevel.INFO,
+                component: Component.SYSTEM,
+                message: `Command executed: ${command.id}, Output ${command.output}`
+            });
+            expect(command.output).to.be.not.null;
+        });
+    });
 

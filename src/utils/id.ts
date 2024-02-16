@@ -9,8 +9,8 @@ const createNodeId = (type: Component) => {
     return `${type}-${createRandomId()}`;
 }
 
-const createCommandId = (nodeId: string) => {
-    return `command-${nodeId}-${createRandomId()}`;
+const createCommandId = (nodeId: string, action: string) => {
+    return `command-${action}-${nodeId}-${createRandomId()}`;
 }
 
 const createDbId = (dbType: string, dbName: string) => {

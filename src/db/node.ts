@@ -6,27 +6,32 @@ import { Helia } from "helia";
 import { Libp2p, Libp2pOptions } from "libp2p";
 import { Database, OrbitDB } from "@orbitdb/core";
 import { createLibp2pProcess, defaultLibp2pOptions } from "./setupLibp2p.js";
+import { Command, INodeCommands} from "./commands.js";
+import { Libp2pCommands } from "./commandsLibp2p.js";
 
 type NodeOptions = OrbitDbOptions | IPFSOptions | Libp2pOptions;
-
+type NodeCommands = Libp2pCommands;
 type ProcessTypes = typeof OrbitDB | Helia | Libp2p;
 
 class Node {
     public id: string;
     public type: Component;
     public process?: ProcessTypes;
+    public commands?: NodeCommands;
     private options?: NodeOptions;
 
     constructor({
         type,
         id,
         options,
-        process
+        process,
+        commands,
     }: {
         type: Component,
         id?: string,
         options?: NodeOptions,
-        process?: ProcessTypes
+        process?: ProcessTypes,
+        commands?: NodeCommands
     }) {
         this.id = id ? id : createNodeId(type);
         this.type = type;
@@ -62,6 +67,7 @@ class Node {
                     break;
             }
         }
+        this.commands = commands;
     }
 
     public init() {
@@ -81,12 +87,35 @@ class Node {
                             message: `Process created: ${this.id}`
                         })
                     }, 1000);
+                    switch (this.type) {
+                        case Component.LIBP2P:
+                            if (this.process) {
+                                this.commands = new Libp2pCommands(this.process);
+                            }
+                            else {
+                                logger({
+                                    level: LogLevel.ERROR,
+                                    component: Component.SYSTEM,
+                                    code: ResponseCode.FAILURE,
+                                    message: `Node not created: ${this.id}`
+                                })
+                            }
+                            break;
+                        default:
+                            logger({
+                                level: LogLevel.ERROR,
+                                component: Component.SYSTEM,
+                                code: ResponseCode.FAILURE,
+                                message: `Node not created: ${this.id}`
+                            })
+                            break;
+                    }
                 }
                 logger({
                     level: LogLevel.INFO,
                     component: Component.SYSTEM,
                     code: ResponseCode.SUCCESS,
-                    message: `Process created: ${this.id}`
+                    message: `Process created: ${this.id} and commands set`
                 })
             });
         }
@@ -166,6 +195,7 @@ class Node {
     }): Promise<void> {
         const verified: boolean = this.verifyOptions(options);
         let process: any;
+        let commands: any;
 
         if (!verified) {
             logger({
@@ -196,11 +226,36 @@ class Node {
                 break;
             case Component.LIBP2P:
                 process = await createLibp2pProcess(options ? options as Libp2pOptions : defaultLibp2pOptions);
+                commands = new Libp2pCommands(process);
                 break;
             default:
                 throw new Error('Invalid node type');
         }
         this.process = process;
+        this.commands = commands;
+    }
+
+    public async execute(command: Command): Promise<any> {
+        if (!this.commands) {
+            logger({
+                level: LogLevel.ERROR,
+                component: Component.SYSTEM,
+                code: ResponseCode.FAILURE,
+                message: `Node commands not found: ${this.id}`
+            })
+            return
+        }
+
+        this.commands?.execute(command).then((output) => {
+            command.setOutput(output);
+            logger({
+                level: LogLevel.INFO,
+                component: Component.SYSTEM,
+                code: ResponseCode.SUCCESS,
+                message: `Command executed: ${command.id}, Output ${command.output}`
+            })
+        });
+        return command.output;
     }
    
     public async stop() {
