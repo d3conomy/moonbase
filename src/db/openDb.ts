@@ -1,4 +1,4 @@
-import { createRandomId } from '../utils/id.js';
+import { createDbId, createRandomId } from '../utils/id.js';
 import { Node } from './node.js';
 import {
     OrbitDbOptions,
@@ -33,7 +33,7 @@ class OpenDbOptions {
         this.orbitDb = orbitDb;
         this.dbName = dbName ? dbName : createRandomId()
         this.dbType = dbType ? dbType : OrbitDbTypes.EVENTS;
-        this.id = id ? id : `${this.dbName}-${this.dbType}`
+        this.id = id ? id : `${createDbId(this.dbType, this.dbName)}`
     }
 }
 

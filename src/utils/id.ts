@@ -9,14 +9,19 @@ const createNodeId = (type: Component) => {
     return `${type}-${createRandomId()}`;
 }
 
-const createProcessId = (type: Component, worker: string) => {
-    return `${type}-${worker}-${createRandomId()}`;
+const createCommandId = (nodeId: string) => {
+    return `command-${nodeId}-${createRandomId()}`;
+}
+
+const createDbId = (dbType: string, dbName: string) => {
+    return `${dbType}-${dbName}`;
 }
 
 
 export {
     createRandomId,
     createNodeId,
-    createProcessId
+    createCommandId,
+    createDbId
 }
 
