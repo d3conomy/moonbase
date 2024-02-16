@@ -9,7 +9,7 @@ import {
 import {
     useIdentityProvider,
     OrbitDb,
-    createOrbitDb
+    createOrbitDB
 } from '@orbitdb/core';
 
 import {
@@ -26,19 +26,23 @@ import { Helia } from 'helia';
 
 
 class OrbitDbOptions {
+    ipfs: Helia;
     enableDID: boolean;
     identitySeed?: Uint8Array;
     identityProvider?: any;
 
     constructor({
+        ipfs,
         enableDID,
         identitySeed,
         identityProvider,
     }: {
+        ipfs: Helia;
         enableDID?: boolean;
         identitySeed?: Uint8Array;
         identityProvider?: any;
     }) {
+        this.ipfs = ipfs;
         this.enableDID = enableDID ? enableDID : false;
         this.identitySeed = identitySeed;
         this.identityProvider = identityProvider;
@@ -47,6 +51,7 @@ class OrbitDbOptions {
 }
 
 const defaultOrbitDbOptions = ({
+    ipfs,
     enableDID = false,
     identitySeed,
     identityProvider
@@ -85,6 +90,7 @@ const defaultOrbitDbOptions = ({
     });
 
     return {
+        ipfs,
         enableDID,
         identitySeed,
         identityProvider
@@ -94,16 +100,20 @@ const defaultOrbitDbOptions = ({
 
 const createOrbitDbNode = async ({
     ipfs,
-    options
+    enableDID,
+    identitySeed,
+    identityProvider,
 }: {
-    ipfs: Helia,
-    options?: OrbitDbOptions
-}
-    ) => {
+    ipfs: Helia;
+    enableDID?: boolean;
+    identitySeed?: Uint8Array;
+    identityProvider?: any;
+}): Promise<typeof OrbitDb> => {
     const orbitDbOptions = defaultOrbitDbOptions({
-        enableDID: options?.enableDID ? options?.enableDID : false,
-        identitySeed: options?.identitySeed,
-        identityProvider: options?.identityProvider
+        ipfs: ipfs,
+        enableDID: enableDID ? enableDID : false,
+        identitySeed: identitySeed,
+        identityProvider: identityProvider
     
     });
     let orbitDb: typeof OrbitDb | undefined = undefined;
@@ -114,10 +124,10 @@ const createOrbitDbNode = async ({
             component: Component.ORBITDB,
             message: `Creating OrbitDB node with DID identity provider...`
         });
-        orbitDb = await createOrbitDb({
+        orbitDb = await createOrbitDB({
             ipfs, 
             identity: {
-                provider: options?.identityProvider
+                provider: identityProvider
             }
         });
     }
@@ -127,7 +137,7 @@ const createOrbitDbNode = async ({
             component: Component.ORBITDB,
             message: `Creating OrbitDB node with no identity provider...`
         });
-        orbitDb = await createOrbitDb({ ipfs });
+        orbitDb = await createOrbitDB({ ipfs });
     }
     return orbitDb;
 }

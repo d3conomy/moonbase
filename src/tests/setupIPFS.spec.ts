@@ -1,6 +1,4 @@
 import { createIPFSNode, IPFSOptions } from "../db/setupIPFS.js";
-import { createLibp2p, Libp2p } from "libp2p";
-import { MemoryDatastore } from "datastore-core";
 import { createLibp2pNode } from "../db/setupLibp2p.js";
 import { Helia } from "helia";
 
@@ -17,7 +15,7 @@ describe("createIPFSNode", async () => {
         });
 
         // Call the createIPFSNode function
-        const ipfsNode = await createIPFSNode(options);
+        const ipfsNode: Helia = await createIPFSNode(options);
 
         // Assert that the IPFS node is created successfully
         expect(ipfsNode.libp2p.peerId.toString()).to.be.a("string");
