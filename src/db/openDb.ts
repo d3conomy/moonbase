@@ -1,12 +1,14 @@
 import { createRandomId } from '../utils/id.js';
+import { Node } from './node.js';
 import {
     OrbitDbOptions,
     defaultOrbitDbOptions,
-    createOrbitDbNode
+    createOrbitDbProcess
 } from './setupOrbitDb.js';
 
 import {
-    OrbitDb
+    OrbitDb,
+    Database
 } from '@orbitdb/core';
 
 enum OrbitDbTypes {
@@ -18,12 +20,12 @@ enum OrbitDbTypes {
 
 class OpenDbOptions {
     public id: string;
-    public orbitDb: typeof OrbitDb;
+    public orbitDb: Node;
     public dbName: string;
     public dbType: OrbitDbTypes;
 
     constructor(
-        orbitDb: typeof OrbitDb,
+        orbitDb: Node,
         id?: string,
         dbName?: string,
         dbType?: OrbitDbTypes
@@ -35,17 +37,19 @@ class OpenDbOptions {
     }
 }
 
-const createOpenDb = async ({
+const openDb = async ({
     orbitDb,
     dbName,
     dbType
-}: OpenDbOptions) => {
+}: OpenDbOptions
+): Promise<typeof Database> => {
     
-    return await orbitDb.open(dbName, { type: dbType });
+    return await orbitDb.process.open(dbName, { type: dbType });
 }
 
 export {
+    OrbitDbTypes,
     OpenDbOptions,
-    createOpenDb
+    openDb
 }
 

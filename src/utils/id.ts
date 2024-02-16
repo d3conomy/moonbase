@@ -5,7 +5,7 @@ const createRandomId = () => {
     return Math.random().toString(36).substring(2, 15);
 }
 
-const createWorkerId = (type: Component) => {
+const createNodeId = (type: Component) => {
     return `${type}-${createRandomId()}`;
 }
 
@@ -16,7 +16,7 @@ const createProcessId = (type: Component, worker: string) => {
 
 export {
     createRandomId,
-    createWorkerId,
+    createNodeId,
     createProcessId
 }
 

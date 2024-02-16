@@ -7,7 +7,7 @@ export {
 
 export {
     createRandomId,
-    createWorkerId,
+    createNodeId,
     createProcessId
 } from './id.js';
 

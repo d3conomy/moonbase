@@ -23,7 +23,7 @@ class IPFSOptions {
     }
 }
 
-const createIPFSNode = async (options: IPFSOptions): Promise<Helia> => {
+const createIPFSProcess = async (options: IPFSOptions): Promise<Helia> => {
     const helia = await createHelia({
         libp2p: options.libp2p,
         datastore: options.datastore,
@@ -34,5 +34,5 @@ const createIPFSNode = async (options: IPFSOptions): Promise<Helia> => {
 
 export {
     IPFSOptions,
-    createIPFSNode
+    createIPFSProcess
 }

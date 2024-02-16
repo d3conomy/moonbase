@@ -98,7 +98,7 @@ const defaultOrbitDbOptions = ({
 }
 
 
-const createOrbitDbNode = async ({
+const createOrbitDbProcess = async ({
     ipfs,
     enableDID,
     identitySeed,
@@ -122,7 +122,7 @@ const createOrbitDbNode = async ({
         logger({
             level: LogLevel.INFO,
             component: Component.ORBITDB,
-            message: `Creating OrbitDB node with DID identity provider...`
+            message: `Creating OrbitDB process with DID identity provider...`
         });
         orbitDb = await createOrbitDB({
             ipfs, 
@@ -135,7 +135,7 @@ const createOrbitDbNode = async ({
         logger({
             level: LogLevel.INFO,
             component: Component.ORBITDB,
-            message: `Creating OrbitDB node with no identity provider...`
+            message: `Creating OrbitDB process with no identity provider...`
         });
         orbitDb = await createOrbitDB({ ipfs });
     }
@@ -145,5 +145,5 @@ const createOrbitDbNode = async ({
 export {
     OrbitDbOptions,
     defaultOrbitDbOptions,
-    createOrbitDbNode
+    createOrbitDbProcess
 }
