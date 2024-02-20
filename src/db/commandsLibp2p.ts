@@ -1,4 +1,3 @@
-import { Component, createCommandId } from '../utils/index.js';
 import { Node, ProcessTypes } from './node.js';
 import { INodeCommands, Command } from './commands.js';
 
@@ -17,16 +16,12 @@ class Libp2pCommands
     async execute(command: Command): Promise<any> {
         switch (command.action) {
             case 'peerInfo':
-                return await this.process.peerId;
+                return await this.process.peerId.toString();
             default:
                 return null;
         }
     }
 }
-
-
-
-
 
 
 export {

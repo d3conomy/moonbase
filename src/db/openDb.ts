@@ -1,10 +1,7 @@
+import { LogLevel } from '../utils/constants.js';
 import { createDbId, createRandomId } from '../utils/id.js';
+import { logger } from '../utils/logBook.js';
 import { Node } from './node.js';
-import {
-    OrbitDbOptions,
-    defaultOrbitDbOptions,
-    createOrbitDbProcess
-} from './setupOrbitDb.js';
 
 import {
     OrbitDb,
@@ -20,32 +17,60 @@ enum OrbitDbTypes {
 
 class OpenDbOptions {
     public id: string;
-    public orbitDb: Node;
-    public dbName: string;
-    public dbType: OrbitDbTypes;
+    public orbitDb?: typeof OrbitDb;
+    public databaseName: string;
+    public databaseType: OrbitDbTypes;
 
-    constructor(
+    constructor({
+        orbitDb,
+        id,
+        databaseName,
+        databaseType
+    }: {
         orbitDb: Node,
         id?: string,
-        dbName?: string,
-        dbType?: OrbitDbTypes
-    ) {
+        databaseName?: string,
+        databaseType?: OrbitDbTypes
+    }) {
         this.orbitDb = orbitDb;
-        this.dbName = dbName ? dbName : createRandomId()
-        this.dbType = dbType ? dbType : OrbitDbTypes.EVENTS;
-        this.id = id ? id : `${createDbId(this.dbType, this.dbName)}`
+        this.databaseName = databaseName ? databaseName : createRandomId()
+        this.databaseType = databaseType ? databaseType : OrbitDbTypes.EVENTS;
+        this.id = id ? id : `${createDbId(this.databaseType, this.databaseName)}`
     }
 }
 
-const openDb = async ({
-    orbitDb,
-    dbName,
-    dbType
-}: OpenDbOptions
+const openDb = async (
+    options: OpenDbOptions
 ): Promise<typeof Database> => {
-    
-    return await orbitDb.process.open(dbName, { type: dbType });
+    let database: typeof Database;
+    const orbitDb = options.orbitDb as typeof OrbitDb;
+    logger({
+        level: LogLevel.INFO,
+        message: `Opening database: ${options.databaseName}\n` +
+                    `Type: ${options.databaseType}\n` +
+                    `process: ${orbitDb.process}`
+
+    });
+    try {
+        database = await orbitDb.open(options.databaseName, {
+            type: options.databaseType
+        });
+        logger({
+            level: LogLevel.INFO,
+            message: `Database ${options.databaseName} opened`
+        });
+    }
+    catch (error) {
+        logger({
+            level: LogLevel.ERROR,
+            message: `Error opening database: ${error}`
+        });
+    }
+    return { database };
 }
+
+
+
 
 export {
     OrbitDbTypes,

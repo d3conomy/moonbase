@@ -11,7 +11,7 @@ class Manager {
         this.nodes = new Array<Node>();
     }
 
-    public createNode({
+    public async createNode({
         id,
         type,
         options
@@ -19,14 +19,15 @@ class Manager {
         id?: string,
         type: Component,
         options?: NodeOptions
-    }) {
+    }): Promise<Node> {
         const node = new Node({
             id,
             type,
             options
         });
-        node.init();
+        await node.init();
         this.addNode(node);
+        return node;
     }
 
     private addNode(node: Node) {
@@ -101,6 +102,7 @@ class Manager {
         
     }
 }
+
 
 export {
     Manager

@@ -4,7 +4,7 @@ import { logger } from '../utils/logBook.js';
 import {
     Manager
 } from './manager.js';
-import { OpenDbOptions } from './openDb.js';
+import { OpenDbOptions, openDb } from './openDb.js';
 import { IPFSOptions } from './setupIPFS.js';
 import { OrbitDbOptions } from './setupOrbitDb.js';
 import { Database } from '@orbitdb/core';
@@ -17,20 +17,13 @@ class Db {
     constructor() {
         this.manager = new Manager();
         this.opened = new Map<string, typeof Database>();
-
-        // this.init().then(() => {
-        //     logger({
-        //         level: LogLevel.INFO,
-        //         message: 'Db initialized'
-        //     });
-        // });
     }
 
     public async init(): Promise<void> {
         // Create a libp2p node
         const type = Component.LIBP2P;
         const libp2pId = createNodeId(type);
-        await this.manager.createNode({
+        const libp2p = await this.manager.createNode({
             id: libp2pId,
             type: type
         });
@@ -39,67 +32,150 @@ class Db {
             message: 'Libp2p node created'
         });
 
-        // //wait until the libp2p node is created
-        // while (!this.manager.getNode(libp2pId)?.process) {
-        //     await new Promise((resolve) => setTimeout(resolve, 1000));
-        // }
-
         // Create an IPFS node
-        const libp2p = this.manager.getNode(libp2pId);
+        const libp2p2 = this.manager.getNode(libp2pId);
+        if (!libp2p2) {
+            logger({
+                level: LogLevel.ERROR,
+                message: 'No libp2p node available'
+            });
+            return;
+        }
+
+        logger({
+            level: LogLevel.INFO,
+            message: `Libp2p node created: ${libp2p2.process.peerId.toString()}`
+        });
+
         const ipfsId = createNodeId(Component.IPFS);
         const ipfsOptions = new IPFSOptions({
-            libp2p: libp2p?.process
+            libp2p: libp2p2.process
         });
-        await this.manager.createNode({
+        const ipfs = await this.manager.createNode({
             id: ipfsId,
             type: Component.IPFS,
             options: ipfsOptions
         });
-
-        // while (!this.manager.getNode(ipfsId)?.process) {
-        //     await new Promise((resolve) => setTimeout(resolve, 1000));
-        // }
 
         logger({
             level: LogLevel.INFO,
             message: 'IPFS node created'
         });
 
+        try {
+            const cid = await ipfs.process.libp2p.peerId.toString();
+            logger({
+                level: LogLevel.INFO,
+                message: `IPFS node created: ${cid}`
+            });
+        }
+        catch (error) {
+            logger({
+                level: LogLevel.ERROR,
+                message: `Error adding to IPFS: ${error}`
+            });
+        }
+
         // Create an OrbitDB node
-        const ipfs = this.manager.getNode(ipfsId);
+        // const ipfs = this.manager.getNode(ipfsId);
+        // console.log('ipfs', ipfs?.process.libp2p.peerId.toString())
         const orbitDbId = createNodeId(Component.ORBITDB);
-        await this.manager.createNode({
-            id: orbitDbId,
-            type: Component.ORBITDB,
-            options: new OrbitDbOptions({
-                ipfs: ipfs?.process,
-                enableDID: true
-            })
+        const orbitDbOptions = new OrbitDbOptions({
+            ipfs: ipfs.process,
+            enableDID: true
         });
+        try {
+            logger({
+                level: LogLevel.INFO,
+                message: 'Creating OrbitDB node...'
+            });
+            const orbitDb = await this.manager.createNode({
+                id: orbitDbId,
+                type: Component.ORBITDB,
+                options: orbitDbOptions
+            });
+            logger({
+                level: LogLevel.INFO,
+                message: 'OrbitDB node creation process done...'
+            });
+            const db = await orbitDb.process.open('orbitDbNode')
+    
+            logger({
+                level: LogLevel.INFO,
+                message: `Database opened: ${await db.getMultiaddrs()}`
+            });
+        }
+        catch (error) {
+            logger({
+                level: LogLevel.ERROR,
+                message: `Error creating OrbitDB node: ${error}`
+            });
+            return;
+        }
+        
 
-        // while (!this.manager.getNode(orbitDbId)?.process) {
-        //     await new Promise((resolve) => setTimeout(resolve, 1000));
-        // }
-
-        logger({
-            level: LogLevel.INFO,
-            message: 'OrbitDB node created'
-        });
+        
     }
 
     public async open({
         id,
         orbitDb,
-        dbName,
-        dbType
-    }: OpenDbOptions): Promise<void> {
+        databaseName,
+        databaseType
+    }: OpenDbOptions): Promise<{
+        database: typeof Database
+    } | undefined> {
 
 
         orbitDb = orbitDb ? orbitDb : this.manager.getNodesByType(Component.ORBITDB)[0];
 
+        if (!orbitDb) {
+            logger({
+                level: LogLevel.ERROR,
+                message: 'No OrbitDB node available'
+            });
+            return;
+        }
 
-        const db = await orbitDb.process.open(dbName, { type: dbType });
-        this.opened.set(id, db);
+        logger({
+            level: LogLevel.INFO,
+            message: `Opening db using OrbitDB node: ${JSON.stringify(orbitDb)}\n` +
+                `Database name: ${databaseName}, type: ${databaseType}\n` +
+                `${orbitDb.process}`
+        });
+
+        try {
+            const openDbOptions = new OpenDbOptions({
+                id: id,
+                orbitDb: orbitDb.process,
+                databaseName: databaseName,
+                databaseType: databaseType
+            });
+            const db = await openDb(openDbOptions);
+            this.opened.set(id, db);
+            logger({
+                level: LogLevel.INFO,
+                message: `Database ${databaseName} opened`
+            });
+            return { database: db };
+        }
+        catch (error) {
+            logger({
+                level: LogLevel.ERROR,
+                message: `Error opening database: ${error}`
+            });
+        }
+        // let db = await orbitDb.process.open(databaseName, { type: databaseType })
+        // this.opened.set(id, db); 
+
+        // const address = db.address.toString();
+
+        // logger({
+        //     level: LogLevel.INFO,
+        //     message: `Database ${databaseName}} opened at address ${address}`
+        // });
+        // return db;
+        // });
     }
 }
 

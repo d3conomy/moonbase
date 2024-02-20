@@ -6,7 +6,7 @@ import { expect } from 'chai';
 import { Component, LogLevel } from '../utils/constants.js';
 import { Node } from '../db/node.js';
 import { logger } from '../utils/logBook.js';
-import { log } from 'console';
+                                                              
 
 describe('Db', () => {
     let db: Db;
@@ -15,10 +15,10 @@ describe('Db', () => {
         
     });
 
-    it('should initialize the Db', async () => {
+    it('should initialize the Db', () => {
         // await db.init();
         db = new Db();
-        await db.init();
+        db.init();
         expect(db.manager).to.be.instanceOf(Manager);
         expect(db.opened.size).to.equal(0);
     });
@@ -36,29 +36,33 @@ describe('Db', () => {
 
     it('should open a database', async () => {
         db = new Db();
-        db.init().then(() => {;
-            const orbitDbNodes: Node[] = db.manager.getNodesByType(Component.ORBITDB);
+        await db.init()
+        const orbitDbNodes: Node[] = db.manager.getNodesByType(Component.ORBITDB);
 
-            const orbitDbNode = orbitDbNodes[0];
+        const orbitDbNode = orbitDbNodes[0];
+        logger({
+            level: LogLevel.INFO,
+            message: `OrbitDB node: ${JSON.stringify(orbitDbNode)}`
+        });
+
+        const openDbOptions: OpenDbOptions = {
+            id: 'db1',
+            orbitDb: orbitDbNode.process,
+            databaseName: 'testDb',
+            databaseType: OrbitDbTypes.EVENTS,
+        };
+
+        db.open(openDbOptions).then(() => {
             logger({
                 level: LogLevel.INFO,
-                message: `OrbitDB node: ${JSON.stringify(orbitDbNode)}`
+                message: `Db opened: ${db.opened.get('db1')}`
             });
-
-            const openDbOptions: OpenDbOptions = {
-                id: 'db1',
-                orbitDb: orbitDbNode,
-                dbName: 'testDb',
-                dbType: OrbitDbTypes.EVENTS,
-            };
-
-            db.open(openDbOptions).then(() => {
-                expect(db.opened.size).to.equal(1);
-            
-            })
+            expect(db.opened.size).to.equal(1);
+        
+        })
             // expect(db.opened.size).to.equal(1);
-        });
-        // expect(db.opened.get('db1')).to.be('OrbitDB');
+
+        expect(db.opened.get('db1')).to.be('OrbitDB');
     });
 
     afterEach(() => {

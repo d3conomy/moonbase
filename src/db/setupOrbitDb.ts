@@ -108,7 +108,7 @@ const createOrbitDbProcess = async ({
     enableDID?: boolean;
     identitySeed?: Uint8Array;
     identityProvider?: any;
-}): Promise<typeof OrbitDb> => {
+}): Promise<any> => {
     const orbitDbOptions = defaultOrbitDbOptions({
         ipfs: ipfs,
         enableDID: enableDID ? enableDID : false,
@@ -119,17 +119,48 @@ const createOrbitDbProcess = async ({
     let orbitDb: typeof OrbitDb | undefined = undefined;
 
     if (orbitDbOptions.enableDID) {
+        try {
+            logger({
+                level: LogLevel.INFO,
+                component: Component.ORBITDB,
+                message: `Creating OrbitDB process from IPFS ${ipfs} with DID identity provider...`
+            });
+        }
+        catch (error) {
+            logger({
+                level: LogLevel.ERROR,
+                component: Component.ORBITDB,
+                code: ResponseCode.INTERNAL_SERVER_ERROR,
+                message: `Error creating OrbitDB process: ${error}`
+            });
+        }
+
         logger({
             level: LogLevel.INFO,
             component: Component.ORBITDB,
             message: `Creating OrbitDB process with DID identity provider...`
         });
-        orbitDb = await createOrbitDB({
-            ipfs, 
-            identity: {
-                provider: identityProvider
-            }
-        });
+        try {
+            orbitDb = await createOrbitDB({
+                ipfs, 
+                identity: {
+                    provider: identityProvider
+                }
+            });
+            logger({
+                level: LogLevel.INFO,
+                component: Component.ORBITDB,
+                message: `OrbitDB process created ${orbitDb}`
+            });
+        }
+        catch (error) {
+            logger({
+                level: LogLevel.ERROR,
+                component: Component.ORBITDB,
+                code: ResponseCode.INTERNAL_SERVER_ERROR,
+                message: `Error creating OrbitDB process: ${error}`
+            });
+        }
     }
     else {
         logger({
@@ -137,8 +168,33 @@ const createOrbitDbProcess = async ({
             component: Component.ORBITDB,
             message: `Creating OrbitDB process with no identity provider...`
         });
-        orbitDb = await createOrbitDB({ ipfs });
+        // while (ipfs.libp2p.status !== 'started') {
+        //     logger({
+        //         level: LogLevel.INFO,
+        //         component: Component.ORBITDB,
+        //         message: `Waiting for libp2p to start...`
+        //     });
+        //     await new Promise(resolve => setTimeout(resolve, 1000));
+        // }
+        try {
+            orbitDb = await createOrbitDB({ ipfs });
+            logger({
+                level: LogLevel.INFO,
+                component: Component.ORBITDB,
+                message: `OrbitDB process created ${orbitDb}`
+            });
+        }
+        catch (error) {
+            logger({
+                level: LogLevel.ERROR,
+                component: Component.ORBITDB,
+                code: ResponseCode.INTERNAL_SERVER_ERROR,
+                message: `Error creating OrbitDB process: ${error}`
+            });
+        }
+        return orbitDb
     }
+    
     return orbitDb;
 }
 

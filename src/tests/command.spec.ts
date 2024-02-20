@@ -35,7 +35,7 @@ describe('Command', () => {
 
     it('should execute the command', async () => {
         const manager = new Manager();
-        manager.createNode({
+        await manager.createNode({
             id: 'node1',
             type: Component.LIBP2P
         });

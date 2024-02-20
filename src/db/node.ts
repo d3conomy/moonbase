@@ -8,10 +8,12 @@ import { Database, OrbitDB } from "@orbitdb/core";
 import { createLibp2pProcess, defaultLibp2pOptions } from "./setupLibp2p.js";
 import { Command, INodeCommands} from "./commands.js";
 import { Libp2pCommands } from "./commandsLibp2p.js";
+import { OpenDbCommands } from "./commandsOpenDb.js";
+import { OpenDbOptions, openDb } from "./openDb.js";
 
-type NodeOptions = OrbitDbOptions | IPFSOptions | Libp2pOptions;
-type NodeCommands = Libp2pCommands;
-type ProcessTypes = typeof OrbitDB | Helia | Libp2p;
+type NodeOptions = OrbitDbOptions | IPFSOptions | Libp2pOptions | OpenDbOptions;
+type NodeCommands = Libp2pCommands | OpenDbCommands;
+type ProcessTypes = typeof OrbitDB | Helia | Libp2p | typeof Database;
 
 class Node {
     public id: string;
@@ -57,6 +59,12 @@ class Node {
                 case Component.LIBP2P:
                     this.options = defaultLibp2pOptions;
                     break;
+                case Component.DB:
+                    this.options = new OpenDbOptions({
+                        orbitDb: this,
+                        id: this.id
+                    });
+                    break;
                 default:
                     logger({
                         level: LogLevel.ERROR,
@@ -70,54 +78,96 @@ class Node {
         this.commands = commands;
     }
 
-    public init() {
+    public async init() {
         if (this.process) {
             return
         }
         else {
-            this.createProcess({
+            await this.createProcess({
                 options: this.options
-            }).then(() => {
-                while (!this.process) {
-                    setTimeout(() => {
-                        logger({
-                            level: LogLevel.INFO,
-                            component: Component.SYSTEM,
-                            code: ResponseCode.SUCCESS,
-                            message: `Process created: ${this.id}`
-                        })
-                    }, 1000);
-                    switch (this.type) {
-                        case Component.LIBP2P:
-                            if (this.process) {
-                                this.commands = new Libp2pCommands(this.process);
-                            }
-                            else {
-                                logger({
-                                    level: LogLevel.ERROR,
-                                    component: Component.SYSTEM,
-                                    code: ResponseCode.FAILURE,
-                                    message: `Node not created: ${this.id}`
-                                })
-                            }
-                            break;
-                        default:
+            })
+            // }).then(() => {
+                // while (!this.process) {
+                //     setTimeout(() => {
+                //         logger({
+                //             level: LogLevel.INFO,
+                //             component: Component.SYSTEM,
+                //             code: ResponseCode.SUCCESS,
+                //             message: `Process created: ${this.id}`
+                //         })
+                //     }, 1000);
+                // }
+
+                switch (this.type) {
+                    case Component.LIBP2P:
+                        if (this.process) {
+                            this.commands = new Libp2pCommands(this.process);
+                        }
+                        else {
                             logger({
                                 level: LogLevel.ERROR,
                                 component: Component.SYSTEM,
                                 code: ResponseCode.FAILURE,
                                 message: `Node not created: ${this.id}`
                             })
-                            break;
-                    }
+                        }
+                        break;
+                    case Component.IPFS:
+                        if (this.process) {
+                            // const ipfs = this.process;
+                            // console.log(ipfs);
+                        }
+                        else {
+                            logger({
+                                level: LogLevel.ERROR,
+                                component: Component.SYSTEM,
+                                code: ResponseCode.FAILURE,
+                                message: `Process not found. Node not created: ${this.id}`
+                            })
+                        }
+                        break;
+                    case Component.DB:
+                        if (this.process) {
+                            this.commands = new OpenDbCommands(this.process);
+                        }
+                        else {
+                            logger({
+                                level: LogLevel.ERROR,
+                                component: Component.SYSTEM,
+                                code: ResponseCode.FAILURE,
+                                message: `Node not created: ${this.id}`
+                            })
+                        }
+                        break;
+                    case Component.ORBITDB:
+                        if (this.process) {
+                            const db = this.process.open('test');
+                            console.log(db.address);
+                        }
+                        else {
+                            logger({
+                                level: LogLevel.ERROR,
+                                component: Component.SYSTEM,
+                                code: ResponseCode.FAILURE,
+                                message: `Process not found. Node not created: ${this.id}`
+                            })
+                        }
+                        break;
+                    default:
+                        logger({
+                            level: LogLevel.ERROR,
+                            component: Component.SYSTEM,
+                            code: ResponseCode.FAILURE,
+                            message: `Node not created: ${this.id}`
+                        })
+                        break;
                 }
-                logger({
-                    level: LogLevel.INFO,
-                    component: Component.SYSTEM,
-                    code: ResponseCode.SUCCESS,
-                    message: `Process created: ${this.id} and commands set`
-                })
-            });
+            logger({
+                level: LogLevel.INFO,
+                component: Component.SYSTEM,
+                code: ResponseCode.SUCCESS,
+                message: `Process created: ${this.id} and commands set`
+            })
         }
     }
 
@@ -142,6 +192,17 @@ class Node {
         }
 
         switch (this.type) {
+            case Component.DB:
+                if (!(options instanceof OpenDbOptions)) {
+                    logger({
+                        level: LogLevel.ERROR,
+                        component: Component.ORBITDB,
+                        code: ResponseCode.FAILURE,
+                        message: 'Invalid options for OpenDb'
+                    })
+                    verified = false;
+                }
+                break;
             case Component.ORBITDB:
                 if (!(options instanceof OrbitDbOptions)) {
                     logger({
@@ -188,8 +249,8 @@ class Node {
         return verified;
     }
 
-    async createProcess({
-        options
+    public async createProcess({
+          options
     }: {
         options?: NodeOptions
     }): Promise<void> {
@@ -218,6 +279,10 @@ class Node {
         }
 
         switch (this.type) {
+            case Component.DB:
+                process = await openDb(options as OpenDbOptions);
+                commands = new OpenDbCommands(process);
+                break;
             case Component.ORBITDB:
                 process = await createOrbitDbProcess(options as OrbitDbOptions);
                 break;
@@ -231,8 +296,25 @@ class Node {
             default:
                 throw new Error('Invalid node type');
         }
+        logger({
+            level: LogLevel.INFO,
+            component: Component.SYSTEM,
+            code: ResponseCode.SUCCESS,
+            message: `Process created: ${this.id}, Type: ${this.type}, Process: ${process}`
+        })
         this.process = process;
         this.commands = commands;
+
+        if (!this.process) {
+            logger({
+                level: LogLevel.ERROR,
+                component: Component.SYSTEM,
+                code: ResponseCode.FAILURE,
+                message: `Process not created for node: ${this.id}`
+            })
+            return;
+        }
+        return;
     }
 
     public async execute(command: Command): Promise<any> {
@@ -246,7 +328,8 @@ class Node {
             return
         }
 
-        this.commands?.execute(command).then((output) => {
+        // 
+        const output = await this.commands.execute(command);
             command.setOutput(output);
             logger({
                 level: LogLevel.INFO,
@@ -254,8 +337,8 @@ class Node {
                 code: ResponseCode.SUCCESS,
                 message: `Command executed: ${command.id}, Output ${command.output}`
             })
-        });
-        return command.output;
+        // });
+        return output;
     }
    
     public async stop() {
@@ -270,6 +353,9 @@ class Node {
         }
         
         switch (this.type) {
+            case Component.DB:
+                this.process.close();
+                break;
             case Component.ORBITDB:
                 this.process.disconnect();
                 break;
