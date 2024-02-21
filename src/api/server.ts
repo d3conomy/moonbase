@@ -4,6 +4,7 @@ import swaggerJsdoc from 'swagger-jsdoc';
 
 import {
     // libp2pRouter,
+    managerRouter,
     metricsRouter,
     // ipfsRouter,
     // orbitdbRouter
@@ -75,7 +76,10 @@ class ApiServer {
         const specs = swaggerJsdoc(options);
 
         this.app.use(express.json());
-        this.app.use('/api/v0', metricsRouter);
+        this.app.use('/api/v0',
+            managerRouter,
+            metricsRouter
+        );
         this.app.use('/api/v0/docs', swaggerUi.serve)
         this.app.get('/api/v0/docs', swaggerUi.setup(specs, { explorer: true }))
 

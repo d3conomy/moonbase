@@ -95,8 +95,7 @@ const defaultLibp2pOptions: Libp2pOptions = {
 }
 
 const createLibp2pProcess = async (options?: Libp2pOptions): Promise<Libp2p> => {
-    const libp2p = await createLibp2p(options ? options: defaultLibp2pOptions)
-    return libp2p
+    return await createLibp2p(options ? options: defaultLibp2pOptions)
 }
 
 export {

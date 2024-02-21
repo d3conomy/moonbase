@@ -1,4 +1,4 @@
-import { OrbitDb } from '@orbitdb/core';
+import { OrbitDb, Database } from '@orbitdb/core';
 import { createOrbitDbProcess, OrbitDbOptions } from '../db/setupOrbitDb.js';
 import { Helia } from 'helia';
 import { createIPFSProcess, IPFSOptions } from '../db/setupIPFS.js';
@@ -10,7 +10,7 @@ import { logger } from '../utils/logBook.js';
 import { LogLevel } from '../utils/constants.js';
 
 describe('createOrbitDbProcess', async () => {
-    let orbitDb: typeof OrbitDb;
+    let orbitDb: any;
     let ipfs: Helia;
     let libp2p: Libp2p;
 
@@ -47,21 +47,32 @@ describe('createOrbitDbProcess', async () => {
             enableDID: true
         };
 
-        orbitDb = await createOrbitDbProcess(options)
+        orbitDb = await createOrbitDbProcess(options) as typeof OrbitDb
         logger({
             level: LogLevel.INFO,
-            message: `OrbitDb process created`
+            message: `OrbitDb process created ${orbitDb.ipfs.libp2p.peerId.toString()}, ${orbitDb.ipfs.libp2p.getMultiaddrs()}`
         });
-        orbitDb.open('test').then((db: any) => {
-            logger({
-                level: LogLevel.INFO,
-                message: `Database opened`
-            });
-
+        // orbitDb.open('test').then((db: any) => {
+        //     logger({
+        //         level: LogLevel.INFO,
+        //         message: `Database opened`
+        //     });
     
-        console.log(`${db.address.toString()}`);
+        // console.log(`${db.database}`);
+        // try {
+        //     const db: typeof Database = await orbitDb.open('test-123', { type: 'events' });
+        //     logger({
+        //         level: LogLevel.INFO,
+        //         message: `Database opened: ${db.address.toString()}`
+        //     });
+        // }
+        // catch (error: any) {
+        //     logger({
+        //         level: LogLevel.ERROR,
+        //         message: `Error opening database: ${error.message}, ${error.stack}, ${error.name}`
+        //     });
+        // }
         expect(orbitDb).to.be.instanceOf(Object);
-        });
         // Call the function
         // createOrbitDbProcess(options).then((orbitDbInstance) => {;
             // expect(orbitDbInstance.identity.provider).to.be.instanceOf(Object);

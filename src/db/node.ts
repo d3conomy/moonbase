@@ -79,96 +79,81 @@ class Node {
     }
 
     public async init() {
+        let message = `Node init...`;
         if (this.process) {
             return
         }
-        else {
-            await this.createProcess({
-                options: this.options
-            })
-            // }).then(() => {
-                // while (!this.process) {
-                //     setTimeout(() => {
-                //         logger({
-                //             level: LogLevel.INFO,
-                //             component: Component.SYSTEM,
-                //             code: ResponseCode.SUCCESS,
-                //             message: `Process created: ${this.id}`
-                //         })
-                //     }, 1000);
-                // }
 
-                switch (this.type) {
-                    case Component.LIBP2P:
-                        if (this.process) {
-                            this.commands = new Libp2pCommands(this.process);
-                        }
-                        else {
-                            logger({
-                                level: LogLevel.ERROR,
-                                component: Component.SYSTEM,
-                                code: ResponseCode.FAILURE,
-                                message: `Node not created: ${this.id}`
-                            })
-                        }
-                        break;
-                    case Component.IPFS:
-                        if (this.process) {
-                            // const ipfs = this.process;
-                            // console.log(ipfs);
-                        }
-                        else {
-                            logger({
-                                level: LogLevel.ERROR,
-                                component: Component.SYSTEM,
-                                code: ResponseCode.FAILURE,
-                                message: `Process not found. Node not created: ${this.id}`
-                            })
-                        }
-                        break;
-                    case Component.DB:
-                        if (this.process) {
-                            this.commands = new OpenDbCommands(this.process);
-                        }
-                        else {
-                            logger({
-                                level: LogLevel.ERROR,
-                                component: Component.SYSTEM,
-                                code: ResponseCode.FAILURE,
-                                message: `Node not created: ${this.id}`
-                            })
-                        }
-                        break;
-                    case Component.ORBITDB:
-                        if (this.process) {
-                            const db = this.process.open('test');
-                            console.log(db.address);
-                        }
-                        else {
-                            logger({
-                                level: LogLevel.ERROR,
-                                component: Component.SYSTEM,
-                                code: ResponseCode.FAILURE,
-                                message: `Process not found. Node not created: ${this.id}`
-                            })
-                        }
-                        break;
-                    default:
-                        logger({
-                            level: LogLevel.ERROR,
-                            component: Component.SYSTEM,
-                            code: ResponseCode.FAILURE,
-                            message: `Node not created: ${this.id}`
-                        })
-                        break;
+        await this.createProcess({
+            options: this.options
+        })
+
+        switch (this.type) {
+            case Component.LIBP2P:
+                if (this.process) {
+                    this.commands = new Libp2pCommands(this.process);
                 }
-            logger({
-                level: LogLevel.INFO,
-                component: Component.SYSTEM,
-                code: ResponseCode.SUCCESS,
-                message: `Process created: ${this.id} and commands set`
-            })
+                else {
+                    message = `Node not created`
+                }
+                break;
+            case Component.IPFS:
+                if (this.process) {
+                    // const ipfs = this.process;
+                    // console.log(ipfs);
+                }
+                else {
+                    logger({
+                        level: LogLevel.ERROR,
+                        component: Component.SYSTEM,
+                        code: ResponseCode.FAILURE,
+                        message: `Process not found. Node not created: ${this.id}`
+                    })
+                }
+                break;
+            case Component.DB:
+                if (this.process) {
+                    this.commands = new OpenDbCommands(this.process);
+                }
+                else {
+                    logger({
+                        level: LogLevel.ERROR,
+                        component: Component.SYSTEM,
+                        code: ResponseCode.FAILURE,
+                        message: `Node not created: ${this.id}`
+                    })
+                }
+                break;
+            case Component.ORBITDB:
+                if (this.process) {
+                    const db = this.process.open('test');
+                    console.log(db.address);
+                }
+                else {
+                    logger({
+                        level: LogLevel.ERROR,
+                        component: Component.SYSTEM,
+                        code: ResponseCode.FAILURE,
+                        message: `Process not found. Node not created: ${this.id}`
+                    })
+                }
+                break;
+            default:
+                logger({
+                    level: LogLevel.ERROR,
+                    component: Component.SYSTEM,
+                    code: ResponseCode.FAILURE,
+                    message: `Node not created: ${this.id}`
+                })
+                break;
         }
+        logger({
+            level: LogLevel.INFO,
+            component: Component.SYSTEM,
+            code: ResponseCode.SUCCESS,
+            workerId: this.id,
+            message
+        })
     }
 
     private verifyOptions(
@@ -347,7 +332,7 @@ class Node {
                 level: LogLevel.ERROR,
                 component: Component.SYSTEM,
                 code: ResponseCode.FAILURE,
-                message: `Node not found: ${this.id}`
+                message: `Node process not found: ${this.id}`
             })
             return
         }

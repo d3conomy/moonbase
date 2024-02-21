@@ -142,9 +142,9 @@ const createOrbitDbProcess = async ({
         });
         try {
             orbitDb = await createOrbitDB({
-                ipfs, 
+                ipfs: orbitDbOptions.ipfs, 
                 identity: {
-                    provider: identityProvider
+                    provider: orbitDbOptions.identityProvider
                 }
             });
             logger({
@@ -177,7 +177,7 @@ const createOrbitDbProcess = async ({
         //     await new Promise(resolve => setTimeout(resolve, 1000));
         // }
         try {
-            orbitDb = await createOrbitDB({ ipfs });
+            orbitDb = await createOrbitDB({ ipfs: orbitDbOptions.ipfs });
             logger({
                 level: LogLevel.INFO,
                 component: Component.ORBITDB,

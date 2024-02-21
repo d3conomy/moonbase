@@ -63,7 +63,7 @@ class Db {
         });
 
         try {
-            const cid = await ipfs.process.libp2p.peerId.toString();
+            const cid = ipfs.process.libp2p.peerId.toString();
             logger({
                 level: LogLevel.INFO,
                 message: `IPFS node created: ${cid}`
@@ -98,12 +98,12 @@ class Db {
                 level: LogLevel.INFO,
                 message: 'OrbitDB node creation process done...'
             });
-            const db = await orbitDb.process.open('orbitDbNode')
+            // const db = await orbitDb.process.open('orbitDbNode')
     
-            logger({
-                level: LogLevel.INFO,
-                message: `Database opened: ${await db.getMultiaddrs()}`
-            });
+            // logger({
+            //     level: LogLevel.INFO,
+            //     message: `Database opened: ${await db.getMultiaddrs()}`
+            // });
         }
         catch (error) {
             logger({
@@ -139,7 +139,7 @@ class Db {
 
         logger({
             level: LogLevel.INFO,
-            message: `Opening db using OrbitDB node: ${JSON.stringify(orbitDb)}\n` +
+            message: `Opening db using OrbitDB node: ${orbitDb}\n` +
                 `Database name: ${databaseName}, type: ${databaseType}\n` +
                 `${orbitDb.process}`
         });
@@ -152,12 +152,12 @@ class Db {
                 databaseType: databaseType
             });
             const db = await openDb(openDbOptions);
-            this.opened.set(id, db);
+            this.opened.set(id, db.database);
             logger({
                 level: LogLevel.INFO,
-                message: `Database ${databaseName} opened`
+                message: `Database ${databaseName} opened, Address ${db.database.address.toString()}`
             });
-            return { database: db };
+            return { database: db.database };
         }
         catch (error) {
             logger({

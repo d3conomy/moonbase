@@ -41,7 +41,7 @@ const createIPFSProcess = async (options: IPFSOptions): Promise<Helia> => {
         throw error;
     }
     
-    // while (helia.libp2p.getConnections().length <= 0) {
+    // while (helia.libp2p.getConnections().length === 0) {
     //     setTimeout(() => {
     //         logger({
     //             level: LogLevel.INFO,
