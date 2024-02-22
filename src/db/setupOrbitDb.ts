@@ -140,13 +140,13 @@ const createOrbitDbProcess = async ({
             message: `Creating OrbitDB process with DID identity provider...`
         });
         // try {
-            orbitDb = await createOrbitDB({
+            return await createOrbitDB({
                 ipfs: ipfs, 
                 identity: {
                     provider: orbitDbOptions.identityProvider
                 }
             });
-            return orbitDb
+            // return orbitDb
         // }
         // catch (error) {
         //     logger({
@@ -165,7 +165,7 @@ const createOrbitDbProcess = async ({
         });
        
         // try {
-            orbitDb = await createOrbitDB({ ipfs: orbitDbOptions.ipfs });
+            return await createOrbitDB({ ipfs: ipfs });
             logger({
                 level: LogLevel.INFO,
                 component: Component.ORBITDB,

@@ -60,10 +60,6 @@ class Node {
                     this.options = defaultLibp2pOptions();
                     break;
                 case Component.DB:
-                    // this.options = new OpenDbOptions({
-                    //     id: this.id,
-                    //     orbitDb: process
-                    // });
                     break;
                 default:
                     logger({
@@ -338,10 +334,10 @@ class Node {
                 await this.process.close();
                 break;
             case Component.ORBITDB:
-                await this.process.disconnect();
+                await this.process.stop();
                 break;
             case Component.IPFS:
-                await this.process.close();
+                await this.process.libp2p.stop();
                 break;
             case Component.LIBP2P:
                 await this.process.stop();

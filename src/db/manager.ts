@@ -89,6 +89,8 @@ class Manager {
         if (node && node.process) {
             try {
                 await node.stop();
+                // remove the node from the array
+                this.nodes.slice(this.nodes.indexOf(node), 1);
             }
             catch (error) {
                 logger({
@@ -99,6 +101,7 @@ class Manager {
                 })
             }
         }
+        
         
     }
 }

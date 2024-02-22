@@ -11,12 +11,13 @@ import { LogLevel } from '../utils/constants.js';
 
 describe('createOrbitDbProcess', () => {
 
-    let orbitDb: typeof OrbitDb;
+    let orbitDb: typeof OrbitDb | null = null;
 
 
     afterEach(async () => {
         // Clean up any resources if needed
         await orbitDb.ipfs.libp2p.stop();
+        orbitDb = null
     })
 
 
@@ -35,15 +36,12 @@ describe('createOrbitDbProcess', () => {
         });
 
         // Mock options
-        // const options: OrbitDbOptions = {
-        //     ipfs: ipfs,
-        //     enableDID: false
-        // };
-
-        orbitDb = await createOrbitDbProcess({
+        const options: OrbitDbOptions = new OrbitDbOptions({
             ipfs: ipfs,
             enableDID: false
-        })
+        });
+
+        orbitDb = await createOrbitDbProcess(options)
 
         logger({
             level: LogLevel.INFO,
