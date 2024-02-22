@@ -34,6 +34,7 @@ import {
 import {
     Database
 } from '@orbitdb/core';
+import { Command } from '../db/commands.js';
 
 
 describe('OpenDb', () => {
@@ -62,13 +63,13 @@ describe('OpenDb', () => {
     });
 
     afterEach(async () => {
-        // if (db !== null) {
+        if (db !== null) {
             
-        //     if (db.address.toString() !== '') {
+            if (db.address !== '') {
 
-        //         await db.close()
-        //     }
-        // }
+                await db.stop()
+            }
+        }
 
         await dbManager?.manager.closeAllNodes();
 
@@ -87,38 +88,69 @@ describe('OpenDb', () => {
         expect(allNodes?.length).to.equal(3);
     });
 
-    // it('should open a database', async () => {
+    it('should open a database', async () => {
        
 
-    //     const orbitDbNodes: Node[] | null | undefined = dbManager?.manager.getNodesByType(Component.ORBITDB);
+        const orbitDbNodes: Node[] | null | undefined = dbManager?.manager.getNodesByType(Component.ORBITDB);
 
-    //     const orbitDbNode = orbitDbNodes ? orbitDbNodes[0] : null;
-    //     logger({
-    //         level: LogLevel.INFO,
-    //         message: `OrbitDB node: ${orbitDbNode}`
-    //     });
+        const orbitDbNode = orbitDbNodes ? orbitDbNodes[0] : null;
+        logger({
+            level: LogLevel.INFO,
+            message: `OrbitDB node: ${orbitDbNode}`
+        });
 
-    //     const openDbOptions = new OpenDbOptions({
-    //         id: 'db1',
-    //         orbitDb: orbitDbNode?.process,
-    //         databaseName: 'testDb',
-    //         databaseType: OrbitDbTypes.EVENTS,
-    //     });
+        if (!orbitDbNode) {
+            logger({
+                level: LogLevel.ERROR,
+                message: 'No OrbitDB node available'
+            });
+            return
+        }
 
-    //     logger({
-    //         level: LogLevel.INFO,
-    //         message: `OpenDb options: ${JSON.stringify(openDbOptions.id)}`
-    //     });
+        const openDbOptions = new OpenDbOptions({
+            id: 'db1',
+            orbitDb: orbitDbNode,
+            databaseName: 'testDb',
+            databaseType: OrbitDbTypes.EVENTS,
+        });
 
-    //     db = await dbManager?.open(openDbOptions);
+        logger({
+            level: LogLevel.INFO,
+            message: `OpenDb options: ${JSON.stringify(openDbOptions.id)}`
+        });
 
-    //     // await db.database.add("hello");
+        db = await dbManager?.open(openDbOptions);
 
-    //     // logger({
-    //     //     level: LogLevel.INFO,
-    //     //     message: `Database opened, all entries: ${db.database.all()}`
-    //     // });
+        logger({
+            level: LogLevel.INFO,
+            message: `Database opened: ${db?.process.address.toString()}`
+        });
 
-    //     expect(db.process).to.be.instanceOf(Database);
-    // });
+        const dbAddCommand = new Command({
+            nodeId: 'db1',
+            type: Component.DB,
+            action: 'add',
+            kwargs: new Map<string, any>([
+                ['key', 'key1'],
+                ['kvalue', 'value1']
+            ])
+        });
+
+        const dbgetAllCommand = new Command({
+            nodeId: 'db1',
+            type: Component.DB,
+            action: 'all',
+        });
+
+        // await dbManager?.executeCommand(dbAddCommand);
+        // })
+        // let command = await dbManager?.executeCommand(dbgetAllCommand)
+
+        // logger({
+        //     level: LogLevel.INFO,
+        //     message: `Database opened, all entries: ${command?.output}`
+        // });
+
+        expect(db.id).to.be.not.null;
+    });
 });

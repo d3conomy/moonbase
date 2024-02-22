@@ -296,16 +296,16 @@ class Node {
 
     public async execute(command: Command): Promise<Command> {
 
-        await this.commands?.execute(command);
+        let commandoutput = await this.commands?.execute(command);
 
         logger({
             level: LogLevel.INFO,
             component: Component.SYSTEM,
             code: ResponseCode.SUCCESS,
-            message: `Command executed: ${command.id}, Output ${command.output}`
+            message: `Command executed: ${commandoutput?.id}, Output ${commandoutput?.output}`
         })
-
-        return command;
+// @ts-ignore
+        return commandoutput; 
     }
    
     public async stop() {
@@ -321,7 +321,7 @@ class Node {
         
         switch (this.type) {
             case Component.DB:
-                    await this.process.stop()
+                    // await this.process.stop()
                     await this.process.close();
 
                 break;

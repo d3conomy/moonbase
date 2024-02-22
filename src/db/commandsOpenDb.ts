@@ -15,27 +15,35 @@ class OpenDbCommands
         this.available = new Array<Command>();
     }
 
-    public async execute(command: Command): Promise<any> {
+    public async execute(command: Command): Promise<Command> {
         logger({
             level: LogLevel.INFO,
             message: `OpenDbCommands: ${command.action}`
         });
 
+        let response: any;
+
         switch (command.action) {
             case 'add':
-                return await this.process.add(command.kwargs?.get('value'));
+                response = await this.process.add(command.kwargs?.get('value'));
             case 'put':
-                return await this.process.put(command.kwargs?.get('key'), command.kwargs?.get('value'));
+                response = await this.process.put(command.kwargs?.get('key'), command.kwargs?.get('value'));
             case 'get':
-                return await this.process.get(command.kwargs?.get('key'));
+                response = await this.process.get(command.kwargs?.get('key'));
             case 'del':
-                return await this.process.del(command.kwargs?.get('key'));
+                response = await this.process.del(command.kwargs?.get('key'));
+            case 'all':
+                response = await this.process.all();
+                break;
             case 'close':
-                return await this.process.close();
+                response = await this.process.close();
             default:
-                return null;
+                response = null;
         }
+        command.setOutput(response);
+        return command
     }
+
 }
 
 export {
