@@ -72,47 +72,47 @@
 //     })
 
 
-//     it('should create the required nodes', () => {
-//         const allNodes = dbManager?.manager.getAllNodes();
-//         logger({
-//             level: LogLevel.INFO,
-//             message: `All nodes: ${allNodes?.map((node) => node.id)}`
-//         });
-//         expect(allNodes?.length).to.equal(3);
-//     });
+//     // it('should create the required nodes', () => {
+//     //     const allNodes = dbManager?.manager.getAllNodes();
+//     //     logger({
+//     //         level: LogLevel.INFO,
+//     //         message: `All nodes: ${allNodes?.map((node) => node.id)}`
+//     //     });
+//     //     expect(allNodes?.length).to.equal(3);
+//     // });
 
-//     it('should open a database', async () => {
+//     // it('should open a database', async () => {
        
 
-//         const orbitDbNodes: Node[] | null | undefined = dbManager?.manager.getNodesByType(Component.ORBITDB);
+//     //     const orbitDbNodes: Node[] | null | undefined = dbManager?.manager.getNodesByType(Component.ORBITDB);
 
-//         const orbitDbNode = orbitDbNodes ? orbitDbNodes[0] : null;
-//         logger({
-//             level: LogLevel.INFO,
-//             message: `OrbitDB node: ${orbitDbNode}`
-//         });
+//     //     const orbitDbNode = orbitDbNodes ? orbitDbNodes[0] : null;
+//     //     logger({
+//     //         level: LogLevel.INFO,
+//     //         message: `OrbitDB node: ${orbitDbNode}`
+//     //     });
 
-//         const openDbOptions = new OpenDbOptions({
-//             id: 'db1',
-//             orbitDb: orbitDbNode?.process,
-//             databaseName: 'testDb',
-//             databaseType: OrbitDbTypes.EVENTS,
-//         });
+//     //     const openDbOptions = new OpenDbOptions({
+//     //         id: 'db1',
+//     //         orbitDb: orbitDbNode?.process,
+//     //         databaseName: 'testDb',
+//     //         databaseType: OrbitDbTypes.EVENTS,
+//     //     });
 
-//         logger({
-//             level: LogLevel.INFO,
-//             message: `OpenDb options: ${JSON.stringify(openDbOptions.id)}`
-//         });
+//     //     logger({
+//     //         level: LogLevel.INFO,
+//     //         message: `OpenDb options: ${JSON.stringify(openDbOptions.id)}`
+//     //     });
 
-//         db = await dbManager?.open(openDbOptions);
+//     //     db = await dbManager?.open(openDbOptions);
 
-//         // await db.database.add("hello");
+//     //     // await db.database.add("hello");
 
-//         // logger({
-//         //     level: LogLevel.INFO,
-//         //     message: `Database opened, all entries: ${db.database.all()}`
-//         // });
+//     //     // logger({
+//     //     //     level: LogLevel.INFO,
+//     //     //     message: `Database opened, all entries: ${db.database.all()}`
+//     //     // });
 
-//         expect(db.process).to.be.instanceOf(Database);
-//     });
+//     //     expect(db.process).to.be.instanceOf(Database);
+//     // });
 // });

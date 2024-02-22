@@ -11,6 +11,7 @@ function sleep(ms: number) {
 
 describe('createLibp2pProcess', () => {
     let libp2pProcess: Libp2p;
+    let libp2pProcess2: Libp2p;
 
     before(async () => {
         // Add any setup code here
@@ -23,21 +24,17 @@ describe('createLibp2pProcess', () => {
         // Add more assertions to validate the created Libp2p node
     });
 
-    it('should get connections from the Libp2p process', async () => {
-        sleep(1800).then(() => {
-            const connections = libp2pProcess.getConnections();
-            logger({
-                level: LogLevel.INFO,
-                component: Component.LIBP2P,
-                message: `Connections: ${JSON.stringify(connections)}`
-            });
-            expect(connections).to.be.an('array').with.length.greaterThan(0);
-        });
-        // Add more assertions to validate the connections
-    });
+    it('should create two simultaneous Libp2p Processes', async () => {
+        libp2pProcess2 = await createLibp2pProcess();
+        expect(libp2pProcess2.peerId.toString()).to.not.equal(libp2pProcess.peerId.toString());
+        // Add more assertions to validate the second created Libp2p node
+    })
+
+
 
     after(async () => {
         // Add any cleanup code here
         await libp2pProcess.stop();
+        await libp2pProcess2.stop();
     });
 });

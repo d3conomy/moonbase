@@ -30,7 +30,8 @@ const defaultBootstrapConfig: any = {
     ]
 }
 
-const defaultLibp2pOptions: Libp2pOptions = {
+const defaultLibp2pOptions = (): Libp2pOptions => {
+    const libp2pOptions: Libp2pOptions = {
     addresses: {
         listen: [
             '/ip4/0.0.0.0/udp/0/',
@@ -93,9 +94,12 @@ const defaultLibp2pOptions: Libp2pOptions = {
         }
     }
 }
+return libp2pOptions
+}
 
 const createLibp2pProcess = async (options?: Libp2pOptions): Promise<Libp2p> => {
-    return await createLibp2p(options ? options: defaultLibp2pOptions)
+    
+    return await createLibp2p(options)
 }
 
 export {

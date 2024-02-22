@@ -57,7 +57,7 @@ class Node {
         else {
             switch (this.type) {
                 case Component.LIBP2P:
-                    this.options = defaultLibp2pOptions;
+                    this.options = defaultLibp2pOptions();
                     break;
                 case Component.DB:
                     // this.options = new OpenDbOptions({
@@ -165,7 +165,7 @@ class Node {
 
         if (!options) {
             if (this.type === Component.LIBP2P) {
-                options = defaultLibp2pOptions;
+                options = defaultLibp2pOptions();
             }
             else {
                 logger({
@@ -276,7 +276,8 @@ class Node {
                 process = await createIPFSProcess(options as IPFSOptions);
                 break;
             case Component.LIBP2P:
-                process = await createLibp2pProcess(options ? options as Libp2pOptions : defaultLibp2pOptions);
+                const newOptions = options ? options as Libp2pOptions : defaultLibp2pOptions();
+                process = await createLibp2pProcess(newOptions);
                 commands = new Libp2pCommands(process);
                 break;
             default:
@@ -334,16 +335,16 @@ class Node {
         
         switch (this.type) {
             case Component.DB:
-                this.process.close();
+                await this.process.close();
                 break;
             case Component.ORBITDB:
-                this.process.disconnect();
+                await this.process.disconnect();
                 break;
             case Component.IPFS:
-                this.process.close();
+                await this.process.close();
                 break;
             case Component.LIBP2P:
-                this.process.stop();
+                await this.process.stop();
                 break;
             default:
                 throw new Error('Invalid node type');

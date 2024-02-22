@@ -28,23 +28,27 @@ describe("Node", () => {
         await node.stop();
     });
 
-    it("should have the correct properties", () => {
+    it("should have the correct properties", async () => {
+        await node.init()
         // expect(node.id).to.be.instanceOf(String);
         expect(node.type).to.be.equal(Component.LIBP2P);
         // expect(node.process.status).to.be.equal("started");
     });
 
     it("should create a process with valid options", async () => {
-        const options: NodeOptions = { /* provide valid options here */ };
-        await node.createProcess({ options });
+        // const options: NodeOptions = { /* provide valid options here */ };
+        // await node.createProcess({ options });
+        await node.init()
         expect(node.process).to.be.not.null;
     });
 
     it("should stop the process", async () => {
-        const options: NodeOptions = { /* provide valid options here */ };
-        await node.createProcess({ options });
-        expect(node.process).to.be.not.null;
+        // const options: NodeOptions = { /* provide valid options here */ };
+        // await node.createProcess({ options });
+        await node.init()
+
         await node.stop();
+        expect(node.process).to.be.not.null;
         // expect(node.process.status).to.be.equal("stopping");
     });
 });
