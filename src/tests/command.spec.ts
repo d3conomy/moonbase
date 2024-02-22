@@ -55,8 +55,8 @@ describe('Command', () => {
         while (!node?.process) {
             await new Promise((resolve) => setTimeout(resolve, 1000));
         }
-        const result = await node?.execute(command);
-            command.setOutput(result);
+        await node?.execute(command);
+            // command.setOutput(result);
             logger({
                 level: LogLevel.INFO,
                 component: Component.SYSTEM,

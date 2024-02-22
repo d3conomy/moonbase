@@ -1,6 +1,7 @@
 import { Component, LogLevel } from '../utils/constants.js';
-import { createNodeId, createRandomId } from '../utils/id.js';
+import { createCommandId, createNodeId, createRandomId } from '../utils/id.js';
 import { logger } from '../utils/logBook.js';
+import { Command } from './commands.js';
 import {
     Manager
 } from './manager.js';
@@ -13,11 +14,11 @@ import { Database } from '@orbitdb/core';
 
 class Db {
     public manager: Manager;
-    public opened: Map<string, Node>;
+    // public opened: Map<string, Node>;
 
     constructor() {
         this.manager = new Manager();
-        this.opened = new Map<string, Node>();
+        // this.opened = new Map<string, Node>();
     }
 
     public async init(): Promise<void> {
@@ -132,29 +133,28 @@ class Db {
         logger({
             level: LogLevel.INFO,
             message: `Opening db using OrbitDB node: ${orbitDb.id}\n` +
-                `Database name: ${databaseName}, type: ${databaseType}\n` 
-                // `${orbitDb.process}`
+                `Database name: ${databaseName}, type: ${databaseType}`
         });
 
         try {
             const openDbOptions = new OpenDbOptions({
                 id: id,
-                orbitDb: orbitDb.process,
+                orbitDb: orbitDb,
                 databaseName: databaseName,
                 databaseType: databaseType
             });
             // const db = await openDb(openDbOptions);
-            const opened = await this.manager.createNode({
+            await this.manager.createNode({
                 id: id,
                 type: Component.DB,
                 options: openDbOptions
             });
-            this.opened.set(id, opened);
+            // this.opened.set(id, opened);
             logger({
                 level: LogLevel.INFO,
-                message: `Database ${databaseName}`
+                message: `Database opened ${databaseName}`
             });
-            return opened;
+            return this.manager.getNode(id);
         }
         catch (error) {
             logger({
@@ -162,6 +162,44 @@ class Db {
                 message: `Error opening database: ${error}`
             });
         }
+    }
+
+    public async executeCommand({
+        id,
+        nodeId,
+        type,
+        action,
+        kwargs
+    }: {
+        id?: string,
+        nodeId: string,
+        type: Component,
+        action: string,
+        kwargs?: Map<string, any>
+    }): Promise<Command> {
+        let command = new Command({
+            id: id ? id : createCommandId(nodeId, action),
+            nodeId: nodeId,
+            type: type,
+            action: action,
+            kwargs: kwargs
+        });
+
+        const node = this.manager.getNode(command.nodeId);
+        if (!node) {
+            logger({
+                level: LogLevel.ERROR,
+                message: `Node not found: ${command.nodeId}`
+            });
+            command.setOutput(`Node not found: ${command.nodeId}`);
+        }
+        else {
+            command = await node.execute(command);
+
+            // command.setOutput(response);
+        }
+
+        return command;
     }
 }
 

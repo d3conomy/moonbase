@@ -13,6 +13,7 @@ import {
 } from '@orbitdb/core';
 
 import {
+    createRandomId,
     logger
 } from '../utils/index.js';
 
@@ -27,26 +28,30 @@ import { Node } from './node.js';
 
 
 class OrbitDbOptions {
+    id: string;
     ipfs: Helia;
     enableDID: boolean;
     identitySeed?: Uint8Array;
     identityProvider?: any;
 
     constructor({
+        id,
         ipfs,
         enableDID,
         identitySeed,
         identityProvider,
     }: {
+        id?: string;
         ipfs: Node | Helia;
         enableDID?: boolean;
         identitySeed?: Uint8Array;
         identityProvider?: any;
     }) {
+        this.id = id ? id : `orbitdb-${createRandomId()}`;
         if(ipfs instanceof Node) {
             this.ipfs = ipfs.process;
         }
-        else {
+        else  {
             this.ipfs = ipfs;
         }
 
@@ -122,7 +127,7 @@ const createOrbitDbProcess = async ({
     enableDID?: boolean;
     identitySeed?: Uint8Array;
     identityProvider?: any;
-}): Promise<any> => {
+}): Promise<typeof OrbitDb> => {
     const orbitDbOptions = defaultOrbitDbOptions({
         ipfs: ipfs,
         enableDID: enableDID ? enableDID : false,
@@ -130,7 +135,7 @@ const createOrbitDbProcess = async ({
         identityProvider: identityProvider
     
     });
-    let orbitDb: typeof OrbitDb | undefined = undefined;
+    // let orbitDb: typeof OrbitDb | undefined = undefined;
 
     if (orbitDbOptions.enableDID) {
 
@@ -139,23 +144,13 @@ const createOrbitDbProcess = async ({
             component: Component.ORBITDB,
             message: `Creating OrbitDB process with DID identity provider...`
         });
-        // try {
-            return await createOrbitDB({
-                ipfs: ipfs, 
-                identity: {
-                    provider: orbitDbOptions.identityProvider
-                }
-            });
-            // return orbitDb
-        // }
-        // catch (error) {
-        //     logger({
-        //         level: LogLevel.ERROR,
-        //         component: Component.ORBITDB,
-        //         code: ResponseCode.INTERNAL_SERVER_ERROR,
-        //         message: `Error creating OrbitDB process: ${error}`
-        //     });
-        // }
+
+        return await createOrbitDB({
+            ipfs: ipfs, 
+            identity: {
+                provider: orbitDbOptions.identityProvider
+            }
+        });
     }
     else {
         logger({
@@ -164,26 +159,8 @@ const createOrbitDbProcess = async ({
             message: `Creating OrbitDB process with no identity provider...`
         });
        
-        // try {
-            return await createOrbitDB({ ipfs: ipfs });
-            logger({
-                level: LogLevel.INFO,
-                component: Component.ORBITDB,
-                message: `OrbitDB process created ${orbitDb.ipfs.libp2p.peerId.toString()}`
-            });
-        // }
-        // catch (error) {
-        //     logger({
-        //         level: LogLevel.ERROR,
-        //         component: Component.ORBITDB,
-        //         code: ResponseCode.INTERNAL_SERVER_ERROR,
-        //         message: `Error creating OrbitDB process: ${error}`
-        //     });
-        // }
-        return orbitDb
+        return await createOrbitDB({ ipfs: ipfs });
     }
-    
-    return orbitDb;
 }
 
 export {

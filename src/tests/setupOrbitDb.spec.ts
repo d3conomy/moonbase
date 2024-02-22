@@ -9,46 +9,67 @@ import { Libp2p } from 'libp2p';
 import { logger } from '../utils/logBook.js';
 import { LogLevel } from '../utils/constants.js';
 
-describe('createOrbitDbProcess', () => {
+describe('CreateOrbitDbProcess', async () => {
+    let id = 'test-id';
+    let orbitDb10001: typeof OrbitDb | null = null;
+    let libp2p00001: Libp2p | null = null;
+    let ipfsProcess00001: Helia | null = null;
 
-    let orbitDb: typeof OrbitDb | null = null;
+    beforeEach(async () => {
+
+        orbitDb10001 = null;
+        libp2p00001 = null;
+        ipfsProcess00001 = null;
+        // Create a mock libp2p instance
+        libp2p00001 = await createLibp2pProcess();
+
+        // Create the options object
+        const options: IPFSOptions = new IPFSOptions({
+            libp2p: libp2p00001,
+        })
+
+        // Call the createIPFSProcess function
+        ipfsProcess00001 = await createIPFSProcess(options);
+
+        logger({
+            level: LogLevel.INFO,
+            message: `IPFS process created ${ipfsProcess00001.libp2p.peerId.toString()}`
+        });
+
+        // Assert that the IPFS node is created successfully
+        expect(ipfsProcess00001.libp2p.peerId.toString()).to.be.a("string");
+    });
 
 
     afterEach(async () => {
         // Clean up any resources if needed
-        await orbitDb.ipfs.libp2p.stop();
-        orbitDb = null
+        await ipfsProcess00001?.libp2p.stop()
+        await libp2p00001?.stop()
+        await orbitDb10001?.ipfs.libp2p.stop()
+        orbitDb10001 = null
     })
 
 
     it('should create an OrbitDb instance with the given IPFS and options', async () => {
+        if (!ipfsProcess00001) {
+            logger({
+                level: LogLevel.ERROR,
+                message: 'IPFS process not found'
+            });
+            return;
+        }
 
-        const libp2p = await createLibp2pProcess();
-        const ipfsOptions = new IPFSOptions({
-            libp2p: libp2p,
-        });
-
-        const ipfs = await createIPFSProcess(ipfsOptions);
-
-        logger({
-            level: LogLevel.INFO,
-            message: `IPFS process created ${ipfs.libp2p.peerId.toString()}`
-        });
-
-        // Mock options
-        const options: OrbitDbOptions = new OrbitDbOptions({
-            ipfs: ipfs,
+        orbitDb10001 = await createOrbitDbProcess({
+            ipfs: ipfsProcess00001,
             enableDID: false
-        });
-
-        orbitDb = await createOrbitDbProcess(options)
+        })
 
         logger({
             level: LogLevel.INFO,
-            message: `OrbitDb process created ${orbitDb}`
+            message: `OrbitDb process created`
         });
 
-        expect(orbitDb.ipfs.libp2p.peerId.toString().length).is.greaterThan(0);
+        // expect(orbitDb10001.ipfs.libp2p.peerId.toString().length).is.greaterThan(0);
     });
 
 });

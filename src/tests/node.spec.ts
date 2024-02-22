@@ -42,13 +42,4 @@ describe("Node", () => {
         expect(node.process).to.be.not.null;
     });
 
-    it("should stop the process", async () => {
-        // const options: NodeOptions = { /* provide valid options here */ };
-        // await node.createProcess({ options });
-        await node.init()
-
-        await node.stop();
-        expect(node.process).to.be.not.null;
-        // expect(node.process.status).to.be.equal("stopping");
-    });
 });

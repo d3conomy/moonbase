@@ -15,7 +15,7 @@ class OpenDbCommands
         this.available = new Array<Command>();
     }
 
-    async execute(command: Command): Promise<any> {
+    public async execute(command: Command): Promise<any> {
         logger({
             level: LogLevel.INFO,
             message: `OpenDbCommands: ${command.action}`

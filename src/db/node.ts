@@ -294,28 +294,18 @@ class Node {
         return;
     }
 
-    public async execute(command: Command): Promise<any> {
-        // if (!this.commands) {
-        //     logger({
-        //         level: LogLevel.ERROR,
-        //         component: Component.SYSTEM,
-        //         code: ResponseCode.FAILURE,
-        //         message: `Node commands not found: ${this.id}`
-        //     })
-        //     return
-        // }
+    public async execute(command: Command): Promise<Command> {
 
-        // 
-        const output = await this.commands?.execute(command);
-            command.setOutput(output);
-            logger({
-                level: LogLevel.INFO,
-                component: Component.SYSTEM,
-                code: ResponseCode.SUCCESS,
-                message: `Command executed: ${command.id}, Output ${command.output}`
-            })
-        // });
-        return output;
+        await this.commands?.execute(command);
+
+        logger({
+            level: LogLevel.INFO,
+            component: Component.SYSTEM,
+            code: ResponseCode.SUCCESS,
+            message: `Command executed: ${command.id}, Output ${command.output}`
+        })
+
+        return command;
     }
    
     public async stop() {
@@ -331,10 +321,13 @@ class Node {
         
         switch (this.type) {
             case Component.DB:
-                await this.process.close();
+                    await this.process.stop()
+                    await this.process.close();
+
                 break;
             case Component.ORBITDB:
                 await this.process.stop();
+                await this.process.ipfs.libp2p.stop();
                 break;
             case Component.IPFS:
                 await this.process.libp2p.stop();

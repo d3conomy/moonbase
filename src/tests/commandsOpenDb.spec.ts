@@ -1,6 +1,6 @@
 // import { OrbitDb , Database} from '@orbitdb/core';
 // import { Command } from '../db/commands.js';
-// import { ProcessTypes } from '../db/node.js';
+// import { Node, ProcessTypes } from '../db/node.js';
 // import { Component, LogLevel } from '../utils/constants.js';
 // import { expect } from 'chai';
 // import { Manager } from '../db/manager.js';
@@ -9,7 +9,8 @@
 // import { OpenDbOptions, OrbitDbTypes } from '../db/openDb.js';
 
 // describe('CommandsOpenDb', async () => {
-//     let command: Command;
+//     let command: Command | null = null;
+//     let newDb: Db | null = null;
 
 //     beforeEach(() => {
 //         //create the processInstance
@@ -32,21 +33,31 @@
 //         });
 //     });
 
+//     afterEach(async () => {
+//         // Clean up any resources if needed
+//         if (command) {
+//             command = null;
+//         }
+//         await newDb?.manager.closeAllNodes();
+//         newDb = null;
+//     });
+
 //     it('should create a new command instance', () => {
-//         expect(command.nodeId).to.be.equal('node1');
-//         expect(command.id).to.be.not.null;
-//         expect(command.type).to.be.equal(Component.DB);
-//         expect(command.action).to.be.equal('put');
+//         expect(command).to.be.not.null;
+//         expect(command?.nodeId).to.be.equal('node1');
+//         expect(command?.id).to.be.not.null;
+//         expect(command?.type).to.be.equal(Component.DB);
+//         expect(command?.action).to.be.equal('put');
 //         // expect(command.kwargs).to.equal(new Map<string, any>());
 //     });
 
 //     it('should set the output of the command', () => {
-//         command.setOutput('output1');
-//         expect(command.output).to.be.not.null;
+//         command?.setOutput('output1');
+//         expect(command?.output).to.be.not.null;
 //     });
 
 //     it('should execute the command', async () => {
-//         let newDb = new Db();
+//         let newDb: Db | null = new Db();
 //         await newDb.init();
 
 //         const orbitDbNodes = newDb.manager.getNodesByType(Component.ORBITDB);
@@ -61,54 +72,38 @@
 
 //         const openDbOptions = new OpenDbOptions({
 //             id: 'node1',
-//             orbitDb: orbitDbNode.process,
+//             orbitDb: orbitDbNode,
 //             databaseName: 'orbitDbNode',
-//             databaseType: OrbitDbTypes.DOCUMENTS,
+//             databaseType: OrbitDbTypes.EVENTS,
 //         });
 
 //         let db = await newDb.open(openDbOptions)
-//         // while (!db.process) {
+//         // while (!db?.process) {
 //         //     await new Promise((resolve) => setTimeout(resolve, 1000));
 //         // }
 //         logger({
 //             level: LogLevel.INFO,
 //             component: Component.SYSTEM,
-//             message: `Db opened: ${db?.id}`
+//             message: `Db opened: ${db?.id}, ${db?.process.address}`
 //         });
 
 //         try {
-//             if (!db) {
-//                 logger({
-//                     level: LogLevel.ERROR,
-//                     component: Component.SYSTEM,
-//                     message: `No OrbitDB node available`
-//                 });
-//                 return;
-//             }
+//             // expect(db).to.be.not.null;
 
-//             // const dbase = db.database
-//             // if (!dbase) {
-//             //     logger({
-//             //         level: LogLevel.ERROR,
-//             //         component: Component.SYSTEM,
-//             //         message: `No OrbitDB node available`
-//             //     });
-//             //     return;
-//             // }
-//             const command1 = new Command({
-//                 nodeId: db.id,
+//             const command1 = {
+//                 nodeId: db ? db?.id : 'newid',
 //                 type: Component.DB,
 //                 action: 'add',
 //                 kwargs: new Map<string, string>([['key', 'hello'], ['value', 'world']])
-//             });
-//             const result = await db.execute(command1)
-//             command1.setOutput(result);
+//             };
+//             // const result = await db.execute(command1)
+//             let commandOutput = await newDb.executeCommand(command1);
 //             logger({
 //                 level: LogLevel.INFO,
 //                 component: Component.SYSTEM,
-//                 message: `Command executed: ${command1.id}, Output ${command1.output}`
+//                 message: `Command executed: ${commandOutput.id}, Output ${commandOutput.output}`
 //             });
-//             expect(command1.output).to.be.not.null;
+//             expect(commandOutput.output).to.be.not.null;
 //             expect(newDb.open.length).to.be.equal(1);
 //         }
 //         catch (error) {
@@ -118,6 +113,7 @@
 //                 message: `Error executing command: ${error}`
 //             });
 //         }
+
 //         // }
 //     });
 // });

@@ -13,13 +13,17 @@ class Libp2pCommands
         this.available = new Array<Command>();
     }
 
-    async execute(command: Command): Promise<any> {
+    public async execute(command: Command): Promise<any> {
+        let response: any;
         switch (command.action) {
             case 'peerInfo':
-                return await this.process.peerId.toString();
+                response = this.process.peerId.toString();
+                break;
             default:
                 return null;
         }
+        command.setOutput(response);
+        return command
     }
 }
 

@@ -97,12 +97,23 @@ class Manager {
                     level: LogLevel.ERROR,
                     component: Component.SYSTEM,
                     code: ResponseCode.FAILURE,
-                    message: `Error closing node: ${node.id}`
+                    message: `Error closing node: ${node.id}, ${error}`
                 })
             }
         }
-        
-        
+    }
+
+    public async closeAllNodes(): Promise<void> {
+        this.nodes.forEach(async (node: Node) => {
+            logger({
+                level: LogLevel.INFO,
+                component: Component.SYSTEM,
+                code: ResponseCode.SUCCESS,
+                message: `Closing node: ${node.id}`
+            
+            })
+            await this.closeNode(node.id);
+        });
     }
 }
 
