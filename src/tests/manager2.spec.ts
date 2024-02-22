@@ -28,7 +28,7 @@ describe('Manager2', async () => {
         });
 
         const allNodes = manager.getAllNodes()
-        allNodes.forEach((node) => {
+        allNodes.forEach(async (node) => {
             logger({
                 level: LogLevel.INFO,
                 component: Component.SYSTEM,
@@ -36,7 +36,7 @@ describe('Manager2', async () => {
                 message: `node: ${node.id}`
             
             })
-            manager.closeNode(node.id);
+            await manager.closeNode(node.id);
         });
         expect(manager.getNode(id)).to.be.instanceOf(Node);
 

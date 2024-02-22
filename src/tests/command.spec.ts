@@ -1,12 +1,13 @@
 import { OrbitDb } from '@orbitdb/core';
 import { Command } from '../db/commands.js';
-import { ProcessTypes } from '../db/node.js';
+import { Node, ProcessTypes } from '../db/node.js';
 import { Component, LogLevel } from '../utils/constants.js';
 import { expect } from 'chai';
 import { Manager } from '../db/manager.js';
 import { logger } from '../utils/logBook.js';
 
 describe('Command', () => {
+    let manager: Manager;
     let command: Command;
 
     beforeEach(() => {
@@ -19,6 +20,16 @@ describe('Command', () => {
             kwargs: new Map<string, any>()
         });
     });
+
+    afterEach(async () => {
+        // Clean up any resources if needed
+        if (manager) {
+            const allNodes = manager.getAllNodes();
+            allNodes.forEach(async (node: Node) => {
+                await node.stop();
+            });
+        }
+    })
 
     it('should create a new command instance', () => {
         expect(command.nodeId).to.be.equal('node1');
@@ -34,7 +45,7 @@ describe('Command', () => {
     });
 
     it('should execute the command', async () => {
-        const manager = new Manager();
+        manager = new Manager();
         await manager.createNode({
             id: 'node1',
             type: Component.LIBP2P

@@ -83,12 +83,12 @@ class Manager {
         return this.nodes;
     }
 
-    public closeNode(id: string): void {
+    public async closeNode(id: string): Promise<void> {
         const node = this.getNode(id);
 
         if (node && node.process) {
             try {
-                node.stop();
+                await node.stop();
             }
             catch (error) {
                 logger({

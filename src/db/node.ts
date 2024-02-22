@@ -60,10 +60,10 @@ class Node {
                     this.options = defaultLibp2pOptions;
                     break;
                 case Component.DB:
-                    this.options = new OpenDbOptions({
-                        orbitDb: this,
-                        id: this.id
-                    });
+                    // this.options = new OpenDbOptions({
+                    //     id: this.id,
+                    //     orbitDb: process
+                    // });
                     break;
                 default:
                     logger({
@@ -125,9 +125,11 @@ class Node {
                 }
                 break;
             case Component.ORBITDB:
+                while (!this.process) {
+                    await new Promise((resolve) => setTimeout(resolve, 1000));
+                }
                 if (this.process) {
-                    const db = this.process.open('test');
-                    console.log(db.address);
+
                 }
                 else {
                     logger({
@@ -211,8 +213,7 @@ class Node {
                 }
                 break;
             case Component.LIBP2P:
-                if (options instanceof IPFSOptions ||
-                    options instanceof OrbitDbOptions) {
+                if (options instanceof IPFSOptions) {
                     logger({
                         level: LogLevel.ERROR,
                         component: Component.LIBP2P,
@@ -281,12 +282,6 @@ class Node {
             default:
                 throw new Error('Invalid node type');
         }
-        logger({
-            level: LogLevel.INFO,
-            component: Component.SYSTEM,
-            code: ResponseCode.SUCCESS,
-            message: `Process created: ${this.id}, Type: ${this.type}, Process: ${process}`
-        })
         this.process = process;
         this.commands = commands;
 
@@ -303,18 +298,18 @@ class Node {
     }
 
     public async execute(command: Command): Promise<any> {
-        if (!this.commands) {
-            logger({
-                level: LogLevel.ERROR,
-                component: Component.SYSTEM,
-                code: ResponseCode.FAILURE,
-                message: `Node commands not found: ${this.id}`
-            })
-            return
-        }
+        // if (!this.commands) {
+        //     logger({
+        //         level: LogLevel.ERROR,
+        //         component: Component.SYSTEM,
+        //         code: ResponseCode.FAILURE,
+        //         message: `Node commands not found: ${this.id}`
+        //     })
+        //     return
+        // }
 
         // 
-        const output = await this.commands.execute(command);
+        const output = await this.commands?.execute(command);
             command.setOutput(output);
             logger({
                 level: LogLevel.INFO,

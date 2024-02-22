@@ -10,7 +10,7 @@ import {
 
 enum OrbitDbTypes {
     EVENTS = 'events',
-    DOCUMENTS = 'docstore',
+    DOCUMENTS = 'documents',
     KEYVALUE = 'keyvalue',
     KEYVALUEINDEXED = 'keyvalueindexed'
 }
@@ -39,25 +39,26 @@ class OpenDbOptions {
     }
 }
 
-const openDb = async (
-    options: OpenDbOptions
-): Promise<typeof Database> => {
+const openDb = async ({
+    orbitDb,
+    databaseName,
+    databaseType
+}: OpenDbOptions): Promise<typeof Database> => {
     let database: typeof Database;
-    const orbitDb = options.orbitDb as typeof OrbitDb;
     logger({
         level: LogLevel.INFO,
-        message: `Opening database: ${options.databaseName}\n` +
-                    `Type: ${options.databaseType}\n` +
-                    `process: ${orbitDb.process}`
+        message: `Opening database: ${databaseName}\n` +
+                    `Type: ${databaseType}\n` +
+                    `process: ${orbitDb.id}`
 
     });
     try {
-        database = await orbitDb.open(options.databaseName, {
-            type: options.databaseType
+        database = await orbitDb.process.open(databaseName, {
+            type: databaseType
         });
         logger({
             level: LogLevel.INFO,
-            message: `Database ${options.databaseName} opened`
+            message: `Database ${databaseName} opened`
         });
     }
     catch (error) {
@@ -66,7 +67,8 @@ const openDb = async (
             message: `Error opening database: ${error}`
         });
     }
-    return { database };
+    return database;
+
 }
 
 

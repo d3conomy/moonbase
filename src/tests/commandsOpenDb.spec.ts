@@ -61,7 +61,7 @@
 
 //         const openDbOptions = new OpenDbOptions({
 //             id: 'node1',
-//             orbitDb: orbitDbNode,
+//             orbitDb: orbitDbNode.process,
 //             databaseName: 'orbitDbNode',
 //             databaseType: OrbitDbTypes.DOCUMENTS,
 //         });
@@ -73,7 +73,7 @@
 //         logger({
 //             level: LogLevel.INFO,
 //             component: Component.SYSTEM,
-//             message: `Db opened: ${db}`
+//             message: `Db opened: ${db?.id}`
 //         });
 
 //         try {
@@ -86,22 +86,22 @@
 //                 return;
 //             }
 
-//             const dbase = db.database
-//             if (!dbase.process) {
-//                 logger({
-//                     level: LogLevel.ERROR,
-//                     component: Component.SYSTEM,
-//                     message: `No OrbitDB node available`
-//                 });
-//                 return;
-//             }
+//             // const dbase = db.database
+//             // if (!dbase) {
+//             //     logger({
+//             //         level: LogLevel.ERROR,
+//             //         component: Component.SYSTEM,
+//             //         message: `No OrbitDB node available`
+//             //     });
+//             //     return;
+//             // }
 //             const command1 = new Command({
-//                 nodeId: db?.database.id,
+//                 nodeId: db.id,
 //                 type: Component.DB,
-//                 action: 'put',
+//                 action: 'add',
 //                 kwargs: new Map<string, string>([['key', 'hello'], ['value', 'world']])
 //             });
-//             const result = await dbase.execute(command1)
+//             const result = await db.execute(command1)
 //             command1.setOutput(result);
 //             logger({
 //                 level: LogLevel.INFO,
@@ -109,6 +109,7 @@
 //                 message: `Command executed: ${command1.id}, Output ${command1.output}`
 //             });
 //             expect(command1.output).to.be.not.null;
+//             expect(newDb.open.length).to.be.equal(1);
 //         }
 //         catch (error) {
 //             logger({

@@ -45,7 +45,7 @@
 //             message: `OrbitDB node: ${JSON.stringify(orbitDbNode)}`
 //         });
 
-//         const openDbOptions: OpenDbOptions = {
+//         const openDbOptions = {
 //             id: 'db1',
 //             orbitDb: orbitDbNode.process,
 //             databaseName: 'testDb',
@@ -65,14 +65,14 @@
 //         expect(db.opened.get('db1')).to.be('OrbitDB');
 //     });
 
-//     afterEach(() => {
-//         // Clean up any opened databases
-//         db.opened.forEach((dbInstance) => {
-//             dbInstance.close();
-//         });
-//         db.opened.clear();
-//         db.manager.nodes.forEach((node: Node) => {
-//             db.manager.closeNode(node.id);
-//         });
-//     });
+//     // afterEach(() => {
+//     //     // Clean up any opened databases
+//     //     db.opened.forEach((dbInstance) => {
+//     //         dbInstance.close();
+//     //     });
+//     //     db.opened.clear();
+//     //     db.manager.nodes.forEach((node: Node) => {
+//     //         db.manager.closeNode(node.id);
+//     //     });
+//     // });
 // });

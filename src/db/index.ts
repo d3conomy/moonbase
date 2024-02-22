@@ -4,7 +4,8 @@ import { logger } from '../utils/logBook.js';
 import {
     Manager
 } from './manager.js';
-import { OpenDbOptions, openDb } from './openDb.js';
+import { Node } from './node.js';
+import { OpenDbOptions, OrbitDbTypes, openDb } from './openDb.js';
 import { IPFSOptions } from './setupIPFS.js';
 import { OrbitDbOptions } from './setupOrbitDb.js';
 import { Database } from '@orbitdb/core';
@@ -12,24 +13,20 @@ import { Database } from '@orbitdb/core';
 
 class Db {
     public manager: Manager;
-    public opened: Map<string, typeof Database>;
+    public opened: Map<string, Node>;
 
     constructor() {
         this.manager = new Manager();
-        this.opened = new Map<string, typeof Database>();
+        this.opened = new Map<string, Node>();
     }
 
     public async init(): Promise<void> {
         // Create a libp2p node
         const type = Component.LIBP2P;
         const libp2pId = createNodeId(type);
-        const libp2p = await this.manager.createNode({
+        await this.manager.createNode({
             id: libp2pId,
             type: type
-        });
-        logger({
-            level: LogLevel.INFO,
-            message: 'Libp2p node created'
         });
 
         // Create an IPFS node
@@ -57,10 +54,6 @@ class Db {
             options: ipfsOptions
         });
 
-        logger({
-            level: LogLevel.INFO,
-            message: 'IPFS node created'
-        });
 
         try {
             const cid = ipfs.process.libp2p.peerId.toString();
@@ -81,15 +74,15 @@ class Db {
         // console.log('ipfs', ipfs?.process.libp2p.peerId.toString())
         const orbitDbId = createNodeId(Component.ORBITDB);
         const orbitDbOptions = new OrbitDbOptions({
-            ipfs: ipfs.process,
+            ipfs: ipfs,
             enableDID: true
         });
-        try {
+        // try {
             logger({
                 level: LogLevel.INFO,
                 message: 'Creating OrbitDB node...'
             });
-            const orbitDb = await this.manager.createNode({
+            await this.manager.createNode({
                 id: orbitDbId,
                 type: Component.ORBITDB,
                 options: orbitDbOptions
@@ -98,20 +91,15 @@ class Db {
                 level: LogLevel.INFO,
                 message: 'OrbitDB node creation process done...'
             });
-            // const db = await orbitDb.process.open('orbitDbNode')
-    
-            // logger({
-            //     level: LogLevel.INFO,
-            //     message: `Database opened: ${await db.getMultiaddrs()}`
-            // });
-        }
-        catch (error) {
-            logger({
-                level: LogLevel.ERROR,
-                message: `Error creating OrbitDB node: ${error}`
-            });
-            return;
-        }
+
+        // }
+        // catch (error) {
+        //     logger({
+        //         level: LogLevel.ERROR,
+        //         message: `Error creating OrbitDB node: ${error}`
+        //     });
+        //     return;
+        // }
         
 
         
@@ -122,9 +110,13 @@ class Db {
         orbitDb,
         databaseName,
         databaseType
-    }: OpenDbOptions): Promise<{
-        database: typeof Database
-    } | undefined> {
+    }: {
+        id: string,
+        orbitDb?: Node,
+        databaseName: string,
+        databaseType: OrbitDbTypes
+    
+    }): Promise<Node | undefined> {
 
 
         orbitDb = orbitDb ? orbitDb : this.manager.getNodesByType(Component.ORBITDB)[0];
@@ -139,9 +131,9 @@ class Db {
 
         logger({
             level: LogLevel.INFO,
-            message: `Opening db using OrbitDB node: ${orbitDb}\n` +
-                `Database name: ${databaseName}, type: ${databaseType}\n` +
-                `${orbitDb.process}`
+            message: `Opening db using OrbitDB node: ${orbitDb.id}\n` +
+                `Database name: ${databaseName}, type: ${databaseType}\n` 
+                // `${orbitDb.process}`
         });
 
         try {
@@ -151,13 +143,18 @@ class Db {
                 databaseName: databaseName,
                 databaseType: databaseType
             });
-            const db = await openDb(openDbOptions);
-            this.opened.set(id, db.database);
+            // const db = await openDb(openDbOptions);
+            const opened = await this.manager.createNode({
+                id: id,
+                type: Component.DB,
+                options: openDbOptions
+            });
+            this.opened.set(id, opened);
             logger({
                 level: LogLevel.INFO,
-                message: `Database ${databaseName} opened, Address ${db.database.address.toString()}`
+                message: `Database ${databaseName}`
             });
-            return { database: db.database };
+            return opened;
         }
         catch (error) {
             logger({
@@ -165,17 +162,6 @@ class Db {
                 message: `Error opening database: ${error}`
             });
         }
-        // let db = await orbitDb.process.open(databaseName, { type: databaseType })
-        // this.opened.set(id, db); 
-
-        // const address = db.address.toString();
-
-        // logger({
-        //     level: LogLevel.INFO,
-        //     message: `Database ${databaseName}} opened at address ${address}`
-        // });
-        // return db;
-        // });
     }
 }
 

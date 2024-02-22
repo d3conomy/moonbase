@@ -2,12 +2,12 @@ import { LogLevel, logger } from "../utils/index.js";
 import { Command, INodeCommands } from "./commands.js";
 import { Node, ProcessTypes } from "./node.js";
 
-import OrbitDb from '@orbitdb/core';
+import {Database} from '@orbitdb/core';
 
 class OpenDbCommands
     implements INodeCommands
 {
-    public process: typeof OrbitDb;
+    public process: typeof Database;
     public available: Array<Command>;
 
     constructor(process: ProcessTypes) {
@@ -22,8 +22,6 @@ class OpenDbCommands
         });
 
         switch (command.action) {
-            case 'open':
-                return await this.process.open(command.kwargs);
             case 'add':
                 return await this.process.add(command.kwargs?.get('value'));
             case 'put':

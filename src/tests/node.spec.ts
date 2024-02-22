@@ -5,12 +5,22 @@ import { expect } from "chai";
 
 describe("Node", () => {
     let node: Node;
+    let node2: Node;
+    let node3: Node;
 
     beforeEach(() => {
         node = new Node({
             type: Component.LIBP2P,
             id: "node1",
-    });
+        });
+        // node2 = new Node({
+        //     type: Component.IPFS,
+        //     id: "node2",
+        // });
+        // node3 = new Node({
+        //     type: Component.ORBITDB,
+        //     id: "node3",
+        // });
     });
 
     afterEach( async () => {

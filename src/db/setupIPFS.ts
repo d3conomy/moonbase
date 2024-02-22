@@ -40,21 +40,7 @@ const createIPFSProcess = async (options: IPFSOptions): Promise<Helia> => {
         });
         throw error;
     }
-    
-    // while (helia.libp2p.getConnections().length === 0) {
-    //     setTimeout(() => {
-    //         logger({
-    //             level: LogLevel.INFO,
-    //             message: 'Waiting for libp2p to start...'
-    //         });
-    //     }, 1000);
-    // }
 
-    // helia.start()
-    // while (helia.libp2p.status === 'starting') {
-    //     await new Promise(resolve => setTimeout(resolve, 1000))
-    //     console.log('Waiting for libp2p to start...')
-    // }
     return helia
 }
 

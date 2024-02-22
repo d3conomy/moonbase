@@ -36,8 +36,8 @@ describe('createLibp2pProcess', () => {
         // Add more assertions to validate the connections
     });
 
-    after(() => {
+    after(async () => {
         // Add any cleanup code here
-        libp2pProcess.stop();
+        await libp2pProcess.stop();
     });
 });
