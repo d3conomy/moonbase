@@ -263,7 +263,7 @@ class Node {
         switch (this.type) {
             case Component.DB:
                 process = await openDb(options as OpenDbOptions);
-                commands = new OpenDbCommands(process.database);
+                commands = new OpenDbCommands(process);
                 break;
             case Component.ORBITDB:
                 process = await createOrbitDbProcess(options as OrbitDbOptions);
@@ -322,7 +322,7 @@ class Node {
         switch (this.type) {
             case Component.DB:
                     // await this.process.stop()
-                    await this.process.close();
+                    await this.process.database.close();
 
                 break;
             case Component.ORBITDB:

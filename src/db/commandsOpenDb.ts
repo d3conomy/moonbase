@@ -10,8 +10,8 @@ class OpenDbCommands
     public process: typeof Database;
     public available: Array<Command>;
 
-    constructor(process: typeof Database) {
-        this.process = process;
+    constructor(processWrapper: typeof Database) {
+        this.process = processWrapper.database;
         this.available = new Array<Command>();
     }
 
@@ -41,7 +41,7 @@ class OpenDbCommands
                 response = await this.process.del(command.kwargs?.get('key'));
                 break;
             case 'all':
-                response = this.process.all;
+                response = await this.process.all();
                 break;
             case 'close':
                 response = await this.process.close();

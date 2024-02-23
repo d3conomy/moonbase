@@ -132,7 +132,7 @@ describe('CommandsOpenDb', async () => {
         const addCommand = new Command({
             nodeId: 'node1',
             type: Component.DB,
-            action: 'all',
+            action: 'add',
             kwargs: new Map<string, string>([['value', 'hello']])
         });
 
