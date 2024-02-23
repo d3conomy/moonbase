@@ -144,7 +144,7 @@ class Db {
                 databaseType: databaseType
             });
             // const db = await openDb(openDbOptions);
-            await this.manager.createNode({
+            const node = await this.manager.createNode({
                 id: id,
                 type: Component.DB,
                 options: openDbOptions
@@ -154,7 +154,7 @@ class Db {
                 level: LogLevel.INFO,
                 message: `Database opened ${databaseName}`
             });
-            return this.manager.getNode(id);
+            return node;
         }
         catch (error) {
             logger({

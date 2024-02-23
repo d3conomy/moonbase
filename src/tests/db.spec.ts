@@ -1,60 +1,60 @@
-// import { Db } from '../db/index.js';
-// import { Manager } from '../db/manager.js';
-// import { OpenDbOptions, OrbitDbTypes } from '../db/openDb.js';
+import { Db } from '../db/index.js';
+import { Manager } from '../db/manager.js';
+import { OpenDbOptions, OrbitDbTypes } from '../db/openDb.js';
 
-// import { expect } from 'chai';
-// import { Component, LogLevel } from '../utils/constants.js';
-// import { Node } from '../db/node.js';
-// import { logger } from '../utils/logBook.js';
+import { expect } from 'chai';
+import { Component, LogLevel } from '../utils/constants.js';
+import { Node } from '../db/node.js';
+import { logger } from '../utils/logBook.js';
                                                               
 
-// describe('Db', () => {
-//     let db: Db | null = null;
-//     let allNodes: Node[] | null | undefined = undefined;
+describe('Db', () => {
+    let db: Db | null = null;
+    let allNodes: Node[] | null | undefined = undefined;
 
-//     beforeEach( async () => {
-//         db = null
-//         allNodes = null
-//         db = new Db();
+    beforeEach( async () => {
+        db = null
+        allNodes = null
+        db = new Db();
 
-//         await db.init();
+        await db.init();
 
-//         // if (!db) {
+        // if (!db) {
 
-//         // }
-//         // expect(db.manager).to.be.instanceOf(Manager);
-//         // expect(db.opened.size).to.equal(0);
-//     });
+        // }
+        // expect(db.manager).to.be.instanceOf(Manager);
+        // expect(db.opened.size).to.equal(0);
+    });
 
-//     afterEach( async () => {
+    afterEach( async () => {
 
-//         allNodes = db?.manager.getAllNodes();
-//         logger({
-//             level: LogLevel.INFO,
-//             message: `All nodes: ${allNodes?.map((node) => node.id)}`
-//         });
-//         await db?.manager.closeAllNodes();
-//         db = null
-//         allNodes = null
+        allNodes = db?.manager.getAllNodes();
+        logger({
+            level: LogLevel.INFO,
+            message: `All nodes: ${allNodes?.map((node) => node.id)}`
+        });
+        await db?.manager.closeAllNodes();
+        db = null
+        allNodes = null
 
-//         logger({
-//             level: LogLevel.INFO,
-//             message: `nodes should be empty: ${allNodes}`
-//         })
+        logger({
+            level: LogLevel.INFO,
+            message: `nodes should be empty: ${allNodes}`
+        })
         
-//     })
+    })
 
-//     // it('should create the required nodes', async () => {
-//     //     allNodes = db?.manager.getAllNodes();
+    it('should create the required nodes', async () => {
+        allNodes = db?.manager.getAllNodes();
 
-//     //     logger({
-//     //         level: LogLevel.INFO,
-//     //         message: `All nodes: ${allNodes?.map((node) => node.id)}`
-//     //     });
+        logger({
+            level: LogLevel.INFO,
+            message: `All nodes: ${allNodes?.map((node) => node.id)}`
+        });
         
-//     //     expect(allNodes?.length).to.equal(3);
+        expect(allNodes?.length).to.equal(3);
 
-//     // });
+    });
 
 //     it('should open a database', async () => {
 //         // db = new Db();
@@ -106,4 +106,4 @@
 //         }
 
 //     });
-// });
+});

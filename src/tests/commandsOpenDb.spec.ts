@@ -62,7 +62,7 @@ describe('CommandsOpenDb', async () => {
         expect(command?.output).to.be.not.null;
     });
 
-    it('should execute open a database', async () => {
+    it('should open a database', async () => {
 
         const orbitDbNodes = newDb?.manager.getNodesByType(Component.ORBITDB);
 
@@ -99,5 +99,63 @@ describe('CommandsOpenDb', async () => {
             message: `Db opened: ${db?.id}, ${db?.process.address}`
         });
         expect(db?.id).to.be.not.null;
+    });
+
+    it('should add a value to the database', async () => {
+        const orbitDbNodes = newDb?.manager.getNodesByType(Component.ORBITDB);
+
+        if (!orbitDbNodes) {
+            logger({
+                level: LogLevel.ERROR,
+                component: Component.SYSTEM,
+                message: `OrbitDB node not found`
+            });
+            return;
+        }
+        const orbitDbNode = orbitDbNodes[0];
+
+        logger({
+            level: LogLevel.INFO,
+            component: Component.SYSTEM,
+            message: `OrbitDB node: ${JSON.stringify(orbitDbNode.id)}`
+        });
+
+        const openDbOptions = new OpenDbOptions({
+            id: 'node1',
+            orbitDb: orbitDbNode,
+            databaseName: 'orbitDbNode',
+            databaseType: OrbitDbTypes.EVENTS,
+        });
+
+        let db = await newDb?.open(openDbOptions)
+
+        const addCommand = new Command({
+            nodeId: 'node1',
+            type: Component.DB,
+            action: 'all',
+            kwargs: new Map<string, string>([['value', 'hello']])
+        });
+
+        // await db?.execute(addCommand);
+        // logger({
+        //     level: LogLevel.INFO,
+        //     component: Component.SYSTEM,
+        //     message: `Value added to db: ${addCommand.output}`
+        // });
+        // expect(addCommand.output).to.be.not.null;
+
+        const libp2pNode = orbitDbNode?.process?.ipfs.libp2p.getMultiaddrs();
+        logger({
+            level: LogLevel.INFO,
+            component: Component.SYSTEM,
+            message: `Libp2p node: ${JSON.stringify(libp2pNode)}`
+        });
+
+        // const output = await db?.process.add('hello');
+        // logger({
+        //     level: LogLevel.INFO,
+        //     component: Component.SYSTEM,
+        //     message: `Value added to db: ${output}`
+        // });
     });
 });

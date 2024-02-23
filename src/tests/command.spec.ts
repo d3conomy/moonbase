@@ -9,6 +9,8 @@ import { logger } from '../utils/logBook.js';
 describe('Command', () => {
     let manager: Manager;
     let command: Command;
+    let command2: Command;
+    let command3: Command;
 
     beforeEach(() => {
         //create the processInstance
@@ -19,6 +21,20 @@ describe('Command', () => {
             action: 'peerInfo',
             kwargs: new Map<string, any>()
         });
+
+        command2 = new Command({
+            nodeId: 'node1',
+            type: Component.LIBP2P,
+            action: 'status',
+            kwargs: new Map<string, any>()
+        })
+
+        command3 = new Command({
+            nodeId: 'node1',
+            type: Component.LIBP2P,
+            action: 'multiaddrs',
+            kwargs: new Map<string, any>()
+        })
     });
 
     afterEach(async () => {
@@ -57,12 +73,41 @@ describe('Command', () => {
         }
         await node?.execute(command);
             // command.setOutput(result);
-            logger({
-                level: LogLevel.INFO,
-                component: Component.SYSTEM,
-                message: `Command executed: ${command.id}, Output ${command.output}`
-            });
-            expect(command.output).to.be.not.null;
+        logger({
+            level: LogLevel.INFO,
+            component: Component.SYSTEM,
+            message: `Command executed: ${command.id}, Output ${command.output}`
         });
+        expect(command.output).to.be.not.null;
     });
+
+    it('should execute command2 & command3', async () => {
+        manager = new Manager();
+        await manager.createNode({
+            id: 'node1',
+            type: Component.LIBP2P
+        });
+        const node = manager.getNode('node1');
+        expect(node).to.be.not.null;
+        while (!node?.process) {
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
+        await node?.execute(command2);
+        logger({
+            level: LogLevel.INFO,
+            component: Component.SYSTEM,
+            message: `Command executed: ${command2.id}, Output ${command2.output}`
+        });
+        expect(command2.output).to.be.not.null;
+
+        await node?.execute(command3);
+        logger({
+            level: LogLevel.INFO,
+            component: Component.SYSTEM,
+            message: `Command executed: ${command3.id}, Output ${command3.output}`
+        });
+    })
+});
+
+
 

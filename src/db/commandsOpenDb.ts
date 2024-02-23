@@ -10,7 +10,7 @@ class OpenDbCommands
     public process: typeof Database;
     public available: Array<Command>;
 
-    constructor(process: ProcessTypes) {
+    constructor(process: typeof Database) {
         this.process = process;
         this.available = new Array<Command>();
     }
@@ -25,7 +25,11 @@ class OpenDbCommands
 
         switch (command.action) {
             case 'add':
-                response = await this.process.add(command.kwargs?.get('value'));
+                try {
+                    response = await this.process.add(command.kwargs?.get('value'));
+                } catch (error) {
+                    response = error;
+                }
                 break;
             case 'put':
                 response = await this.process.put(command.kwargs?.get('key'), command.kwargs?.get('value'));

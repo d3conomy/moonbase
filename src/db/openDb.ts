@@ -17,7 +17,7 @@ enum OrbitDbTypes {
 
 class OpenDbOptions {
     public id: string;
-    public orbitDb?: typeof OrbitDb;
+    public orbitDb: Node;
     public databaseName: string;
     public databaseType: OrbitDbTypes;
 
@@ -39,6 +39,13 @@ class OpenDbOptions {
     }
 }
 
+/**
+ * @constant openDb
+ * @param orbitDb - The OrbitDb node
+ * @param databaseName - The name of the database to open
+ * @param databaseType - The type of the database to open
+ * @returns [typeof Database] The opened database
+ */
 const openDb = async ({
     orbitDb,
     databaseName,
@@ -67,10 +74,30 @@ const openDb = async ({
             message: `Error opening database: ${error}`
         });
     }
+
+    logger({
+        level: LogLevel.INFO,
+        message: `Database address: ${database?.address.toString()}`
+    });
+
+    // await testDb(database);
+    // const cid = await database.add('hello');
+    // logger({
+    //     level: LogLevel.INFO,
+    //     message: `Database test: ${cid}`
+    // });
+
     return database;
 
 }
 
+const testDb = async ( database: typeof Database) => {
+    const cid = await database.add('hello');
+    logger({
+        level: LogLevel.INFO,
+        message: `Database test: ${cid}`
+    });
+}
 
 
 
