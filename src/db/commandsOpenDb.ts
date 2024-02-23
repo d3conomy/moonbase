@@ -41,7 +41,7 @@ class OpenDbCommands
                 response = await this.process.del(command.kwargs?.get('key'));
                 break;
             case 'all':
-                response = await this.process.all();
+                response = this.process.all;
                 break;
             case 'close':
                 response = await this.process.close();

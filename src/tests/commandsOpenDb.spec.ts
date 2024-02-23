@@ -136,13 +136,13 @@ describe('CommandsOpenDb', async () => {
             kwargs: new Map<string, string>([['value', 'hello']])
         });
 
-        // await db?.execute(addCommand);
-        // logger({
-        //     level: LogLevel.INFO,
-        //     component: Component.SYSTEM,
-        //     message: `Value added to db: ${addCommand.output}`
-        // });
-        // expect(addCommand.output).to.be.not.null;
+        await db?.execute(addCommand);
+        logger({
+            level: LogLevel.INFO,
+            component: Component.SYSTEM,
+            message: `Value added to db: ${addCommand.output}`
+        });
+        expect(addCommand.output).to.be.not.null;
 
         const libp2pNode = orbitDbNode?.process?.ipfs.libp2p.getMultiaddrs();
         logger({

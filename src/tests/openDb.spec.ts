@@ -117,7 +117,7 @@ describe('OpenDb', () => {
 
         logger({
             level: LogLevel.INFO,
-            message: `Database opened: ${db?.process.address.toString()}`
+            message: `Database opened: ${db.process.address.toString()}`
         });
 
         expect(db.id).to.be.not.null;
