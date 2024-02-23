@@ -72,14 +72,12 @@ class Manager {
 
 
     public getAllNodes(): Array<Node> {
-        logger(
-            {
+        logger({
                 level: LogLevel.INFO,
                 component: Component.SYSTEM,
                 code: ResponseCode.SUCCESS,
                 message: `Getting all nodes`
-            }
-        )
+        })
         return this.nodes;
     }
 
@@ -112,7 +110,20 @@ class Manager {
                 message: `Closing node: ${node.id}`
             
             })
-            await this.closeNode(node.id);
+            if (node.type === Component.ORBITDB) {
+                try {
+                    await node.process.stop();
+                }
+                catch (error) {
+                    logger({
+                        level: LogLevel.ERROR,
+                        component: Component.SYSTEM,
+                        code: ResponseCode.FAILURE,
+                        message: `Error closing OrbitDB node: ${node.id}, ${error}`
+                    })
+                }
+                await this.closeNode(node.id);
+            }
         });
     }
 }

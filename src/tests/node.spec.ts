@@ -45,7 +45,6 @@ describe("Node", () => {
 
     it("should have the correct properties", async () => {
         await node.init()
-        // expect(node.id).to.be.instanceOf(String);
         expect(node.type).to.be.equal(Component.LIBP2P);
         // expect(node.process.status).to.be.equal("started");
     });

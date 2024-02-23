@@ -83,7 +83,7 @@
 //                 databaseType: OrbitDbTypes.EVENTS,
 //             };
 
-//             const openeddb = await db?.open(openDbOptions);
+//             const openeddb = await .open(openDbOptions);
 
 //             logger({
 //                 level: LogLevel.INFO,

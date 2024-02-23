@@ -48,8 +48,6 @@ describe('OpenDb', () => {
         dbManager = new Db();
         await dbManager.init();
 
-        // const orbitDbNode = dbManager.manager.getNodesByType(Component.ORBITDB)[0];
-
         db = null
 
         allNodes = dbManager.manager.getAllNodes();
@@ -57,16 +55,11 @@ describe('OpenDb', () => {
             level: LogLevel.INFO,
             message: `All nodes: ${allNodes.map((node) => node.id)}`
         });
-
-        // expect(orbitDbNode).to.be.instanceOf(Node);
-
     });
 
     afterEach(async () => {
         if (db !== null) {
-            
             if (db.address !== '') {
-
                 await db.stop()
             }
         }

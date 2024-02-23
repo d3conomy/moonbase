@@ -26,19 +26,25 @@ class OpenDbCommands
         switch (command.action) {
             case 'add':
                 response = await this.process.add(command.kwargs?.get('value'));
+                break;
             case 'put':
                 response = await this.process.put(command.kwargs?.get('key'), command.kwargs?.get('value'));
+                break;
             case 'get':
                 response = await this.process.get(command.kwargs?.get('key'));
+                break
             case 'del':
                 response = await this.process.del(command.kwargs?.get('key'));
+                break;
             case 'all':
                 response = await this.process.all();
                 break;
             case 'close':
                 response = await this.process.close();
+                break;
             default:
-                response = null;
+                response = `Command not found: ${command.action}`;
+                break;
         }
         command.setOutput(response);
         return command
