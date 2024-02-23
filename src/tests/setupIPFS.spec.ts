@@ -49,6 +49,7 @@ describe("createIPFSProcess", async () => {
         // Assert that the IPFS node is created successfully
         expect(ipfsProcess.libp2p.peerId.toString()).to.be.a("string");
         expect(ipfsProcess2.libp2p.peerId.toString()).to.be.a("string");
+        expect(ipfsProcess.libp2p.peerId.toString()).to.not.equal(ipfsProcess2.libp2p.peerId.toString());
         // Add more assertions based on your specific requirements
     });
 
