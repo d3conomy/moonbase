@@ -121,9 +121,9 @@ class Node {
                 }
                 break;
             case Component.ORBITDB:
-                while (!this.process) {
-                    await new Promise((resolve) => setTimeout(resolve, 1000));
-                }
+                // while (!this.process) {
+                //     await new Promise((resolve) => setTimeout(resolve, 1000));
+                // }
                 if (this.process) {
 
                 }
@@ -296,16 +296,26 @@ class Node {
 
     public async execute(command: Command): Promise<Command> {
 
-        let commandoutput = await this.commands?.execute(command);
+        if (!this.commands) {
+            logger({
+                level: LogLevel.ERROR,
+                component: Component.SYSTEM,
+                code: ResponseCode.FAILURE,
+                message: `Node commands not found: ${this.id}`
+            })
+            return command;
+        }
 
-        logger({
-            level: LogLevel.INFO,
-            component: Component.SYSTEM,
-            code: ResponseCode.SUCCESS,
-            message: `Command executed: ${commandoutput?.id}, Output ${commandoutput?.output}`
-        })
-// @ts-ignore
-        return commandoutput; 
+        return await this.commands.execute(command);
+
+//         logger({
+//             level: LogLevel.INFO,
+//             component: Component.SYSTEM,
+//             code: ResponseCode.SUCCESS,
+//             message: `Command executed: ${commandoutput?.id}, Output ${commandoutput?.output}`
+//         })
+// // @ts-ignore
+//         return commandoutput; 
     }
    
     public async stop() {

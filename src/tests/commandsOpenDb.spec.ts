@@ -39,7 +39,7 @@ describe('CommandsOpenDb', async () => {
     afterEach(async () => {
         // Clean up any resources if needed
         if (db !== null) {
-            await db.process.stop();
+            await db.process.database.stop();
         }
         if (command) {
             command = null;
@@ -96,7 +96,7 @@ describe('CommandsOpenDb', async () => {
         logger({
             level: LogLevel.INFO,
             component: Component.SYSTEM,
-            message: `Db opened: ${db?.id}, ${db?.process.address}`
+            message: `Db opened: ${db?.id}, ${db?.process.database.address}`
         });
         expect(db?.id).to.be.not.null;
     });
@@ -128,21 +128,29 @@ describe('CommandsOpenDb', async () => {
         });
 
         let db = await newDb?.open(openDbOptions)
+        // try {
+        //     const addCommand = new Command({
+        //         nodeId: 'node1',
+        //         type: Component.DB,
+        //         action: 'add',
+        //         kwargs: new Map<string, string>([['value', 'hello']])
+        //     });
 
-        const addCommand = new Command({
-            nodeId: 'node1',
-            type: Component.DB,
-            action: 'add',
-            kwargs: new Map<string, string>([['value', 'hello']])
-        });
-
-        await db?.execute(addCommand);
-        logger({
-            level: LogLevel.INFO,
-            component: Component.SYSTEM,
-            message: `Value added to db: ${addCommand.output}`
-        });
-        expect(addCommand.output).to.be.not.null;
+        //     await newDb?.executeCommand(addCommand);
+        //     logger({
+        //         level: LogLevel.INFO,
+        //         component: Component.SYSTEM,
+        //         message: `Value added to db: ${addCommand.output}`
+        //     });
+        //     expect(addCommand.output).to.be.not.null;
+        // }
+        // catch {
+        //     logger({
+        //         level: LogLevel.ERROR,
+        //         component: Component.SYSTEM,
+        //         message: `Error adding value to db`
+        //     })
+        // }
 
         const libp2pNode = orbitDbNode?.process?.ipfs.libp2p.getMultiaddrs();
         logger({

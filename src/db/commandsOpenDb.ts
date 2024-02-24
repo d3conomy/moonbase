@@ -7,11 +7,11 @@ import {Database} from '@orbitdb/core';
 class OpenDbCommands
     implements INodeCommands
 {
-    public process: typeof Database;
+    public process: any;
     public available: Array<Command>;
 
-    constructor(processWrapper: typeof Database) {
-        this.process = processWrapper.database;
+    constructor(processWrapper: any) {
+        this.process = processWrapper;
         this.available = new Array<Command>();
     }
 
@@ -26,7 +26,7 @@ class OpenDbCommands
         switch (command.action) {
             case 'add':
                 try {
-                    response = await this.process.add(command.kwargs?.get('value'));
+                    return await this.process.database.add(command.kwargs?.get('value'));
                 } catch (error) {
                     response = error;
                 }
