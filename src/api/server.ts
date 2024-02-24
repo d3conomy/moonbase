@@ -14,6 +14,7 @@ const defaultRouters = [
     // libp2pRouter,
     // ipfsRouter,
     // orbitdbRouter,
+    managerRouter,
     metricsRouter
 ]
 

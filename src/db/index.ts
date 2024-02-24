@@ -43,9 +43,9 @@ class Db {
     }): Promise<Node> {
         // Create a libp2p node
         const type = Component.LIBP2P;
-        const libp2pId = createNodeId(type);
+        const libp2pId = libp2pNodeId ? libp2pNodeId : createNodeId(type);
         return await this.manager.createNode({
-            id: libp2pId ? libp2pId : createNodeId(Component.LIBP2P),
+            id: libp2pId,
             type: type
         });
     }
@@ -244,6 +244,10 @@ class Db {
     }
 }
 
+const db = new Db()
+await db.init();
+
 export {
-    Db
+    Db,
+    db
 }

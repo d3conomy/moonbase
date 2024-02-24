@@ -17,11 +17,10 @@ RUN npm run build
 
 COPY ./entrypoint.sh ./entrypoint.sh
 
+RUN chmod +x ./entrypoint.sh
+
 EXPOSE 3000
 
-# CMD ["node", "./dist/index.js", "--trace-deprecation", "--trace-warnings"]
-CMD ["npm", "run", "test", "--trace-deprecation", "--trace-warnings"]
+ENTRYPOINT ["./entrypoint.sh"]
 
-
-
-
+CMD ["node", "./dist/index.js", "--trace-deprecation", "--trace-warnings"]

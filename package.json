@@ -9,7 +9,7 @@
     "remove": "rm -rf dist",
     "build": "tsc",
     "test": "tsc && mocha -r ts-node/register 'dist/tests/**/*.spec.js' --trace-warnings",
-    "start": "tsc && node dist/server.js --trace-deprecation --trace-warnings"
+    "start": "tsc && node dist/index.js --trace-deprecation --trace-warnings"
   },
   "author": "d3conomy",
   "license": "ISC",

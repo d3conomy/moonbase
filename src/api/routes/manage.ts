@@ -1,5 +1,7 @@
 import express, { Request, Response } from 'express';
 
+import { db, Db } from "../../db/index.js";
+
 const router = express.Router();
 /**
  * @openapi
@@ -7,20 +9,20 @@ const router = express.Router();
  *  get:
  *   description: Get all nodes
  *   responses:
- *    '200':
+ *    200:
  *     description: A successful response
- *      content:
- *       application/json:  
- *        schema:
- *         type: object
- *         properties:
- *          nodes:
- *           type: array
- *           items:  
- * 
+ *     content:
+ *      application/json:  
+ *       schema:
+ *        type: object 
+ *     example: /or
  * */
 router.get('/manage/nodes', function(req: Request, res: Response) {
-    res.send('Manage Nodes');
+    db.manager.getAllNodes()
+
+    const nodes = db.manager.getAllNodes().map((node) => node.id);
+    
+    res.send(nodes);
 });
 
 export {
