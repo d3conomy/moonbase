@@ -22,88 +22,129 @@ class Db {
     }
 
     public async init(): Promise<void> {
-        // Create a libp2p node
-        const type = Component.LIBP2P;
-        const libp2pId = createNodeId(type);
-        await this.manager.createNode({
-            id: libp2pId,
-            type: type
+        const libp2p: Node = await this.createLibp2pNode({});
+        const ipfs: Node = await this.createIPFSNode({
+            libp2pNode: libp2p
         });
-
-        // Create an IPFS node
-        const libp2p2 = this.manager.getNode(libp2pId);
-        if (!libp2p2) {
-            logger({
-                level: LogLevel.ERROR,
-                message: 'No libp2p node available'
-            });
-            return;
-        }
+        const orbitDb: Node = await this.createOrbitDbNode({
+            ipfsNode: ipfs
+        });
 
         logger({
             level: LogLevel.INFO,
-            message: `Libp2p node created: ${libp2p2.process.peerId.toString()}`
+            message: `Db initialized ${orbitDb.id}`
         });
+    }
 
-        const ipfsId = createNodeId(Component.IPFS);
-        const ipfsOptions = new IPFSOptions({
-            libp2p: libp2p2.process
+    public async createLibp2pNode({
+        libp2pNodeId
+    } : {
+        libp2pNodeId?: Node['id']
+    }): Promise<Node> {
+        // Create a libp2p node
+        const type = Component.LIBP2P;
+        const libp2pId = createNodeId(type);
+        return await this.manager.createNode({
+            id: libp2pId ? libp2pId : createNodeId(Component.LIBP2P),
+            type: type
         });
-        const ipfs = await this.manager.createNode({
-            id: ipfsId,
+    }
+
+
+    public async createIPFSNode({
+        libp2pNode,
+        libp2pNodeId,
+        ipfsNodeId
+    }: {
+        libp2pNode?: Node,
+        libp2pNodeId?: Node['id'],
+        ipfsNodeId?: Node['id']
+    }): Promise<Node> {
+        // get the libp2p node
+        if (!libp2pNode && libp2pNodeId) {
+            libp2pNode = this.manager.getNode(libp2pNodeId);
+
+            if (!libp2pNode) {
+                libp2pNode = await this.createLibp2pNode({libp2pNodeId: libp2pNodeId});
+            }
+        }
+        else if (!libp2pNode && !libp2pNodeId) {
+            libp2pNode = await this.createLibp2pNode({});
+        }
+        else if (libp2pNode && libp2pNodeId) {
+            logger({
+                level: LogLevel.ERROR,
+                message: 'Specify either libp2pNode or libp2pNodeId, not both.'
+            });
+        }
+        else {
+            logger({
+                level: LogLevel.ERROR,
+                message: 'Invalid libp2p node'
+            });
+        }
+
+        ipfsNodeId = ipfsNodeId ? ipfsNodeId : createNodeId(Component.IPFS);
+        const ipfsOptions = new IPFSOptions({
+            libp2p: libp2pNode?.process
+        });
+        return await this.manager.createNode({
+            id: ipfsNodeId,
             type: Component.IPFS,
             options: ipfsOptions
         });
+    }
 
+    public async createOrbitDbNode({
+        ipfsNode,
+        ipfsNodeId,
+        orbitDbNodeId
+    }: {
+        ipfsNode?: Node,
+        ipfsNodeId?: Node['id'],
+        orbitDbNodeId?: Node['id']
+    }): Promise<Node> {
+        // check if ipfs node is available
+        if (!ipfsNode && ipfsNodeId) {
+            ipfsNode = this.manager.getNode(ipfsNodeId);
 
-        try {
-            const cid = ipfs.process.libp2p.peerId.toString();
-            logger({
-                level: LogLevel.INFO,
-                message: `IPFS node created: ${cid}`
-            });
+            if (!ipfsNode) {
+                ipfsNode = await this.createIPFSNode({ipfsNodeId: ipfsNodeId});
+            }
         }
-        catch (error) {
+        else if (!ipfsNode && !ipfsNodeId) {
+            ipfsNode = await this.createIPFSNode({});
+        }
+        else if (ipfsNode && ipfsNodeId) {
             logger({
                 level: LogLevel.ERROR,
-                message: `Error adding to IPFS: ${error}`
+                message: 'Specify either ipfsNode or ipfsNodeId, not both.'
+            });
+        }
+        else {
+            logger({
+                level: LogLevel.ERROR,
+                message: 'Invalid IPFS node'
             });
         }
 
+
         // Create an OrbitDB node
-        // const ipfs = this.manager.getNode(ipfsId);
-        // console.log('ipfs', ipfs?.process.libp2p.peerId.toString())
         const orbitDbId = createNodeId(Component.ORBITDB);
         const orbitDbOptions = new OrbitDbOptions({
-            ipfs: ipfs,
+            ipfs: ipfsNode?.process,
             enableDID: true
         });
-        // try {
-            logger({
-                level: LogLevel.INFO,
-                message: 'Creating OrbitDB node...'
-            });
-            await this.manager.createNode({
-                id: orbitDbId,
-                type: Component.ORBITDB,
-                options: orbitDbOptions
-            });
-            logger({
-                level: LogLevel.INFO,
-                message: 'OrbitDB node creation process done...'
-            });
 
-        // }
-        // catch (error) {
-        //     logger({
-        //         level: LogLevel.ERROR,
-        //         message: `Error creating OrbitDB node: ${error}`
-        //     });
-        //     return;
-        // }
-        
-
-        
+        logger({
+            level: LogLevel.INFO,
+            message: 'Creating OrbitDB node...'
+        });
+        return await this.manager.createNode({
+            id: orbitDbId,
+            type: Component.ORBITDB,
+            options: orbitDbOptions
+        });       
     }
 
     public async open({

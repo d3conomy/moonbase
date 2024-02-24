@@ -128,29 +128,29 @@ describe('CommandsOpenDb', async () => {
         });
 
         let db = await newDb?.open(openDbOptions)
-        // try {
-        //     const addCommand = new Command({
-        //         nodeId: 'node1',
-        //         type: Component.DB,
-        //         action: 'add',
-        //         kwargs: new Map<string, string>([['value', 'hello']])
-        //     });
+        try {
+            const addCommand = new Command({
+                nodeId: 'node1',
+                type: Component.DB,
+                action: 'add',
+                kwargs: new Map<string, string>([['value', 'hello']])
+            });
 
-        //     await newDb?.executeCommand(addCommand);
-        //     logger({
-        //         level: LogLevel.INFO,
-        //         component: Component.SYSTEM,
-        //         message: `Value added to db: ${addCommand.output}`
-        //     });
-        //     expect(addCommand.output).to.be.not.null;
-        // }
-        // catch {
-        //     logger({
-        //         level: LogLevel.ERROR,
-        //         component: Component.SYSTEM,
-        //         message: `Error adding value to db`
-        //     })
-        // }
+            await newDb?.executeCommand(addCommand);
+            logger({
+                level: LogLevel.INFO,
+                component: Component.SYSTEM,
+                message: `Value added to db: ${addCommand.output}`
+            });
+            expect(addCommand.output).to.be.not.null;
+        }
+        catch {
+            logger({
+                level: LogLevel.ERROR,
+                component: Component.SYSTEM,
+                message: `Error adding value to db`
+            })
+        }
 
         const libp2pNode = orbitDbNode?.process?.ipfs.libp2p.getMultiaddrs();
         logger({
