@@ -117,7 +117,7 @@ describe('OpenDb', () => {
 
         logger({
             level: LogLevel.INFO,
-            message: `Database opened: ${db.process.database.address.toString()}`
+            message: `Database opened: ${db.process.address.toString()}`
         });
 
         expect(db.id).to.be.not.null;
@@ -159,12 +159,12 @@ describe('OpenDb', () => {
 
         logger({
             level: LogLevel.INFO,
-            message: `Database 1 opened: ${db1?.process.database.address.toString()}`
+            message: `Database 1 opened: ${db1?.process.address.toString()}`
         });
 
         logger({
             level: LogLevel.INFO,
-            message: `Database 2 opened: ${db2?.process.database.address.toString()}`
+            message: `Database 2 opened: ${db2?.process.address.toString()}`
         });
 
         expect(db1?.id).to.be.not.null;

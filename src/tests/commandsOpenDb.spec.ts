@@ -39,7 +39,7 @@ describe('CommandsOpenDb', async () => {
     afterEach(async () => {
         // Clean up any resources if needed
         if (db !== null) {
-            await db.process.database.stop();
+            await db.process.stop();
         }
         if (command) {
             command = null;
@@ -96,7 +96,7 @@ describe('CommandsOpenDb', async () => {
         logger({
             level: LogLevel.INFO,
             component: Component.SYSTEM,
-            message: `Db opened: ${db?.id}, ${db?.process.database.address}`
+            message: `Db opened: ${db?.id}, ${db?.process.address}`
         });
         expect(db?.id).to.be.not.null;
     });

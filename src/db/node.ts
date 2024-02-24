@@ -332,7 +332,7 @@ class Node {
         switch (this.type) {
             case Component.DB:
                     // await this.process.stop()
-                    await this.process.database.close();
+                    await this.process.close();
 
                 break;
             case Component.ORBITDB:

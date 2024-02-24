@@ -50,7 +50,7 @@ const openDb = async ({
     orbitDb,
     databaseName,
     databaseType
-}: OpenDbOptions): Promise<{database: typeof Database}> => {
+}: OpenDbOptions): Promise<typeof Database> => {
     let database: typeof Database;
     logger({
         level: LogLevel.INFO,
@@ -60,7 +60,7 @@ const openDb = async ({
 
     });
     try {
-        database = await orbitDb.process.open(databaseName, {
+        return await orbitDb.process.open(databaseName, {
             type: databaseType
         });
         logger({
@@ -91,7 +91,7 @@ const openDb = async ({
     // });
 
     // await testDb(database);
-    // const cid = await database.add('hello');
+    // const cid = await database?.add('hello');
     // logger({
     //     level: LogLevel.INFO,
     //     message: `Database test: ${cid}`

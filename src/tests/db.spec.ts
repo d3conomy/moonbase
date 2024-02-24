@@ -87,7 +87,7 @@ describe('Db', () => {
 
             logger({
                 level: LogLevel.INFO,
-                message: `Db opened: ${openeddb?.process?.database.address.toString()}`
+                message: `Db opened: ${openeddb?.process?.address.toString()}`
             });
             // })
     
