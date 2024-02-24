@@ -19,7 +19,8 @@ COPY ./entrypoint.sh ./entrypoint.sh
 
 EXPOSE 3000
 
-CMD ["node", "./dist/index.js", "--trace-deprecation", "--trace-warnings"]
+# CMD ["node", "./dist/index.js", "--trace-deprecation", "--trace-warnings"]
+CMD ["npm", "run", "test", "--trace-deprecation", "--trace-warnings"]
 
 
 

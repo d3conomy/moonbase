@@ -89,6 +89,11 @@ describe('Db', () => {
                 level: LogLevel.INFO,
                 message: `Db opened: ${openeddb?.process?.address.toString()}`
             });
+
+            logger({
+                level: LogLevel.INFO,
+                message: `Db test cid: ${await openeddb?.process?.add('hello')}`
+            });
             // })
     
             // db?.open(openDbOptions).then(() => {
