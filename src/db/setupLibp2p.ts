@@ -49,9 +49,9 @@ const defaultLibp2pOptions = (): Libp2pOptions => {
     },
     transports: [
         webSockets(),
-        webTransport(),
+        // webTransport(),
         tcp(),
-        webRTC(),
+        // webRTC(),
         circuitRelayTransport({
             discoverRelays: 2
         }),
