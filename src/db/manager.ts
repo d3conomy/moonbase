@@ -32,23 +32,22 @@ class Manager {
 
     private addNode(node: Node) {
         if (this.nodes.find((n: Node) => n.id === node.id)) {
-            logger(
-                {
+            logger({
                     level: LogLevel.WARN,
                     component: Component.SYSTEM,
                     message: `Node already exists: ${node.id}\n` +
                              `Node not added to manager`
-                }
-            )
-            return;
+            })
         }
-        this.nodes.push(node);
-        logger({
-            level: LogLevel.INFO,
-            component: Component.SYSTEM,
-            code: ResponseCode.SUCCESS,
-            message: `Node Added: ${node.id}`
-        })
+        else {
+            this.nodes.push(node);
+            logger({
+                level: LogLevel.INFO,
+                component: Component.SYSTEM,
+                code: ResponseCode.SUCCESS,
+                message: `Node Added: ${node.id}`
+            })
+        }
     }
 
     public getNode(id: string): Node | undefined {
@@ -88,7 +87,7 @@ class Manager {
             try {
                 await node.stop();
                 // remove the node from the array
-                this.nodes.slice(this.nodes.indexOf(node), 1);
+                this.nodes = this.nodes.filter((n: Node) => n.id !== id);
             }
             catch (error) {
                 logger({

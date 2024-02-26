@@ -40,6 +40,11 @@ const defaultLibp2pOptions = (): Libp2pOptions => {
             '/ip4/0.0.0.0/tcp/0/ws/',
             '/ip4/0.0.0.0/tcp/0',
             '/webrtc',
+            '/ip6/::/udp/0/',
+            '/ip6/::/udp/0/quic-v1',
+            '/ip6/::/udp/0/quic-v1/webtransport',
+            '/ip6/::/tcp/0/ws/',
+            '/ip6/::/tcp/0'
         ],
     },
     transports: [
@@ -56,7 +61,7 @@ const defaultLibp2pOptions = (): Libp2pOptions => {
     ],
     streamMuxers: [
         yamux(),
-        mplex()
+        // mplex()
     ],
     services: {
         pubsub: gossipsub({

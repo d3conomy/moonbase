@@ -130,7 +130,7 @@ class Db {
 
 
         // Create an OrbitDB node
-        const orbitDbId = createNodeId(Component.ORBITDB);
+        const orbitDbId: string = orbitDbNodeId ? orbitDbNodeId : createNodeId(Component.ORBITDB);
         const orbitDbOptions = new OrbitDbOptions({
             ipfs: ipfsNode?.process,
             enableDID: true

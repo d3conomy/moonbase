@@ -1,6 +1,8 @@
 import express, { Request, Response } from 'express';
 
 import { db, Db } from "../../db/index.js";
+import { Command } from '../../db/commands.js';
+import { Component } from '../../utils/constants.js';
 
 const router = express.Router();
 
@@ -141,6 +143,12 @@ router.delete('/manage/nodes/:id', async function(req: Request, res: Response) {
  *      schema:
  *       type: string
  *      description: Node ID
+ *    - in: query
+ *      name: command
+ *      required: false
+ *      schema:
+ *       type: string
+ *      description: Command to execute  [ multiaddrs | ... ] 
  *   responses:
  *    200:
  *     description: A successful response
@@ -150,13 +158,47 @@ router.delete('/manage/nodes/:id', async function(req: Request, res: Response) {
  *        type: object
  *     example: /or
  * */
-router.get('/manage/nodes/:id', function(req: Request, res: Response) {
+router.get('/manage/nodes/:id', async function(req: Request, res: Response) {
     const nodeId = req.params.id;
+    const commandQuery = req.query.command;
+
     const node = db.manager.getNode(nodeId);
-    res.send({
-        nodeId: node?.id,
-        nodeType: node?.type,
-    });
+
+    if (!node) {
+        res.send({
+            message: `Node not found`,
+            nodeId: nodeId
+        });
+    }
+
+    if (!commandQuery) {
+        res.send({
+            nodeId: node?.id,
+            nodeType: node?.type,
+        });
+    }
+
+    if (commandQuery === 'multiaddrs') {
+        const command = new Command({
+            nodeId: nodeId,
+            type: Component.LIBP2P,
+            action: 'multiaddrs'
+        });
+        const multiaddrs = await db.executeCommand(command);
+        res.send({
+            nodeId: nodeId,
+            multiaddrs: multiaddrs.output
+        });
+    }
+    else {
+        res.send({
+            nodeId: nodeId,
+            nodeType: node?.type,
+            message: `Command not found: ${commandQuery}`
+        });
+    
+    }
+
 });
 
 
