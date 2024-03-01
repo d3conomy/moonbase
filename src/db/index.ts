@@ -26,13 +26,13 @@ class Db {
         const ipfs: Node = await this.createIPFSNode({
             libp2pNode: libp2p
         });
-        const orbitDb: Node = await this.createOrbitDbNode({
+        const orbitDb: Node | undefined = await this.createOrbitDbNode({
             ipfsNode: ipfs
         });
 
         logger({
             level: LogLevel.INFO,
-            message: `Db initialized ${orbitDb.id}`
+            message: `Db initialized ${orbitDb?.id}`
         });
     }
 
@@ -108,7 +108,7 @@ class Db {
         ipfsNode?: Node,
         ipfsNodeId?: Node['id'],
         orbitDbNodeId?: Node['id']
-    }): Promise<Node> {
+    }): Promise<Node | undefined> {
         const orbitDbId: string = orbitDbNodeId ? orbitDbNodeId : createNodeId(Component.ORBITDB);
         // check if ipfs node is available
         if (!ipfsNode && ipfsNodeId) {
@@ -135,12 +135,12 @@ class Db {
             });
         }
 
-        if (ipfsNode === null) {
+        if (ipfsNode === null || ipfsNode === undefined) {
             logger({
                 level: LogLevel.ERROR,
                 message: 'No IPFS node available'
             });
-            ipfsNode = await 
+            return
         }
 
 
@@ -258,10 +258,10 @@ class Db {
     }
 }
 
-const db = new Db()
-await db.init();
+// const db = new Db()
+// await db.init();
 
 export {
     Db,
-    db
+    // db
 }

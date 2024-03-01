@@ -1,10 +1,34 @@
 import express, { Request, Response } from 'express';
 
-import { db, Db } from "../../db/index.js";
+import { Db } from "../../db/index.js";
 import { Command } from '../../db/commands.js';
 import { Component } from '../../utils/constants.js';
 
 const router = express.Router();
+const db = new Db();
+
+/**
+ * @openapi
+ * /api/v0/manage/init:
+ *  get:
+ *   tags:
+ *    - nodes
+ *   description: Initialize the database
+ *   responses:
+ *    200:
+ *     description: A successful response
+ *     content:
+ *      application/json:
+ *       schema:
+ *        type: object
+ *     example: /or
+ * */
+router.get('/manage/init', async function(req: Request, res: Response) {
+    await db.init();
+    res.send({
+        message: `Database initialized`
+    });
+});
 
 /**
  * @openapi
