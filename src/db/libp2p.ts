@@ -18,9 +18,10 @@ import { mdns } from '@libp2p/mdns'
 import { mplex } from '@libp2p/mplex'
 import { Libp2p, Libp2pOptions, createLibp2p } from 'libp2p'
 import { Libp2pStatus } from '@libp2p/interface'
-import { IdReference } from '../moonbase.js'
+import { IdReference } from './pod.js'
 import { Component } from '../utils/index.js'
 import { Multiaddr } from '@multiformats/multiaddr'
+import { _BaseProcess, _BaseStatus } from './base.js'
 
 
 const defaultBootstrapConfig: any = {
@@ -130,26 +131,30 @@ const createLibp2pProcess = async (options?: _Libp2pOptions): Promise<Libp2p> =>
     return await createLibp2p(options.processOptions)
 }
 
-class _Libp2pStatus {
-    public status?: string;
+class _Libp2pStatus
+    implements _BaseStatus
+{
+    public stage: string;
     public message?: string;
-    public updated?: Date;
+    public updated: Date;
 
     constructor(status?: Libp2pStatus, message?: string) {
-        this.status = status ? status : "unknown"
+        this.stage = status ? status : "unknown"
         this.message = message
         this.updated = new Date()
     }
 
     public update(status: Libp2pStatus, message?: string): void {
-        this.status = status
+        this.stage = status
         this.message = message
         this.updated = new Date()
     }
 
 }
 
-class Libp2pProcess {
+class Libp2pProcess
+    implements _BaseProcess
+{
     public id: IdReference
     public process?: Libp2p
     public options?: _Libp2pOptions
@@ -170,12 +175,21 @@ class Libp2pProcess {
     }
 
     public checkProcess(): boolean {
-        return this.process ? true : false
+         return this.process ? true : false
+    }
+
+    public checkStatus(force?: boolean): _Libp2pStatus {
+        if (force || !this.status) {
+            this.status = new _Libp2pStatus(this.process?.status, `Libp2p process status checked`)
+        }
+        return this.status
     }
 
     public async init(): Promise<void> {
-        this.process = await createLibp2pProcess(this.options)
-        this.status = new _Libp2pStatus(this.process.status)
+        if (!this.process) {
+            this.process = await createLibp2pProcess(this.options)
+        }
+        this.status = new _Libp2pStatus(this.process.status, `Libp2p process initialized`)
     }
 
     public async start(): Promise<void> {

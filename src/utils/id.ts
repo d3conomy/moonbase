@@ -1,4 +1,3 @@
-import { OrbitDbOptions } from "../db/setupOrbitDb";
 import { Component } from "./constants";
 
 const createRandomId = () => {

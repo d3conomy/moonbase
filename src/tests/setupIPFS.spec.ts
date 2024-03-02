@@ -1,5 +1,5 @@
-import { createIpfsProcess, IpfsOptions, IpfsProcess } from "../db/setupIpfs.js";
-import { createLibp2pProcess, Libp2pProcess } from "../db/setupLibp2p.js";
+import { createIpfsProcess, _IpfsOptions, IpfsProcess } from "../db/ipfs.js";
+import { createLibp2pProcess, Libp2pProcess } from "../db/libp2p.js";
 import { Helia } from "helia";
 
 import { expect } from "chai";
@@ -16,7 +16,7 @@ describe("createIpfsProcess", async () => {
         libp2p = new Libp2pProcess({});
 
         // Create the options object
-        const options: IpfsOptions = new IpfsOptions({
+        const options: _IpfsOptions = new _IpfsOptions({
             libp2p,
         });
 
@@ -36,11 +36,11 @@ describe("createIpfsProcess", async () => {
         libp2p2 = new Libp2pProcess({});
 
         // Create the options object
-        const options: IpfsOptions = new IpfsOptions({
+        const options: _IpfsOptions = new _IpfsOptions({
             libp2p,
         });
 
-        const options2: IpfsOptions = new IpfsOptions({
+        const options2: _IpfsOptions = new _IpfsOptions({
             libp2p: libp2p2,
         });
 

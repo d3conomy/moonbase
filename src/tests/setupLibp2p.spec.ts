@@ -1,4 +1,4 @@
-import { createLibp2pProcess, defaultLibp2pOptions } from '../db/setupLibp2p.js';
+import { createLibp2pProcess, defaultLibp2pOptions } from '../db/libp2p.js';
 import { Libp2p } from 'libp2p';
 import { expect } from 'chai';
 import { logger } from '../utils/logBook.js';
