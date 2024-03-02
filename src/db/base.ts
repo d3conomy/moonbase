@@ -1,3 +1,4 @@
+import { Component } from "../utils/constants.js"
 import { IdReference } from "../utils/id.js"
 
 interface _IBaseStatus {
@@ -14,7 +15,7 @@ interface _IBaseStatus {
     }): void
 }
 
-class _BaseStatus
+class _Status
     implements _IBaseStatus
 {
     public stage: string
@@ -60,11 +61,69 @@ interface _IBaseProcess {
     restart(): Promise<void>
 }
 
+class _BaseProcess {
+    public id: IdReference
+    public type: Component
+    public process?: any
+    public options?: any
+    public status?: _Status
 
+    constructor({
+        id,
+        process,
+        options
+    }: {
+        id?: IdReference,
+        process?: any,
+        options?: any
+    }) {
+        this.type = Component.PROCESS
+        this.id = id ? id : new IdReference({ component: this.type });
+        this.process = process
+        this.options = options
+    }
+
+    public checkProcess(): boolean {
+        return this.process ? true : false
+    }
+
+    public checkStatus(force?: boolean): _Status {
+        if (force || !this.status) {
+            this.status = new _Status({stage: this.process?.status , message: `${this.type} process status checked`})
+        }
+        return this.status
+    }
+
+    public async init(): Promise<void> {
+        return;
+    }
+
+    public async start(): Promise<void> {
+        if (this.process) {
+            await this.process.start()
+            this.status?.update({stage: this.process.status})
+        }
+    }
+
+    public async stop(): Promise<void> {
+        if (this.process) {
+            await this.process.stop()
+            this.status?.update({stage: this.process.status})
+        }
+    }
+
+    public async restart(): Promise<void> {
+        await this.stop()
+        await this.init()
+        await this.start()
+    }
+
+}
 
 
 export {
     _IBaseProcess,
     _IBaseStatus,
-    _BaseStatus,
+    _Status,
+    _BaseProcess
 }

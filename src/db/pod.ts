@@ -51,50 +51,52 @@ class LunarPod {
         await this.libp2p.init();
     }
 
-//     public async initIpfs({
-//         ipfsOptions
-//     }: {
-//         ipfsOptions?: _IpfsOptions
-//     }): Promise<void> {
-//         if (!this.ipfs) {
-//             if (!this.libp2p) {
-//                 await this.initLibp2p({});
-//             }
+    public async initIpfs({
+        ipfsOptions
+    }: {
+        ipfsOptions?: _IpfsOptions
+    }): Promise<void> {
+        if (!this.ipfs) {
+            if (!this.libp2p) {
+                await this.initLibp2p({});
+            }
+            else if (ipfsOptions && !ipfsOptions.libp2p) {
+                this.libp2p = ipfsOptions.libp2p;
+            }
+            else if (ipfsOptions && !ipfsOptions.libp2p && this.libp2p) {
+                ipfsOptions.libp2p = this.libp2p;
+            }
+            else {
+                ipfsOptions = new _IpfsOptions({
+                    libp2p: this.libp2p as Libp2pProcess
+                });
+            }
 
-//             if (ipfsOptions && !ipfsOptions.libp2p && this.libp2p) {
-//                 ipfsOptions.libp2p = this.libp2p;
-//             }
-//             else {
-//                 ipfsOptions = new _IpfsOptions({
-//                     libp2p: this.libp2p
-//                 });
-//             }
+            this.ipfs = new IpfsProcess({
+                id: new IdReference({
+                    component: Component.IPFS
+                }),
+                options: ipfsOptions
+            });
+        }
+        await this.ipfs.init();
+    }
 
-//             this.ipfs = new IpfsProcess({
-//                 id: new IdReference({
-//                     component: Component.IPFS
-//                 }),
-//                 options: ipfsOptions
-//             });
-//         }
-//         await this.ipfs.init();
-//     }
-
-//     public async initOrbitDb({
-//         orbitDbOptions
-//     }: {
-//         orbitDbOptions?: _OrbitDbOptions
-//     }): Promise<void> {
-//         if (!this.orbitDb) {
-//             this.orbitDb = new OrbitDbProcess({
-//                 id: new IdReference({
-//                     component: Component.ORBITDB
-//                 }),
-//                 options: orbitDbOptions
-//             });
-//         }
-//         await this.orbitDb.init();
-//     }
+    public async initOrbitDb({
+        orbitDbOptions
+    }: {
+        orbitDbOptions?: _OrbitDbOptions
+    }): Promise<void> {
+        if (!this.orbitDb) {
+            this.orbitDb = new OrbitDbProcess({
+                id: new IdReference({
+                    component: Component.ORBITDB
+                }),
+                options: orbitDbOptions
+            });
+        }
+        await this.orbitDb.init();
+    }
 }
 
 

@@ -24,6 +24,7 @@ import {
 } from '../utils/constants.js';
 import { IpfsProcess } from './ipfs.js';
 import { IdReference } from './pod.js';
+import { _BaseProcess, _Status, _IBaseProcess } from './base.js';
 
 
 const createIdentityProvider = ({
@@ -130,27 +131,40 @@ class _OrbitDbStatus {
 }
 
 
-class OrbitDbProcess {
-    public id: IdReference;
+class OrbitDbProcess
+    extends _BaseProcess
+    implements _IBaseProcess
+{
     public process?: typeof OrbitDb;
-    public options: _OrbitDbOptions;
-    public status?: _OrbitDbStatus;
+    public options?: _OrbitDbOptions;
 
     constructor({
         id,
-        orbitDb,
+        process,
         options
     }: {
         id?: IdReference,
-        orbitDb?: typeof OrbitDb,
-        options: _OrbitDbOptions
+        process?: typeof OrbitDb,
+        options?: _OrbitDbOptions
     }) {
+        super({});
         this.id = id ? id : new IdReference({ component: Component.ORBITDB });
-        this.process = orbitDb;
+        this.process = process;
         this.options = options;
     }
 
     public async init(): Promise<void> {
+        if (this.process) {
+            return;
+        }
+
+        if (!this.options) {
+            this.options = new _OrbitDbOptions({
+                ipfs: new IpfsProcess({}),
+                enableDID: false
+            });
+        }
+
         if (!this.process) {
             this.process = await createOrbitDbProcess(this.options);
         }

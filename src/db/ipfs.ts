@@ -4,7 +4,7 @@ import { Helia, createHelia} from "helia";
 import { Component } from "../utils/index.js";
 import { Libp2pProcess } from "./libp2p.js";
 import { IdReference } from "../utils/id.js";
-import { _BaseStatus } from "./base.js";
+import { _BaseProcess, _Status, _IBaseProcess } from "./base.js";
 
 class _IpfsOptions {
     libp2p: Libp2pProcess
@@ -35,29 +35,31 @@ const createIpfsProcess = async (options: _IpfsOptions): Promise<Helia> => {
 }
 
 
-class IpfsProcess {
-    public id: IdReference;
+class IpfsProcess 
+    extends _BaseProcess
+    implements _IBaseProcess
+{
     public process?: Helia
     public options?: _IpfsOptions
-    public status?: _BaseStatus
 
     constructor({
         id,
-        helia,
+        process,
         options
     }: {
         id?: IdReference,
-        helia?: Helia
+        process?: Helia
         options?: _IpfsOptions
     }) {
+        super({})
         this.id = id ? id : new IdReference({ component: Component.IPFS });
-        this.process = helia
+        this.process = process
         this.options = options
     }
 
     public async init(): Promise<void> {
         if (this.process) {
-            return
+            return;
         }
 
         if (!this.options) {
