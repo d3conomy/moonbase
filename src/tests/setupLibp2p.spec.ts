@@ -4,16 +4,12 @@ import { expect } from 'chai';
 import { logger } from '../utils/logBook.js';
 import { Component, LogLevel } from '../utils/constants.js';
 
-function sleep(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
 
 describe('createLibp2pProcess', () => {
     let libp2pProcess: Libp2p;
     let libp2pProcess2: Libp2p;
 
-    before(async () => {
+    beforeEach(async () => {
         // Add any setup code here
         libp2pProcess = await createLibp2pProcess();
     });
@@ -32,9 +28,9 @@ describe('createLibp2pProcess', () => {
 
 
 
-    after(async () => {
+    afterEach(async () => {
         // Add any cleanup code here
         await libp2pProcess.stop();
-        await libp2pProcess2.stop();
+        await libp2pProcess2?.stop();
     });
 });

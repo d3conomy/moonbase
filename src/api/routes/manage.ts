@@ -100,7 +100,7 @@ router.post('/manage/nodes', async function(req: Request, res: Response) {
             });
             break;
         case 'ipfs':
-            await db.createIPFSNode({
+            await db.createIpfsNode({
                 ipfsNodeId: nodeId,
                 libp2pNodeId: nodeDependency
             });

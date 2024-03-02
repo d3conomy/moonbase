@@ -3,7 +3,7 @@ import { Libp2pProcess, _Libp2pOptions, createLibp2pProcess } from "./db/setupLi
 import { Helia, createHelia } from "helia";
 import { Database, OrbitDB } from "@orbitdb/core";
 import { Libp2pOptions } from "libp2p";
-import { IPFSOptions, IPFSProcess, createIPFSProcess } from "./db/setupIPFS.js";
+import { IpfsOptions, IpfsProcess, createIpfsProcess } from "./db/setupIpfs.js";
 import { Component } from "./utils/constants.js";
 
 class IdReference {
@@ -38,7 +38,7 @@ class IdReference {
 class LunarPod {
     public id: IdReference;
     public libp2p?: Libp2pProcess;
-    public ipfs?: IPFSProcess;
+    public ipfs?: IpfsProcess;
     public orbitDb?: typeof OrbitDB;
     public db?: typeof Database;
 
@@ -49,9 +49,9 @@ class LunarPod {
         orbitDb,
         db
     }: {
-        id: IdReference,
+        id?: IdReference,
         libp2p?: Libp2pProcess,
-        ipfs?: IPFSProcess,
+        ipfs?: IpfsProcess,
         orbitDb?: typeof OrbitDB,
         db?: typeof Database
     }) {
@@ -78,13 +78,13 @@ class LunarPod {
         await this.libp2p.init();
     }
 
-    public async initIPFS({
+    public async initIpfs({
         ipfsOptions
     }: {
-        ipfsOptions?: IPFSOptions
+        ipfsOptions?: IpfsOptions
     }): Promise<void> {
         if (!this.ipfs) {
-            this.ipfs = new IPFSProcess({
+            this.ipfs = new IpfsProcess({
                 id: new IdReference({
                     component: Component.IPFS
                 }),

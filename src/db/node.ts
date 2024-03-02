@@ -1,6 +1,6 @@
 
 import { Component, LogLevel, ResponseCode, createNodeId, createRandomId, logger } from "../utils/index.js";
-import { IPFSOptions, createIPFSProcess } from "./setupIPFS.js";
+import { IpfsOptions, createIpfsProcess } from "./setupIpfs.js";
 import { OrbitDbOptions, createOrbitDbProcess } from "./setupOrbitDb.js";
 import { Helia } from "helia";
 import { Libp2p, Libp2pOptions } from "libp2p";
@@ -11,7 +11,7 @@ import { Libp2pCommands } from "./commandsLibp2p.js";
 import { OpenDbCommands } from "./commandsOpenDb.js";
 import { OpenDbOptions, openDb } from "./openDb.js";
 
-type NodeOptions = OrbitDbOptions | IPFSOptions | Libp2pOptions | OpenDbOptions;
+type NodeOptions = OrbitDbOptions | IpfsOptions | Libp2pOptions | OpenDbOptions;
 type NodeCommands = Libp2pCommands | OpenDbCommands;
 type ProcessTypes = typeof OrbitDB | Helia | Libp2p | typeof Database;
 
@@ -198,7 +198,7 @@ class Node {
                 }
                 break;
             case Component.IPFS:
-                if (!(options instanceof IPFSOptions)) {
+                if (!(options instanceof IpfsOptions)) {
                     logger({
                         level: LogLevel.ERROR,
                         component: Component.IPFS,
@@ -209,7 +209,7 @@ class Node {
                 }
                 break;
             case Component.LIBP2P:
-                if (options instanceof IPFSOptions) {
+                if (options instanceof IpfsOptions) {
                     logger({
                         level: LogLevel.ERROR,
                         component: Component.LIBP2P,
@@ -269,7 +269,7 @@ class Node {
                 process = await createOrbitDbProcess(options as OrbitDbOptions);
                 break;
             case Component.IPFS:
-                process = await createIPFSProcess(options as IPFSOptions);
+                process = await createIpfsProcess(options as IpfsOptions);
                 break;
             case Component.LIBP2P:
                 const newOptions = options ? options as Libp2pOptions : defaultLibp2pOptions();

@@ -6,7 +6,7 @@ import { Libp2pProcess, createLibp2pProcess } from "./setupLibp2p.js";
 import { IdReference } from "../moonbase.js";
 
 
-class IPFSOptions {
+class IpfsOptions {
     libp2p: Libp2pProcess
     datastore: any
     blockstore: any
@@ -26,9 +26,9 @@ class IPFSOptions {
     }
 }
 
-const createIPFSProcess = async (options?: IPFSOptions): Promise<Helia> => {
+const createIpfsProcess = async (options?: IpfsOptions): Promise<Helia> => {
     if (!options) {
-        options = new IPFSOptions({
+        options = new IpfsOptions({
             libp2p: new Libp2pProcess({})
         })
     }
@@ -68,19 +68,17 @@ const createIPFSProcess = async (options?: IPFSOptions): Promise<Helia> => {
 
 }
 
-class _IPFSStatus {
+class _IpfsStatus {
     public status?: string
     public message?: string
     public updated?: Date
 
     constructor({
         status,
-        message,
-        code
+        message
     }: {
         status?: string,
         message?: string,
-        code?: number
     }) {
         this.status = status
         this.message = message
@@ -90,11 +88,9 @@ class _IPFSStatus {
     public update({
         status,
         message,
-        code
     }: {
         status?: string,
         message?: string,
-        code?: number
     }): void {
         this.status = status
         this.message = message
@@ -103,11 +99,11 @@ class _IPFSStatus {
 }
 
 
-class IPFSProcess {
+class IpfsProcess {
     public id: IdReference;
-    public ipfs?: Helia
-    public options?: IPFSOptions
-    public status?: _IPFSStatus
+    public process?: Helia
+    public options?: IpfsOptions
+    public status?: _IpfsStatus
 
     constructor({
         id,
@@ -116,29 +112,29 @@ class IPFSProcess {
     }: {
         id?: IdReference,
         helia?: Helia
-        options?: IPFSOptions
+        options?: IpfsOptions
     }) {
         this.id = id ? id : new IdReference({ component: Component.IPFS});
-        this.ipfs = helia
+        this.process = helia
         this.options = options
     }
 
     public async init(): Promise<void> {
         if (!this.options) {
-            this.options = new IPFSOptions({
+            this.options = new IpfsOptions({
                 libp2p: new Libp2pProcess({})
             })
         }
 
-        if (!this.ipfs) {
-            this.ipfs = await createIPFSProcess(this.options);
+        if (!this.process) {
+            this.process = await createIpfsProcess(this.options);
         }
     }
 }
 
 export {
-    IPFSOptions,
-    createIPFSProcess,
-    _IPFSStatus,
-    IPFSProcess
+    IpfsOptions,
+    createIpfsProcess,
+    _IpfsStatus,
+    IpfsProcess
 }

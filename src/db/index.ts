@@ -7,7 +7,7 @@ import {
 } from './manager.js';
 import { Node } from './node.js';
 import { OpenDbOptions, OrbitDbTypes, openDb } from './openDb.js';
-import { IPFSOptions } from './setupIPFS.js';
+import { IpfsOptions } from './setupIpfs.js';
 import { OrbitDbOptions } from './setupOrbitDb.js';
 import { Database } from '@orbitdb/core';
 
@@ -23,7 +23,7 @@ class Db {
 
     public async init(): Promise<void> {
         const libp2p: Node = await this.createLibp2pNode({});
-        const ipfs: Node = await this.createIPFSNode({
+        const ipfs: Node = await this.createIpfsNode({
             libp2pNode: libp2p
         });
         const orbitDb: Node | undefined = await this.createOrbitDbNode({
@@ -51,7 +51,7 @@ class Db {
     }
 
 
-    public async createIPFSNode({
+    public async createIpfsNode({
         libp2pNode,
         libp2pNodeId,
         ipfsNodeId
@@ -60,7 +60,7 @@ class Db {
         libp2pNodeId?: Node['id'],
         ipfsNodeId?: Node['id']
     }): Promise<Node> {
-        let ipfsOptions: IPFSOptions;
+        let ipfsOptions: IpfsOptions;
         // get the libp2p node
         if (!libp2pNode && libp2pNodeId) {
             libp2pNode = this.manager.getNode(libp2pNodeId);
@@ -78,7 +78,7 @@ class Db {
         else if (!libp2pNode && !libp2pNodeId) {
             libp2pNode = await this.createLibp2pNode({});
             ipfsNodeId = ipfsNodeId ? ipfsNodeId : `${Component.IPFS}-${libp2pNode.id}`;
-            ipfsOptions = new IPFSOptions({
+            ipfsOptions = new IpfsOptions({
                 libp2p: libp2pNode?.process,
             });
         }
@@ -89,7 +89,7 @@ class Db {
             });
         }
 
-        ipfsOptions = new IPFSOptions({
+        ipfsOptions = new IpfsOptions({
             libp2p: libp2pNode?.process
         });
 
@@ -115,12 +115,12 @@ class Db {
             ipfsNode = this.manager.getNode(ipfsNodeId);
 
             if (!ipfsNode) {
-                ipfsNode = await this.createIPFSNode({ipfsNodeId})
+                ipfsNode = await this.createIpfsNode({ipfsNodeId})
             }
         }
         else if (!ipfsNode && !ipfsNodeId) {
             ipfsNodeId = `${Component.IPFS}-${orbitDbId}`;
-            ipfsNode = await this.createIPFSNode({ipfsNodeId});
+            ipfsNode = await this.createIpfsNode({ipfsNodeId});
         }
         else if (ipfsNode && ipfsNodeId) {
             logger({
