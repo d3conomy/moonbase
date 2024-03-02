@@ -26,7 +26,7 @@ class OpenDbCommands
         switch (command.action) {
             case 'add':
                 try {
-                    return await this.process.add(command.kwargs?.get('value'));
+                    response = await this.process.add(command.kwargs?.get('value'));
                 } catch (error) {
                     response = error;
                 }

@@ -273,7 +273,7 @@ class Node {
                 break;
             case Component.LIBP2P:
                 const newOptions = options ? options as Libp2pOptions : defaultLibp2pOptions();
-                process = await createLibp2pProcess(newOptions);
+                process = await createLibp2pProcess({processOptions: newOptions});
                 commands = new Libp2pCommands(process);
                 break;
             default:
@@ -333,6 +333,7 @@ class Node {
             case Component.DB:
                     // await this.process.stop()
                     await this.process.close();
+                    await this.process.ipfs.libp2p.stop();
 
                 break;
             case Component.ORBITDB:

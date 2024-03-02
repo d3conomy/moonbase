@@ -16,14 +16,14 @@ enum OrbitDbTypes {
 }
 
 class OpenDbOptions {
-    public id: string;
+    // public id: string;
     public orbitDb: Node;
     public databaseName: string;
     public databaseType: OrbitDbTypes;
 
     constructor({
         orbitDb,
-        id,
+        // id,
         databaseName,
         databaseType
     }: {
@@ -35,7 +35,7 @@ class OpenDbOptions {
         this.orbitDb = orbitDb;
         this.databaseName = databaseName ? databaseName : createRandomId()
         this.databaseType = databaseType ? databaseType : OrbitDbTypes.EVENTS;
-        this.id = id ? id : `${createDbId(this.databaseType, this.databaseName)}`
+        // this.id = id ? id : `${createDbId(this.databaseType, this.databaseName)}`
     }
 }
 
@@ -60,7 +60,7 @@ const openDb = async ({
 
     });
     try {
-        return await orbitDb.process.open(databaseName, {
+        database = await orbitDb.process.open(databaseName, {
             type: databaseType
         });
         logger({
@@ -85,19 +85,19 @@ const openDb = async ({
         message: `IPFS status: ${orbitDb.process.ipfs.libp2p.status}`
     })
 
-    // logger({
-    //     level: LogLevel.INFO,
-    //     message: `Database status: ${await orbitDb.process.ipfs.libp2p.pubsub.ls()}`
-    // });
+    logger({
+        level: LogLevel.INFO,
+        message: `Database status: ${await orbitDb.process.ipfs.libp2p.status}`
+    });
 
-    // await testDb(database);
-    // const cid = await database?.add('hello');
-    // logger({
-    //     level: LogLevel.INFO,
-    //     message: `Database test: ${cid}`
-    // });
+    // // await testDb(database);
+    const cid = await database.add('hello');
+    logger({
+        level: LogLevel.INFO,
+        message: `Database test: ${cid}`
+    });
 
-    return { database };
+    return database;
 
 }
 

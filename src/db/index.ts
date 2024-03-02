@@ -193,7 +193,6 @@ class Db {
 
         try {
             const openDbOptions = new OpenDbOptions({
-                id: id,
                 orbitDb: orbitDb,
                 databaseName: databaseName,
                 databaseType: databaseType

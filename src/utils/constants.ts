@@ -3,6 +3,7 @@ enum Component {
     IPFS = 'IPFS',
     LIBP2P = 'Libp2p',
     ORBITDB = 'OrbitDb',
+    POD = 'Pod',
     SYSTEM = 'System'
 }
 

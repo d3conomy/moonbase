@@ -18,6 +18,9 @@ import { mdns } from '@libp2p/mdns'
 import { mplex } from '@libp2p/mplex'
 import { Libp2p, Libp2pOptions, createLibp2p } from 'libp2p'
 import { Libp2pStatus } from '@libp2p/interface'
+import { IdReference } from '../moonbase.js'
+import { Component } from '../utils/index.js'
+import { Multiaddr } from '@multiformats/multiaddr'
 
 
 const defaultBootstrapConfig: any = {
@@ -32,82 +35,183 @@ const defaultBootstrapConfig: any = {
 
 const defaultLibp2pOptions = (): Libp2pOptions => {
     const libp2pOptions: Libp2pOptions = {
-    addresses: {
-        listen: [
-            '/ip4/0.0.0.0/udp/0/',
-            '/ip4/0.0.0.0/udp/0/quic-v1',
-            '/ip4/0.0.0.0/udp/0/quic-v1/webtransport',
-            '/ip4/0.0.0.0/tcp/0/ws/',
-            '/ip4/0.0.0.0/tcp/0',
-            '/webrtc',
-            '/ip6/::/udp/0/',
-            '/ip6/::/udp/0/quic-v1',
-            '/ip6/::/udp/0/quic-v1/webtransport',
-            '/ip6/::/tcp/0/ws/',
-            '/ip6/::/tcp/0'
+        start: false,
+        addresses: {
+            listen: [
+                '/ip4/0.0.0.0/udp/0/',
+                '/ip4/0.0.0.0/udp/0/quic-v1',
+                '/ip4/0.0.0.0/udp/0/quic-v1/webtransport',
+                '/ip4/0.0.0.0/tcp/0/ws/',
+                '/ip4/0.0.0.0/tcp/0',
+                '/webrtc',
+                '/ip6/::/udp/0/',
+                '/ip6/::/udp/0/quic-v1',
+                '/ip6/::/udp/0/quic-v1/webtransport',
+                '/ip6/::/tcp/0/ws/',
+                '/ip6/::/tcp/0'
+            ],
+        },
+        transports: [
+            webSockets(),
+            // webTransport(),
+            tcp(),
+            // webRTC(),
+            circuitRelayTransport({
+                discoverRelays: 2
+            }),
         ],
-    },
-    transports: [
-        webSockets(),
-        // webTransport(),
-        tcp(),
-        // webRTC(),
-        circuitRelayTransport({
-            discoverRelays: 2
-        }),
-    ],
-    connectionEncryption: [
-        noise()
-    ],
-    streamMuxers: [
-        yamux(),
-        // mplex()
-    ],
-    services: {
-        pubsub: gossipsub({
-            allowPublishToZeroPeers: true
-        }),
-        autonat: autoNAT(),
-        identify: identify(),
-        upnpNAT: uPnPNAT(),
-        dht: kadDHT({
-            clientMode: false,
-            validators: {
-                ipns: ipnsValidator
-            },
-            selectors: {
-                ipns: ipnsSelector
+        connectionEncryption: [
+            noise()
+        ],
+        streamMuxers: [
+            yamux(),
+            // mplex()
+        ],
+        services: {
+            pubsub: gossipsub({
+                allowPublishToZeroPeers: true
+            }),
+            autonat: autoNAT(),
+            identify: identify(),
+            upnpNAT: uPnPNAT(),
+            dht: kadDHT({
+                clientMode: false,
+                validators: {
+                    ipns: ipnsValidator
+                },
+                selectors: {
+                    ipns: ipnsSelector
+                }
+            }),
+            lanDHT: kadDHT({
+                protocol: '/ipfs/lan/kad/1.0.0',
+                peerInfoMapper: removePublicAddressesMapper,
+                clientMode: false
+            }),
+            relay: circuitRelayServer({
+                advertise: true
+            }),
+            dcutr: dcutr(),
+        },
+        peerDiscovery: [
+            bootstrap(defaultBootstrapConfig),
+            mdns(),
+        ],
+        connectionGater: {
+            denyDialMultiaddr: async () => {
+                return false
             }
-        }),
-        lanDHT: kadDHT({
-            protocol: '/ipfs/lan/kad/1.0.0',
-            peerInfoMapper: removePublicAddressesMapper,
-            clientMode: false
-        }),
-        relay: circuitRelayServer({
-            advertise: true
-        }),
-        dcutr: dcutr(),
-    },
-    peerDiscovery: [
-        bootstrap(defaultBootstrapConfig),
-        mdns(),
-    ],
-    connectionGater: {
-        denyDialMultiaddr: async () => {
-            return false
         }
     }
-}
 return libp2pOptions
 }
 
-const createLibp2pProcess = async (options?: Libp2pOptions): Promise<Libp2p> => {
+class _Libp2pOptions {
+    public processOptions: Libp2pOptions
+
+    constructor({
+        processOptions
+    }: {
+        processOptions?: Libp2pOptions
     
-    return await createLibp2p(options)
+    }) {
+        this.processOptions = processOptions ? processOptions : defaultLibp2pOptions()
+    }
+
+}
+
+
+
+const createLibp2pProcess = async (options?: _Libp2pOptions): Promise<Libp2p> => {
+    if (!options) {
+        options = new _Libp2pOptions({})
+    }
+    
+    return await createLibp2p(options.processOptions)
+}
+
+class _Libp2pStatus {
+    public status?: string;
+    public message?: string;
+    public updated?: Date;
+
+    constructor(status?: Libp2pStatus, message?: string) {
+        this.status = status ? status : "unknown"
+        this.message = message
+        this.updated = new Date()
+    }
+
+    public update(status: Libp2pStatus, message?: string): void {
+        this.status = status
+        this.message = message
+        this.updated = new Date()
+    }
+
+}
+
+class Libp2pProcess {
+    public id: IdReference
+    public process?: Libp2p
+    public options?: _Libp2pOptions
+    public status?: _Libp2pStatus
+
+    constructor({
+        id,
+        libp2p,
+        options
+    }: {
+        id?: IdReference,
+        libp2p?: Libp2p,
+        options?: _Libp2pOptions
+    }) {
+        this.id = id ? id : new IdReference({component: Component.LIBP2P})
+        this.process = libp2p
+        this.options = options
+    }
+
+    public checkProcess(): boolean {
+        return this.process ? true : false
+    }
+
+    public async init(): Promise<void> {
+        this.process = await createLibp2pProcess(this.options)
+        this.status = new _Libp2pStatus(this.process.status)
+    }
+
+    public async start(): Promise<void> {
+        if (this.process) {
+            await this.process.start()
+            this.status?.update(this.process.status)
+        }
+    }
+
+    public async stop(): Promise<void> {
+        if (this.process) {
+            await this.process.stop()
+            this.status?.update(this.process.status)
+        }
+    }
+
+    public async restart(): Promise<void> {
+        await this.stop()
+        await this.init()
+        await this.start()
+    }
+
+    public peerId(): string {
+        return this.process?.peerId.toString() ? this.process.peerId.toString() : ""
+    }
+
+    public getMultiaddrs(): Multiaddr[] {
+        return this.process?.getMultiaddrs() ? this.process.getMultiaddrs() : []
+    }
+
 }
 
 export {
     defaultLibp2pOptions,
-    createLibp2pProcess
+    createLibp2pProcess,
+    _Libp2pOptions,
+    _Libp2pStatus,
+    Libp2pProcess
 }
