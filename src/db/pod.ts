@@ -5,36 +5,8 @@ import { Database, OrbitDB } from "@orbitdb/core";
 import { Libp2pOptions } from "libp2p";
 import { _IpfsOptions, IpfsProcess, createIpfsProcess } from "./ipfs.js";
 import { Component } from "../utils/constants.js";
+import { IdReference } from "../utils/id.js";
 import { OrbitDbProcess, _OrbitDbOptions } from "./orbitDb.js";
-
-class IdReference {
-    public id: string;
-    public component: Component;
-
-    constructor({
-        component,
-        id,
-    }: {
-        component: Component
-        id?: string,
-    }) {
-        this.component = component;
-        if (id) {
-            this.id = id;
-        }
-        else {
-            this.id = this.randomId();
-        }
-    }
-
-    public getId(): string {
-        return this.id;
-    }
-
-    public randomId(): string {
-        return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    }
-}
 
 class LunarPod {
     public id: IdReference;

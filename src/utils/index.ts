@@ -8,7 +8,8 @@ export {
 export {
     createRandomId,
     createNodeId,
-    createCommandId
+    createCommandId,
+    IdReference
 } from './id.js';
 
 export {

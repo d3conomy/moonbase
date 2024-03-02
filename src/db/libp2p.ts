@@ -21,7 +21,7 @@ import { Libp2pStatus } from '@libp2p/interface'
 import { IdReference } from './pod.js'
 import { Component } from '../utils/index.js'
 import { Multiaddr } from '@multiformats/multiaddr'
-import { _BaseProcess, _BaseStatus } from './base.js'
+import { _BaseStatus, _IBaseProcess, _IBaseStatus } from './base.js'
 
 
 const defaultBootstrapConfig: any = {
@@ -131,34 +131,13 @@ const createLibp2pProcess = async (options?: _Libp2pOptions): Promise<Libp2p> =>
     return await createLibp2p(options.processOptions)
 }
 
-class _Libp2pStatus
-    implements _BaseStatus
-{
-    public stage: string;
-    public message?: string;
-    public updated: Date;
-
-    constructor(status?: Libp2pStatus, message?: string) {
-        this.stage = status ? status : "unknown"
-        this.message = message
-        this.updated = new Date()
-    }
-
-    public update(status: Libp2pStatus, message?: string): void {
-        this.stage = status
-        this.message = message
-        this.updated = new Date()
-    }
-
-}
-
 class Libp2pProcess
-    implements _BaseProcess
+    implements _IBaseProcess
 {
     public id: IdReference
     public process?: Libp2p
     public options?: _Libp2pOptions
-    public status?: _Libp2pStatus
+    public status?: _BaseStatus
 
     constructor({
         id,
@@ -178,9 +157,9 @@ class Libp2pProcess
          return this.process ? true : false
     }
 
-    public checkStatus(force?: boolean): _Libp2pStatus {
+    public checkStatus(force?: boolean): _BaseStatus {
         if (force || !this.status) {
-            this.status = new _Libp2pStatus(this.process?.status, `Libp2p process status checked`)
+            this.status = new _BaseStatus({stage: this.process?.status , message: `Libp2p process status checked`})
         }
         return this.status
     }
@@ -189,20 +168,20 @@ class Libp2pProcess
         if (!this.process) {
             this.process = await createLibp2pProcess(this.options)
         }
-        this.status = new _Libp2pStatus(this.process.status, `Libp2p process initialized`)
+        this.status = new _BaseStatus({stage: this.process?.status, message: `Libp2p process initialized`})
     }
 
     public async start(): Promise<void> {
         if (this.process) {
             await this.process.start()
-            this.status?.update(this.process.status)
+            this.status?.update({stage: this.process.status})
         }
     }
 
     public async stop(): Promise<void> {
         if (this.process) {
             await this.process.stop()
-            this.status?.update(this.process.status)
+            this.status?.update({stage: this.process.status})
         }
     }
 
@@ -226,6 +205,6 @@ export {
     defaultLibp2pOptions,
     createLibp2pProcess,
     _Libp2pOptions,
-    _Libp2pStatus,
+    _BaseStatus,
     Libp2pProcess
 }

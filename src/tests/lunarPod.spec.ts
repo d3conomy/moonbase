@@ -33,6 +33,13 @@ describe('LunarPod', () => {
             message: `Peer id: ${peer?.libp2p?.peerId()}`
         })
 
+        await peer?.libp2p?.start();
+
+        logger({
+            level: LogLevel.INFO,
+            message: `Peer status: ${peer?.libp2p?.status?.stage}`
+        })
+
         await peer?.libp2p?.stop();
     })
 

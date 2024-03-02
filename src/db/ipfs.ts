@@ -1,9 +1,10 @@
 import { MemoryDatastore } from "datastore-core";
+import { MemoryBlockstore } from "blockstore-core";
 import { Helia, createHelia} from "helia";
 import { Component } from "../utils/index.js";
 import { Libp2pProcess } from "./libp2p.js";
-import { IdReference } from "./pod.js";
-
+import { IdReference } from "../utils/id.js";
+import { _BaseStatus } from "./base.js";
 
 class _IpfsOptions {
     libp2p: Libp2pProcess
@@ -21,7 +22,7 @@ class _IpfsOptions {
     }) {
         this.libp2p = libp2p
         this.datastore = datastore ? datastore : new MemoryDatastore()
-        this.blockstore = blockstore ? datastore : new MemoryDatastore()
+        this.blockstore = blockstore ? datastore : new MemoryBlockstore()
     }
 }
 
@@ -33,42 +34,12 @@ const createIpfsProcess = async (options: _IpfsOptions): Promise<Helia> => {
     })
 }
 
-class _IpfsStatus {
-    public status?: string
-    public message?: string
-    public updated?: Date
-
-    constructor({
-        status,
-        message
-    }: {
-        status?: string,
-        message?: string,
-    }) {
-        this.status = status
-        this.message = message
-        this.updated = new Date()
-    }
-
-    public update({
-        status,
-        message,
-    }: {
-        status?: string,
-        message?: string,
-    }): void {
-        this.status = status
-        this.message = message
-        this.updated = new Date()
-    }
-}
-
 
 class IpfsProcess {
     public id: IdReference;
     public process?: Helia
-    public options: _IpfsOptions
-    public status?: _IpfsStatus
+    public options?: _IpfsOptions
+    public status?: _BaseStatus
 
     constructor({
         id,
@@ -77,15 +48,23 @@ class IpfsProcess {
     }: {
         id?: IdReference,
         helia?: Helia
-        options: _IpfsOptions
+        options?: _IpfsOptions
     }) {
-        this.id = id ? id : new IdReference({ component: Component.IPFS});
+        this.id = id ? id : new IdReference({ component: Component.IPFS });
         this.process = helia
         this.options = options
     }
 
     public async init(): Promise<void> {
-        if (!this.process) {
+        if (this.process) {
+            return
+        }
+
+        if (!this.options) {
+            this.options = new _IpfsOptions({
+                libp2p: new Libp2pProcess({})
+            })
+            
             this.process = await createIpfsProcess(this.options);
         }
     }
@@ -94,6 +73,5 @@ class IpfsProcess {
 export {
     createIpfsProcess,
     _IpfsOptions,
-    _IpfsStatus,
     IpfsProcess
 }
