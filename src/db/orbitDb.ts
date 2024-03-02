@@ -100,36 +100,6 @@ const createOrbitDbProcess = async (options: _OrbitDbOptions): Promise<typeof Or
     });
 }
 
-class _OrbitDbStatus {
-    public status?: string;
-    public message?: string;
-    public updated?: Date;
-
-    constructor({
-        status,
-        message
-    }: {
-        status?: string,
-        message?: string,
-    }) {
-        this.status = status;
-        this.message = message;
-        this.updated = new Date();
-    }
-
-    public update({
-        status,
-        message,
-    }: {
-        status?: string,
-        message?: string,
-    }): void {
-        this.status = status;
-        this.message = message;
-        this.updated = new Date();
-    }
-}
-
 
 class OrbitDbProcess
     extends _BaseProcess

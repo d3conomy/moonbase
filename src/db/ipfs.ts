@@ -10,19 +10,24 @@ class _IpfsOptions {
     libp2p: Libp2pProcess
     datastore: any
     blockstore: any
+    start: boolean
+
 
     constructor({
         libp2p,
         datastore,
-        blockstore
+        blockstore,
+        start,
     }: {
         libp2p: Libp2pProcess,
         datastore?: any,
-        blockstore?: any
+        blockstore?: any,
+        start?: boolean
     }) {
         this.libp2p = libp2p
         this.datastore = datastore ? datastore : new MemoryDatastore()
         this.blockstore = blockstore ? datastore : new MemoryBlockstore()
+        this.start = start ? start : false
     }
 }
 
@@ -30,7 +35,8 @@ const createIpfsProcess = async (options: _IpfsOptions): Promise<Helia> => {
     return await createHelia({
         libp2p: options.libp2p.process,
         datastore: options.datastore,
-        blockstore: options.blockstore
+        blockstore: options.blockstore,
+        start: options.start
     })
 }
 
@@ -58,7 +64,8 @@ class IpfsProcess
     }
 
     public async init(): Promise<void> {
-        if (this.process) {
+        if (this.process !== undefined) {
+            this.status = new _Status({stage: this.process.libp2p.status, message: `Ipfs process already initialized`})
             return;
         }
 
@@ -66,8 +73,25 @@ class IpfsProcess
             this.options = new _IpfsOptions({
                 libp2p: new Libp2pProcess({})
             })
-            
-            this.process = await createIpfsProcess(this.options);
+        }
+        this.process = await createIpfsProcess(this.options);
+        this.status = new _Status({stage: this.process.libp2p.status, message: `Ipfs process initialized`})
+        
+    }
+
+    public async start(): Promise<void> {
+        if (this.process) {
+            // await this.process.libp2p.start()
+            await this.process.start()
+            this.status?.update({stage: this.process.libp2p.status})
+        }
+    }
+
+    public async stop(): Promise<void> {
+        if (this.process) {
+            // await this.process.libp2p.stop()
+            await this.process.stop()
+            this.status?.update({stage: this.process.libp2p.status})
         }
     }
 }

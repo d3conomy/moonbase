@@ -36,8 +36,12 @@ class IdReference {
         }
     }
 
-    public getId(): string {
+    public getId(component: boolean = false): string {
+        if (component) {
+            return `${this.component}-${this.randomId()}`;
+        }
         return this.id;
+        
     }
 
     public randomId(): string {
