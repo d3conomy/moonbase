@@ -1,38 +1,96 @@
-import { Libp2p } from "libp2p";
-import { Libp2pProcess, _Libp2pOptions, createLibp2pProcess } from "./libp2p.js";
-import { Helia, createHelia } from "helia";
-import { Database, OrbitDB } from "@orbitdb/core";
-import { Libp2pOptions } from "libp2p";
-import { _IpfsOptions, IpfsProcess, createIpfsProcess } from "./ipfs.js";
-import { Component } from "../utils/constants.js";
+
+import { Libp2pProcess, _Libp2pOptions } from "./libp2p.js";
+import { _IpfsOptions, IpfsProcess } from "./ipfs.js";
+import { Component, LogLevel } from "../utils/constants.js";
 import { IdReference } from "../utils/id.js";
 import { OrbitDbProcess, _OrbitDbOptions } from "./orbitDb.js";
+import { OpenDb, _OpenDbOptions } from "./open.js";
+import { logger } from "../utils/logBook.js";
+import e from "express";
 
 class LunarPod {
     public id: IdReference;
     public libp2p?: Libp2pProcess;
     public ipfs?: IpfsProcess;
     public orbitDb?: OrbitDbProcess;
-    public db?: typeof Database;
+    public db?: OpenDb;
 
     constructor({
         id,
         libp2p,
         ipfs,
         orbitDb,
-        db
     }: {
         id?: IdReference,
         libp2p?: Libp2pProcess,
         ipfs?: IpfsProcess,
         orbitDb?: OrbitDbProcess,
-        db?: typeof Database
     }) {
         this.id = id ? id : new IdReference({ component: Component.POD });
-        this.libp2p = libp2p;
-        this.ipfs = ipfs;
-        this.orbitDb = orbitDb;
-        this.db = db;
+        if (orbitDb) {
+            this.orbitDb = orbitDb;
+            this.setOrbitDbProcesses();
+        }
+        else if (ipfs) {
+            this.ipfs = ipfs;
+            this.setIpfsProcesses();
+        }
+        else if (libp2p) {
+            this.libp2p = libp2p;
+        }
+    }
+
+    public async init(): Promise<void> {
+        if (!this.libp2p) {
+            await this.initLibp2p({});
+        }
+        if (!this.ipfs) {
+            await this.initIpfs({});
+        }
+        if (!this.orbitDb) {
+            await this.initOrbitDb({});
+        }
+    }
+
+    private setOrbitDbProcesses(): void {
+        if (this.orbitDb) {
+            logger({
+                level: LogLevel.INFO,
+                message: `Setting OrbitDb process and sub-processes, ignoring redundant libp2p and ipfs options.`
+            })
+            this.libp2p = new Libp2pProcess({
+                id: new IdReference({
+                    component: Component.LIBP2P
+                }),
+                process: this.orbitDb.process?.ipfs?.libp2p
+            });
+            this.ipfs = new IpfsProcess({
+                id: new IdReference({
+                    component: Component.IPFS
+                }),
+                options: new _IpfsOptions({
+                    libp2p: this.libp2p
+                })
+            }); 
+
+            return
+        }
+    }
+
+    private setIpfsProcesses(): void {
+        if (this.ipfs) {
+            logger({
+                level: LogLevel.INFO,
+                message: `Setting IPFS process and sub-processes, ignoring redundant libp2p options.`
+            })
+            this.libp2p = new Libp2pProcess({
+                id: new IdReference({
+                    component: Component.LIBP2P
+                }),
+                process: this.ipfs.process?.libp2p
+            });
+            return
+        }
     }
 
     public async initLibp2p({
@@ -111,7 +169,52 @@ class LunarPod {
         }
         await this.orbitDb.init();
     }
+
+    public async initOpenDb({
+        openDbOptions
+    }: {
+        openDbOptions?: _OpenDbOptions
+    }): Promise<void> {
+        if (!this.orbitDb) {
+            await this.initOrbitDb({});
+        }
+        else if (openDbOptions && !openDbOptions.orbitDb) {
+            openDbOptions.orbitDb = this.orbitDb;
+        }
+        else if (openDbOptions && !openDbOptions.orbitDb && this.orbitDb) {
+            openDbOptions.orbitDb = this.orbitDb;
+        }
+        else {
+            openDbOptions = new _OpenDbOptions({
+                orbitDb: this.orbitDb
+            });
+        }
+        if (!this.db) {
+            this.db = new OpenDb({
+                id: new IdReference({
+                    component: Component.DB
+                }),
+                options: openDbOptions
+            });
+        }
+        await this.db.init();
+    }
+
+    public async stop(): Promise<void> {
+        if (this.db) {
+            await this.db.stop();
+        }
+        if (this.orbitDb) {
+            await this.orbitDb.stop();
+        }
+        if (this.ipfs) {
+            await this.ipfs.stop();
+        }
+        if (this.libp2p) {
+            await this.libp2p.stop();
+        }
+    }
 }
 
 
-export { IdReference, LunarPod };
+export { LunarPod };

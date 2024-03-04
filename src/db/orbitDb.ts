@@ -22,7 +22,7 @@ import {
     ResponseCode
 } from '../utils/constants.js';
 import { IpfsProcess } from './ipfs.js';
-import { IdReference } from './pod.js';
+import { IdReference } from '../utils/id.js';
 import { _BaseProcess, _Status, _IBaseProcess } from './base.js';
 
 

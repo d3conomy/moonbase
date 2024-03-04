@@ -1,4 +1,5 @@
-import { IdReference, LunarPod } from "../db/pod.js";
+import { LunarPod } from "../db/pod.js";
+import { IdReference } from "../utils/id.js";
 import { Component, LogLevel, logger } from "../utils/index.js";
 import { expect } from "chai";
 
@@ -83,4 +84,28 @@ describe('LunarPod', () => {
         await peer?.ipfs?.stop();
         await peer?.libp2p?.stop();
     })
+
+    it('should open a database', async () => {
+        await peer?.initLibp2p({});
+        await peer?.libp2p?.start();
+        await peer?.initIpfs({});
+        await peer?.initOrbitDb({});
+        await peer?.initOpenDb({});
+        expect(peer).to.be.not.null;
+        expect(peer?.id).to.be.not.null;
+        expect(peer?.libp2p).to.be.not.null;
+        expect(peer?.ipfs).to.be.not.null;
+        expect(peer?.orbitDb).to.be.not.null;
+        expect(peer?.db).to.be.not.null;
+
+        logger({
+            level: LogLevel.INFO,
+            message: `Peer id: ${peer?.libp2p?.peerId()}`
+        })
+
+        await peer?.db?.stop();
+        await peer?.orbitDb?.stop()
+        await peer?.ipfs?.stop();
+        await peer?.libp2p?.stop();
+    });
 })
