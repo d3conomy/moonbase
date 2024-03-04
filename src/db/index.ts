@@ -1,5 +1,7 @@
-import { LunarPod } from "./pod";
-import { IdReference } from "../utils/id";
+import { LunarPod } from "./pod.js";
+import { IdReference } from "../utils/id.js";
+import { logger } from "../utils/logBook.js";
+import { LogLevel } from "../utils/constants.js";
 
 
 
@@ -33,8 +35,24 @@ class Db {
         }
     }
 
-    public getPod(id: string): LunarPod | undefined {
-        return this.pods.find(pod => pod.id.id === id);
+    public getPod(id: IdReference): LunarPod | undefined {
+        return this.pods.find(pod => pod.id === id);
+    }
+
+    public async removePod(id: IdReference): Promise<void> {
+        const pod = this.getPod(id);
+        if (pod) {
+            await pod.stop();
+            const index = this.pods.indexOf(pod);
+            this.pods.splice(index, 1);
+            logger({
+                level: LogLevel.INFO,
+                message: `Pod with id ${id.getId()} removed`
+            });
+        }
+        else {
+            throw new Error(`Pod with id ${id.getId()} not found`);
+        }
     }
 }
 
