@@ -63,7 +63,6 @@ interface _IBaseProcess {
 
 class _BaseProcess {
     public id: IdReference
-    public type: Component
     public process?: any
     public options?: any
     public status?: _Status
@@ -77,8 +76,7 @@ class _BaseProcess {
         process?: any,
         options?: any
     }) {
-        this.type = Component.PROCESS
-        this.id = id ? id : new IdReference({ component: this.type });
+        this.id = id ? id : new IdReference({ component: Component.PROCESS });
         this.process = process
         this.options = options
     }
@@ -89,7 +87,7 @@ class _BaseProcess {
 
     public checkStatus(force?: boolean): _Status {
         if (force || !this.status) {
-            this.status = new _Status({stage: this.process?.status , message: `${this.type} process status checked`})
+            this.status = new _Status({stage: this.process?.status , message: `${this.id.component} process status checked`})
         }
         return this.status
     }

@@ -13,7 +13,6 @@ import {
 } from '@orbitdb/core';
 
 import {
-    createRandomId,
     logger
 } from '../utils/index.js';
 
@@ -41,7 +40,11 @@ const createIdentityProvider = ({
             code: ResponseCode.NOT_FOUND,
             message: `No identity seed provided. Using hardcoded seed...`
         });
-        identitySeed = new Uint8Array([157, 94, 116, 1918, 1239, 238, 91, 229, 173, 82, 245, 222, 199, 7, 183, 177, 123, 238, 83, 240, 143, 188, 87, 191, 33, 95, 58, 136, 46, 218, 219, 245]);
+        identitySeed = new Uint8Array([
+            157, 94, 116, 1918, 1239, 238, 91, 229, 173, 82, 245,
+            222, 199, 7, 183, 177, 123, 238, 83, 240, 143, 188,
+            87, 191, 33, 95, 58, 136, 46, 218, 219, 245
+        ]);
     }
 
     OrbitDBIdentityProviderDID.setDIDResolver(KeyDidResolver.getResolver())

@@ -1,175 +1,86 @@
-// import {
-//     openDb, OpenDbOptions
-// } from '../db/openDb.js';
 
-// import {
-//     Db
-// } from '../db/index.js';
+import {
+    OpendDb,
+    OrbitDbTypes,
+    _OpenDbOptions
+} from '../db/open.js';
 
-// import {
-//     OrbitDbTypes
-// } from '../db/openDb.js';
+import {
+    expect
+} from 'chai';
 
-// import {
-//     expect
-// } from 'chai';
-
-// import {
-//     Component,
-//     LogLevel
-// } from '../utils/constants.js';
-
-// import {
-//     Manager
-// } from '../db/manager.js';
-
-// import {
-//     Node
-// } from '../db/node.js';
-
-// import {
-//     logger
-// } from '../utils/logBook.js';
-
-// import {
-//     Database
-// } from '@orbitdb/core';
-// import { Command } from '../db/commands.js';
+import {
+    Component,
+    LogLevel
+} from '../utils/constants.js';
 
 
-// describe('OpenDb', () => {
-//     let dbManager: Db | null = null;
-//     let db: typeof Database | null = null;
-//     let allNodes: Node[] | null | undefined = undefined;
+import {
+    logger
+} from '../utils/logBook.js';
 
-//     beforeEach(async () => {
-//         dbManager = null;
-//         allNodes = null;
-//         dbManager = new Db();
-//         await dbManager.init();
-
-//         db = null
-
-//         allNodes = dbManager.manager.getAllNodes();
-//         logger({
-//             level: LogLevel.INFO,
-//             message: `All nodes: ${allNodes.map((node) => node.id)}`
-//         });
-//     });
-
-//     afterEach(async () => {
-//         if (db !== null) {
-//             if (db.address !== '') {
-//                 await db.stop()
-//             }
-//         }
-
-//         await dbManager?.manager.closeAllNodes();
+import {
+    Database
+} from '@orbitdb/core';
+import { IdReference } from '../utils/id.js';
+import { OrbitDbProcess, _OrbitDbOptions } from '../db/orbitDb.js';
+import { Libp2pProcess } from '../db/libp2p.js';
+import { IpfsProcess, _IpfsOptions } from '../db/ipfs.js';
 
 
-//         db = null
-//         dbManager = null
-//         allNodes = null
-//     })
+describe('OpenDb', () => {
+    let db: typeof Database | null = null;
 
+    it('should open a database', async () => {
+        const libp2p = new Libp2pProcess({});
 
-//     it('should create the required nodes', () => {
-//         allNodes = dbManager?.manager.getAllNodes();
-//         logger({
-//             level: LogLevel.INFO,
-//             message: `All nodes: ${allNodes?.map((node) => node.id)}`
-//         });
-//         expect(allNodes?.length).to.equal(3);
-//     });
+        await libp2p.init();
 
-//     it('should open a database', async () => {
-       
+        const ipfs = new IpfsProcess({
+            options: new _IpfsOptions({
+                libp2p
+            })
+        });
 
-//         const orbitDbNodes: Node[] | null | undefined = dbManager?.manager.getNodesByType(Component.ORBITDB);
+        await ipfs.init();
+        await ipfs.start();
 
-//         const orbitDbNode = orbitDbNodes ? orbitDbNodes[0] : null;
-//         logger({
-//             level: LogLevel.INFO,
-//             message: `OrbitDB node: ${orbitDbNode}`
-//         });
+        const orbitDb = new OrbitDbProcess({
+            id: new IdReference({
+                component: Component.ORBITDB
+            }),
+            options: new _OrbitDbOptions({
+                ipfs
+            })
+        });
 
-//         if (!orbitDbNode) {
-//             logger({
-//                 level: LogLevel.ERROR,
-//                 message: 'No OrbitDB node available'
-//             });
-//             return
-//         }
+        await orbitDb.init();
 
-//         const openDbOptions = {
-//             id: 'db1',
-//             orbitDb: orbitDbNode,
-//             databaseName: 'testDb',
-//             databaseType: OrbitDbTypes.EVENTS,
-//         };
+        const dbOptions = new _OpenDbOptions({
+            orbitDb,
+        });
 
-//         logger({
-//             level: LogLevel.INFO,
-//             message: `OpenDb options: ${JSON.stringify(openDbOptions.id)}`
-//         });
+        db = new OpendDb({options: dbOptions});
 
-//         db = await dbManager?.open(openDbOptions);
+        await db.init();
 
-//         logger({
-//             level: LogLevel.INFO,
-//             message: `Database opened: ${db.process.address.toString()}`
-//         });
+        expect(db.process).to.be.not.null;
+        expect(db.process.address).to.be.not.null;
+        // expect(db?.address).to.be.a('string');
+        // expect(db.address).to.be.not.empty;
 
-//         expect(db.id).to.be.not.null;
-//     });
+        logger({
+            level: LogLevel.INFO,
+            message: `Database address: ${db.process.address}`
+        });
 
-//     it('should create two simultaneous databases', async () => {
-//         const orbitDbNodes: Node[] | null | undefined = dbManager?.manager.getNodesByType(Component.ORBITDB);
+        await orbitDb.stop();
+        await ipfs.stop();
+        await libp2p.stop();
+    });
 
-//         const orbitDbNode = orbitDbNodes ? orbitDbNodes[0] : null;
-//         logger({
-//             level: LogLevel.INFO,
-//             message: `OrbitDB node: ${orbitDbNode}`
-//         });
-
-//         if (!orbitDbNode) {
-//             logger({
-//                 level: LogLevel.ERROR,
-//                 message: 'No OrbitDB node available'
-//             });
-//             return
-//         }
-
-//         const openDbOptions1 = {
-//             id: 'db1',
-//             orbitDb: orbitDbNode,
-//             databaseName: 'testDb1',
-//             databaseType: OrbitDbTypes.EVENTS,
-//         };
-
-//         const openDbOptions2 = {
-//             id: 'db2',
-//             orbitDb: orbitDbNode,
-//             databaseName: 'testDb2',
-//             databaseType: OrbitDbTypes.EVENTS,
-//         };
-
-//         const db1 = await dbManager?.open(openDbOptions1);
-//         const db2 = await dbManager?.open(openDbOptions2);
-
-//         logger({
-//             level: LogLevel.INFO,
-//             message: `Database 1 opened: ${db1?.process.address.toString()}`
-//         });
-
-//         logger({
-//             level: LogLevel.INFO,
-//             message: `Database 2 opened: ${db2?.process.address.toString()}`
-//         });
-
-//         expect(db1?.id).to.be.not.null;
-//         expect(db2?.id).to.be.not.null;
-
-//         await dbManager?.manager.closeAllNodes();
-//     });
-// });
+    afterEach(async () => {
+        await db.process.close();
+        db = null;
+    });
+});

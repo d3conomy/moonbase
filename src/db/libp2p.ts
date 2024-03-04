@@ -54,9 +54,9 @@ const defaultLibp2pOptions = (): Libp2pOptions => {
         },
         transports: [
             webSockets(),
-            // webTransport(),
+            webTransport(),
             tcp(),
-            // webRTC(),
+            webRTC(),
             circuitRelayTransport({
                 discoverRelays: 2
             }),
@@ -118,10 +118,7 @@ class _Libp2pOptions {
     }) {
         this.processOptions = processOptions ? processOptions : defaultLibp2pOptions()
     }
-
 }
-
-
 
 const createLibp2pProcess = async (options?: _Libp2pOptions): Promise<Libp2p> => {
     if (!options) {
@@ -148,7 +145,6 @@ class Libp2pProcess
         options?: _Libp2pOptions
     }) {
         super({})
-        this.type = Component.LIBP2P
         this.id = id ? id : new IdReference({component: Component.LIBP2P})
         this.process = process
         this.options = options
