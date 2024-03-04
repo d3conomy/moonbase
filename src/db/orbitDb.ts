@@ -124,23 +124,32 @@ class OrbitDbProcess
         this.id = id ? id : new IdReference({ component: Component.ORBITDB });
         this.process = process;
         this.options = options;
+
+        if (!this.process && !this.options) {
+            logger({
+                level: LogLevel.ERROR,
+                component: Component.ORBITDB,
+                code: ResponseCode.NOT_FOUND,
+                message: `No OrbitDb process or options found`
+            })
+            new Error(`No OrbitDb process or options found`)
+        }
     }
 
     public async init(): Promise<void> {
         if (this.process) {
             return;
         }
-
         if (!this.options) {
-            this.options = new _OrbitDbOptions({
-                ipfs: new IpfsProcess({}),
-                enableDID: false
-            });
+            logger({
+                level: LogLevel.ERROR,
+                component: Component.ORBITDB,
+                code: ResponseCode.NOT_FOUND,
+                message: `No OrbitDb options found`
+            })
+            return;
         }
-
-        if (!this.process) {
-            this.process = await createOrbitDbProcess(this.options);
-        }
+        this.process = await createOrbitDbProcess(this.options);
     }
 }
 

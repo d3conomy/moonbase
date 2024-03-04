@@ -68,7 +68,7 @@ const openDb = async ({
     }
 }
 
-class OpendDb
+class OpenDb
     extends _BaseProcess
     implements _IBaseProcess
 {
@@ -93,7 +93,6 @@ class OpendDb
     public async init(): Promise<void> {
         if (this.process) {
             this.status = new _Status({
-                // stage: this.process.ipfs.libp2p.status,
                 message: `Database process already initialized`
             });
             return;
@@ -108,11 +107,41 @@ class OpendDb
         if (!this.process) {
             this.process = await openDb(this.options);
             this.status = new _Status({
-                // stage: this.process.ipfs.libp2p.status,
                 message: `Database process initialized`
             });
         }
     }
+
+    public async stop(): Promise<void> {
+        if (this.process) {
+            await this.process.close();
+            this.status = new _Status({
+                message: `Database process closed`
+            });
+        }
+    }
+
+    public async add(data: any): Promise<string> {
+        return await this.process?.add(data);
+    }
+
+    public async all(): Promise<any> {
+        return await this.process?.all();
+    }
+
+    public async get(hash: string): Promise<any> {
+        return await this.process?.get(hash);
+    }
+
+    public async put(key: string, value: any): Promise<string> {
+        return await this.process?.put(key, value);
+    }
+
+    public async del(key: string): Promise<void> {
+        await this.process?.del(key);
+    }
+
+
 }
 
 
@@ -121,6 +150,6 @@ export {
     OrbitDbTypes,
     _OpenDbOptions,
     openDb,
-    OpendDb
+    OpenDb
 }
 

@@ -1,6 +1,6 @@
 
 import {
-    OpendDb,
+    OpenDb,
     OrbitDbTypes,
     _OpenDbOptions
 } from '../db/open.js';
@@ -29,14 +29,17 @@ import { IpfsProcess, _IpfsOptions } from '../db/ipfs.js';
 
 
 describe('OpenDb', () => {
-    let db: typeof Database | null = null;
+    let db: OpenDb;
+    let ipfs: IpfsProcess;
+    let orbitDb: OrbitDbProcess;
+    let libp2p: Libp2pProcess;
 
-    it('should open a database', async () => {
-        const libp2p = new Libp2pProcess({});
+    beforeEach( async () => {
+        libp2p = new Libp2pProcess({});
 
         await libp2p.init();
 
-        const ipfs = new IpfsProcess({
+        ipfs = new IpfsProcess({
             options: new _IpfsOptions({
                 libp2p
             })
@@ -45,7 +48,7 @@ describe('OpenDb', () => {
         await ipfs.init();
         await ipfs.start();
 
-        const orbitDb = new OrbitDbProcess({
+        orbitDb = new OrbitDbProcess({
             id: new IdReference({
                 component: Component.ORBITDB
             }),
@@ -55,32 +58,82 @@ describe('OpenDb', () => {
         });
 
         await orbitDb.init();
+    });
 
+    it('should open a database', async () => {
+        
         const dbOptions = new _OpenDbOptions({
             orbitDb,
         });
 
-        db = new OpendDb({options: dbOptions});
+        db = new OpenDb({options: dbOptions});
 
         await db.init();
 
         expect(db.process).to.be.not.null;
         expect(db.process.address).to.be.not.null;
-        // expect(db?.address).to.be.a('string');
-        // expect(db.address).to.be.not.empty;
 
         logger({
             level: LogLevel.INFO,
             message: `Database address: ${db.process.address}`
         });
 
-        await orbitDb.stop();
-        await ipfs.stop();
-        await libp2p.stop();
+        const cid = await db.add('hello');
+        logger({
+            level: LogLevel.INFO,
+            message: `Test cid: ${cid}`
+        });
+
+        const testGet = await db.get(cid);
+        logger({
+            level: LogLevel.INFO,
+            message: `Test get: ${testGet}`
+        });
+
+        const all = await db.all();
+        logger({
+            level: LogLevel.INFO,
+            message: `All: ${JSON.stringify(all)}`
+        });
+    });
+
+    it('should open a keyvalue database', async () => {
+        const dbOptions = new _OpenDbOptions({
+            orbitDb,
+            databaseType: OrbitDbTypes.KEYVALUE
+        });
+
+        db = new OpenDb({options: dbOptions});
+
+        await db.init();
+
+        expect(db.process).to.be.not.null;
+        expect(db.process.address).to.be.not.null;
+
+        logger({
+            level: LogLevel.INFO,
+            message: `Database address: ${db.process.address}`
+        });
+
+        const cid = await db.put('hello', 'world');
+        logger({
+            level: LogLevel.INFO,
+            message: `Test cid: ${'cid'}`
+        });
+
+        const testGet = await db.get('hello');
+        logger({
+            level: LogLevel.INFO,
+            message: `Test get: ${testGet}`
+        });
+
+        await db.del('hello');
     });
 
     afterEach(async () => {
-        await db.process.close();
-        db = null;
-    });
+        await db.stop();
+        await orbitDb.stop();
+        await ipfs.stop();
+        await libp2p.stop();
+    })
 });
