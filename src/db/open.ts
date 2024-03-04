@@ -137,8 +137,16 @@ class OpenDb
         return await this.process?.put(key, value);
     }
 
+    public async putDoc(doc: any): Promise<string> {
+        return await this.process?.put(doc);
+    }
+
     public async del(key: string): Promise<void> {
         await this.process?.del(key);
+    }
+
+    public async query(mapper: any): Promise<any> {
+        return await this.process?.query(mapper);
     }
 
 

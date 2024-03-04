@@ -87,6 +87,20 @@ class LunarPod {
     }: {
         orbitDbOptions?: _OrbitDbOptions
     }): Promise<void> {
+        if (!this.ipfs) {
+            await this.initIpfs({});
+        }
+        else if (orbitDbOptions && !orbitDbOptions.ipfs) {
+            orbitDbOptions.ipfs = this.ipfs;
+        }
+        else if (orbitDbOptions && !orbitDbOptions.ipfs && this.ipfs) {
+            orbitDbOptions.ipfs = this.ipfs;
+        }
+        else {
+            orbitDbOptions = new _OrbitDbOptions({
+                ipfs: this.ipfs
+            });
+        }
         if (!this.orbitDb) {
             this.orbitDb = new OrbitDbProcess({
                 id: new IdReference({

@@ -63,21 +63,24 @@ describe('LunarPod', () => {
         await peer?.ipfs?.process?.libp2p.stop();
     })
 
-    // it('should create an OrbitDB instance', async () => {
-    //     await peer?.initLibp2p({});
-    //     await peer?.initIpfs({});
-    //     expect(peer).to.be.not.null;
-    //     expect(peer?.id).to.be.not.null;
-    //     expect(peer?.libp2p).to.be.not.null;
-    //     expect(peer?.ipfs).to.be.not.null;
-    //     expect(peer?.orbitDb).to.be.undefined;
-    //     expect(peer?.db).to.be.undefined;
+    it('should create an OrbitDB instance', async () => {
+        await peer?.initLibp2p({});
+        await peer?.initIpfs({});
+        await peer?.initOrbitDb({});
+        expect(peer).to.be.not.null;
+        expect(peer?.id).to.be.not.null;
+        expect(peer?.libp2p).to.be.not.null;
+        expect(peer?.ipfs).to.be.not.null;
+        expect(peer?.orbitDb).to.be.not.null;
+        expect(peer?.db).to.be.undefined;
 
-    //     logger({
-    //         level: LogLevel.INFO,
-    //         message: `Peer id: ${peer?.libp2p?.peerId()}`
-    //     })
+        logger({
+            level: LogLevel.INFO,
+            message: `Peer id: ${peer?.libp2p?.peerId()}`
+        })
 
-    //     await peer?.libp2p?.stop();
-    // })
+        await peer?.orbitDb?.stop()
+        await peer?.ipfs?.stop();
+        await peer?.libp2p?.stop();
+    })
 })

@@ -130,6 +130,39 @@ describe('OpenDb', () => {
         await db.del('hello');
     });
 
+    it('should open a document database', async () => {
+        const dbOptions = new _OpenDbOptions({
+            orbitDb,
+            databaseType: OrbitDbTypes.DOCUMENTS
+        });
+
+        db = new OpenDb({options: dbOptions});
+
+        await db.init();
+
+        expect(db.process).to.be.not.null;
+        expect(db.process.address).to.be.not.null;
+
+        logger({
+            level: LogLevel.INFO,
+            message: `Database address: ${db.process.address}`
+        });
+
+        const cid = await db.putDoc({'_id': 'hello', 'value': 'world'});
+        logger({
+            level: LogLevel.INFO,
+            message: `Test cid: ${cid}`
+        });
+
+        const testGet = await db.get('hello');
+        logger({
+            level: LogLevel.INFO,
+            message: `Test get: ${JSON.stringify(testGet)}`
+        });
+
+        await db.del('hello');
+    });
+
     afterEach(async () => {
         await db.stop();
         await orbitDb.stop();

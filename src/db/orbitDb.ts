@@ -86,9 +86,6 @@ class _OrbitDbOptions {
     }
 }
 
-
-
-
 const createOrbitDbProcess = async (options: _OrbitDbOptions): Promise<typeof OrbitDb> => {
    if (options.enableDID) {
         return await createOrbitDB({
@@ -102,7 +99,6 @@ const createOrbitDbProcess = async (options: _OrbitDbOptions): Promise<typeof Or
         ipfs: options.ipfs.process
     });
 }
-
 
 class OrbitDbProcess
     extends _BaseProcess
