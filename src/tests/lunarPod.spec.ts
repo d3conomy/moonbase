@@ -27,7 +27,7 @@ describe('LunarPod', () => {
         expect(peer?.libp2p).to.be.not.null;
         expect(peer?.ipfs).to.be.undefined;
         expect(peer?.orbitDb).to.be.undefined;
-        expect(peer?.db).to.be.undefined;
+        expect(peer?.db.size).to.be.equal(0);
 
         logger({
             level: LogLevel.INFO,
@@ -52,7 +52,7 @@ describe('LunarPod', () => {
         expect(peer?.libp2p).to.be.not.null;
         expect(peer?.ipfs).to.be.not.null;
         expect(peer?.orbitDb).to.be.undefined;
-        expect(peer?.db).to.be.undefined;
+        expect(peer?.db.size).to.be.equal(0);
 
 
         await peer?.libp2p?.start();
@@ -73,7 +73,7 @@ describe('LunarPod', () => {
         expect(peer?.libp2p).to.be.not.null;
         expect(peer?.ipfs).to.be.not.null;
         expect(peer?.orbitDb).to.be.not.null;
-        expect(peer?.db).to.be.undefined;
+        expect(peer?.db.size).to.be.equal(0);
 
         logger({
             level: LogLevel.INFO,
@@ -96,16 +96,13 @@ describe('LunarPod', () => {
         expect(peer?.libp2p).to.be.not.null;
         expect(peer?.ipfs).to.be.not.null;
         expect(peer?.orbitDb).to.be.not.null;
-        expect(peer?.db).to.be.not.null;
+        expect(peer?.db.size).to.be.equal(1);
 
         logger({
             level: LogLevel.INFO,
             message: `Peer id: ${peer?.libp2p?.peerId()}`
         })
 
-        await peer?.db?.stop();
-        await peer?.orbitDb?.stop()
-        await peer?.ipfs?.stop();
-        await peer?.libp2p?.stop();
+        await peer?.stop();
     });
 })

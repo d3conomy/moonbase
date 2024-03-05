@@ -12,7 +12,7 @@ const podBay = new PodBay();
  * /api/v0/pods:
  *  get:
  *   tags:
- *    - pods
+ *    - pod bay
  *   description: Return the list of pods in the pod bay
  *   responses:
  *    200:
@@ -45,7 +45,7 @@ router.get('/pods', async function(req: Request, res: Response) {
  * /api/v0/pods:
  *  post:
  *   tags:
- *    - pods
+ *    - pod bay
  *   requestBody:
  *    description: Pod ID
  *    required: false
@@ -87,7 +87,7 @@ router.post('/pods', async function(req: Request, res: Response) {
  * /api/v0/pods:
  *  delete:
  *   tags:
- *    - pods
+ *    - pod bay
  *   description: Delete a pod by ID
  *   requestBody:
  *    description: Pod ID
@@ -118,79 +118,54 @@ router.delete('/pods', async function(req: Request, res: Response) {
     });
 });
 
-// /**
-//  * @openapi
-//  * /api/v0/manage/nodes/{id}:
-//  *  get:
-//  *   tags:
-//  *    - nodes
-//  *   description: Get a node by ID
-//  *   parameters:
-//  *    - in: path
-//  *      name: id
-//  *      required: true
-//  *      schema:
-//  *       type: string
-//  *      description: Node ID
-//  *    - in: query
-//  *      name: command
-//  *      required: false
-//  *      schema:
-//  *       type: string
-//  *      description: Command to execute  [ multiaddrs | ... ] 
-//  *   responses:
-//  *    200:
-//  *     description: A successful response
-//  *     content:
-//  *      application/json:
-//  *       schema:
-//  *        type: object
-//  *     example: /or
-//  * */
-// router.get('/manage/nodes/:id', async function(req: Request, res: Response) {
-//     const nodeId = req.params.id;
-//     const commandQuery = req.query.command;
+/**
+ * @openapi
+ * /api/v0/pod/{id}:
+ *  get:
+ *   tags:
+ *    - pod
+ *   description: Get a node by ID
+ *   parameters:
+ *    - in: path
+ *      name: id
+ *      required: true
+ *      schema:
+ *       type: string
+ *      example: "TestPod"
+ *      description: Node ID
+ *    - in: query
+ *      name: command
+ *      required: false
+ *      schema:
+ *       type: string
+ *      description: Command to execute  [ multiaddrs | ... ] 
+ *   responses:
+ *    200:
+ *     description: A successful response
+ *     content:
+ *      application/json:
+ *       schema:
+ *        type: object
+ *     example: /or
+ * */
+router.get('/pod/:id', async function(req: Request, res: Response) {
+    const podId = req.params.id;
+    const command = req.query.command;
+    const pod = podBay.getPod(new IdReference({id: podId, component: Component.POD}));
 
-//     const node = db.manager.getNode(nodeId);
-
-//     if (!node) {
-//         res.send({
-//             message: `Node not found`,
-//             nodeId: nodeId
-//         });
-//     }
-
-//     if (!commandQuery) {
-//         res.send({
-//             nodeId: node?.id,
-//             nodeType: node?.type,
-//         });
-//     }
-
-//     if (commandQuery === 'multiaddrs') {
-//         const command = new Command({
-//             nodeId: nodeId,
-//             type: Component.LIBP2P,
-//             action: 'multiaddrs'
-//         });
-//         const multiaddrs = await db.executeCommand(command);
-//         res.send({
-//             nodeId: nodeId,
-//             multiaddrs: multiaddrs.output
-//         });
-//     }
-//     else {
-//         res.send({
-//             nodeId: nodeId,
-//             nodeType: node?.type,
-//             message: `Command not found: ${commandQuery}`
-//         });
-    
-//     }
-
-// });
+    if (command === 'multiaddrs') {
+        res.send(
+            pod?.libp2p?.getMultiaddrs()
+        );
+    } else {
+        res.send(
+            pod?.getComponents()
+        );
+    }
+});
 
 
 export {
-    router as podBayRouter
+    router as podBayRouter,
+    podBay
 };

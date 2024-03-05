@@ -21,7 +21,7 @@ class LunarPod {
     public libp2p?: Libp2pProcess;
     public ipfs?: IpfsProcess;
     public orbitDb?: OrbitDbProcess;
-    public db?: OpenDb;
+    public db: Map<string, OpenDb> = new Map<string, OpenDb>();
 
     constructor({
         id,
@@ -53,14 +53,14 @@ class LunarPod {
             this.libp2p?.id,
             this.ipfs?.id,
             this.orbitDb?.id,
-            this.db?.id
+            this.db?.forEach(db => db.id)
         ].filter(id => id !== undefined) as Array<IdReference>;
 
         const componentStatuses = [
             this.libp2p?.checkStatus(),
             this.ipfs?.status,
             this.orbitDb?.status,
-            this.db?.status
+            this.db?.forEach(db => db.status)
         ].filter(status => status !== undefined) as Array<_Status>;
 
         return componentIds.map((id, index) => {
@@ -252,20 +252,33 @@ class LunarPod {
                 orbitDb: this.orbitDb
             });
         }
-        if (!this.db) {
-            this.db = new OpenDb({
-                id: new IdReference({
-                    component: Component.DB
-                }),
-                options: openDbOptions
-            });
+
+        if (openDbOptions) {
+            // check if the orbitdb is already open
+            if (this.db.has(openDbOptions.databaseName)) {
+                return;
+            }
         }
-        await this.db.init();
+
+        const db = new OpenDb({
+            id: new IdReference({
+                component: Component.DB
+            }),
+            options: openDbOptions
+        });
+
+        await db.init();
+
+        const orbitDbName = db.options?.orbitDb?.id.getId() ? db.options?.orbitDb?.id.getId() : new IdReference({ component: Component.DB }).getId();
+
+        this.db.set(orbitDbName , db);
     }
 
     public async stop(): Promise<void> {
         if (this.db) {
-            await this.db.stop();
+            this.db.forEach(async db => {
+                await db.stop();
+            });
         }
         if (this.orbitDb) {
             await this.orbitDb.stop();
@@ -283,7 +296,7 @@ class LunarPod {
             libp2p: this.libp2p?.checkStatus(), 
             ipfs: this.ipfs?.status,
             orbitdb: this.orbitDb?.status,
-            db: this.db?.status
+            db: this.db?.forEach(db => db.status)
         }
     }
 }
