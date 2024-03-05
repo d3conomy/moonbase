@@ -4,8 +4,7 @@ import { logger } from "../utils/logBook.js";
 import { LogLevel } from "../utils/constants.js";
 
 
-
-class Db {
+class PodBay {
     public pods: Array<LunarPod>;
 
     constructor(pods?: Array<LunarPod>) {
@@ -56,4 +55,4 @@ class Db {
     }
 }
 
-export { Db };
+export { PodBay };

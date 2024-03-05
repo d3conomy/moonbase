@@ -1,12 +1,12 @@
-import { Db } from "../db/index.js";
+import { PodBay } from "../db/index.js";
 import { LunarPod } from "../db/pod.js";
 import { expect } from "chai";
 
-describe('Db', async () => {
-    let db: Db;
+describe('PodBay', async () => {
+    let db: PodBay;
 
-    it('should create a new Db instance', async () => {
-        db = new Db();
+    it('should create a new PodBay instance', async () => {
+        db = new PodBay();
         expect(db).to.be.not.null;
         expect(db.pods).to.be.not.null;
         expect(db.pods).to.be.an('array');
