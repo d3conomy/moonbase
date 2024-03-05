@@ -56,7 +56,7 @@ const defaultLibp2pOptions = (): Libp2pOptions => {
             webSockets(),
             webTransport(),
             tcp(),
-            webRTC(),
+            // webRTC(),
             circuitRelayTransport({
                 discoverRelays: 2
             }),
@@ -155,6 +155,10 @@ class Libp2pProcess
             this.process = await createLibp2pProcess(this.options)
         }
         this.status = new _Status({stage: this.process?.status, message: `Libp2p process initialized`})
+    }
+
+    public checkStatus(): _Status {
+        return this.process?.status ? new _Status({stage: this.process.status}) : new _Status({message: `Libp2p process status not found`})
     }
 
     public peerId(): string {

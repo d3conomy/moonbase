@@ -6,6 +6,7 @@ import { IdReference } from "../utils/id.js";
 import { OrbitDbProcess, _OrbitDbOptions } from "./orbitDb.js";
 import { OpenDb, _OpenDbOptions } from "./open.js";
 import { logger } from "../utils/logBook.js";
+import { _Status } from "./base.js";
 
 
 const isComponent = (component: string): Component => {
@@ -47,13 +48,27 @@ class LunarPod {
         }
     }
 
-    public getComponents(): Array<IdReference> {
-        return [
+    public getComponents(): Array<{id: IdReference, status: _Status}> {
+        const componentIds = [
             this.libp2p?.id,
             this.ipfs?.id,
             this.orbitDb?.id,
             this.db?.id
         ].filter(id => id !== undefined) as Array<IdReference>;
+
+        const componentStatuses = [
+            this.libp2p?.status,
+            this.ipfs?.status,
+            this.orbitDb?.status,
+            this.db?.status
+        ].filter(status => status !== undefined) as Array<_Status>;
+
+        return componentIds.map((id, index) => {
+            return {
+                id,
+                status: componentStatuses[index]
+            }
+        });
     }
 
     private async initAll(): Promise<void> {
@@ -260,6 +275,15 @@ class LunarPod {
         }
         if (this.libp2p) {
             await this.libp2p.stop();
+        }
+    }
+
+    public status(): {} {
+        return {
+            libp2p: this.libp2p?.status, 
+            ipfs: this.ipfs?.status,
+            orbitdb: this.orbitDb?.status,
+            db: this.db?.status
         }
     }
 }

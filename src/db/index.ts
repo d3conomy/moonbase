@@ -2,6 +2,7 @@ import { LunarPod } from "./pod.js";
 import { IdReference } from "../utils/id.js";
 import { logger } from "../utils/logBook.js";
 import { Component, LogLevel } from "../utils/constants.js";
+import { _IBaseStatus, _Status } from "./base.js";
 
 
 class PodBay {
@@ -89,6 +90,13 @@ class PodBay {
         }
         else {
             throw new Error(`Pod with id ${id.getId()} not found`);
+        }
+    }
+
+    public getStatus(id: IdReference): _Status | undefined {
+        const pod = this.getPod(id);
+        if (pod && pod.libp2p) {
+            return pod.libp2p.status;
         }
     }
 }

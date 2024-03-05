@@ -17,7 +17,7 @@ const createDbId = (dbType: string, dbName: string) => {
 }
 
 class IdReference {
-    public id: string;
+    public name: string;
     public component: Component;
 
     constructor({
@@ -29,10 +29,10 @@ class IdReference {
     }) {
         this.component = component;
         if (id) {
-            this.id = id;
+            this.name = id;
         }
         else {
-            this.id = this.randomId();
+            this.name = this.randomId();
         }
     }
 
@@ -40,7 +40,7 @@ class IdReference {
         if (component) {
             return `${this.component}-${this.randomId()}`;
         }
-        return this.id;
+        return this.name;
         
     }
 

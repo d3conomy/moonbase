@@ -26,7 +26,7 @@ const podBay = new PodBay();
 router.get('/pods', async function(req: Request, res: Response) {
     const podIds = podBay.pods.map(pod => pod.id);
     const podComponents = podBay.pods.map(pod => pod.getComponents());
-    
+
     const pods = podIds.map((id, index) => {
         return {
             pod: id.getId(),
@@ -34,9 +34,9 @@ router.get('/pods', async function(req: Request, res: Response) {
         }
     });
 
-    res.send({
-        pods: pods
-    });
+    res.send(
+        pods
+    );
 });
 
 
@@ -82,37 +82,41 @@ router.post('/pods', async function(req: Request, res: Response) {
 });
 
 
-// /**
-//  * @openapi
-//  * /api/v0/manage/nodes/{id}:
-//  *  delete:
-//  *   tags:
-//  *    - nodes
-//  *   description: Delete a node by ID
-//  *   parameters:
-//  *    - in: path
-//  *      name: id
-//  *      required: true
-//  *      schema:
-//  *       type: string
-//  *      description: Node ID
-//  *   responses:
-//  *    200:
-//  *     description: A successful response
-//  *     content:
-//  *      application/json:
-//  *       schema:
-//  *        type: object
-//  *     example: /or
-//  * */
-// router.delete('/manage/nodes/:id', async function(req: Request, res: Response) {
-//     const nodeId = req.params.id;
-//     await db.manager.closeNode(nodeId);
-//     res.send({
-//         message: `Node deleted`,
-//         nodeId: nodeId
-//     });
-// });
+/**
+ * @openapi
+ * /api/v0/pods:
+ *  delete:
+ *   tags:
+ *    - pods
+ *   description: Delete a pod by ID
+ *   requestBody:
+ *    description: Pod ID
+ *    required: false
+ *    content:
+ *     application/json:
+ *      schema:
+ *       type: object
+ *       properties:
+ *        id:
+ *         type: string
+ *         example: "TestPod"
+ *   responses:
+ *    200:
+ *     description: A successful response
+ *     content:
+ *      application/json:
+ *       schema:
+ *        type: object
+ *     example: /or
+ * */
+router.delete('/pods', async function(req: Request, res: Response) {
+    const nodeId = req.body.id;
+    await podBay.removePod(new IdReference({id: nodeId, component: Component.POD}));
+    res.send({
+        message: `Node deleted`,
+        nodeId: nodeId
+    });
+});
 
 // /**
 //  * @openapi
