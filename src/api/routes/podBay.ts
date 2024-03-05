@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 
 import { PodBay } from '../../db/index.js';
 import { Component } from '../../utils/constants.js';
+import { IdReference } from '../../utils/id.js';
 
 const router = express.Router();
 const podBay = new PodBay();
@@ -11,8 +12,8 @@ const podBay = new PodBay();
  * /api/v0/pods:
  *  get:
  *   tags:
- *    - nodes
- *   description: Initialize the database
+ *    - pods
+ *   description: Return the list of pods in the pod bay
  *   responses:
  *    200:
  *     description: A successful response
@@ -27,95 +28,47 @@ router.get('/pods', async function(req: Request, res: Response) {
     res.send(podIds);
 });
 
-// /**
-//  * @openapi
-//  * /api/v0/manage/nodes:
-//  *  get:
-//  *   tags:
-//  *    - nodes
-//  *   description: Get all nodes
-//  *   responses:
-//  *    200:
-//  *     description: A successful response
-//  *     content:
-//  *      application/json:  
-//  *       schema:
-//  *        type: object 
-//  *     example: /or
-//  * */
-// router.get('/manage/nodes', function(req: Request, res: Response) {
-//     db.manager.getAllNodes()
 
-//     const nodes = db.manager.getAllNodes().map((node) => node.id);
-    
-//     res.send(nodes);
-// });
-
-
-// /**
-//  * @openapi
-//  * /api/v0/manage/nodes:
-//  *  post:
-//  *   tags:
-//  *    - nodes
-//  *   requestBody:
-//  *    description: Node ID
-//  *    required: false
-//  *    content:
-//  *     application/json:
-//  *      schema:
-//  *       type: object
-//  *       properties:
-//  *        id:
-//  *         type: string
-//  *         example: "myNode1"
-//  *        type:
-//  *         type: string
-//  *         example: "ipfs"
-//  *        dependency:
-//  *         type: string
-//  *         example: "libp2p"
-//  *   description: Create a new node
-//  *   responses:
-//  *    200:
-//  *     description: A successful response
-//  *     content:
-//  *      application/json:
-//  *       schema:
-//  *        type: object
-//  *     example: /or
-//  */
-// router.post('/manage/nodes', async function(req: Request, res: Response) {
-//     const nodeId = req.body.id;
-//     const nodeType = req.body.type;
-//     const nodeDependency = req.body.dependency;
-
-//     switch(nodeType) {
-//         case 'libp2p':
-//             await db.createLibp2pNode({
-//                 libp2pNodeId: nodeId,
-//             });
-//             break;
-//         case 'ipfs':
-//             await db.createIpfsNode({
-//                 ipfsNodeId: nodeId,
-//                 libp2pNodeId: nodeDependency
-//             });
-//             break;
-//         case 'orbitdb':
-//             await db.createOrbitDbNode({
-//                 orbitDbNodeId: nodeId,
-//                 ipfsNodeId: nodeDependency
-//             });
-//             break;
-//     }
-//     res.send({
-//         message: `Node created`,
-//         nodeId: nodeId,
-//         nodeType: nodeType,
-//         nodeDependency: nodeDependency
-//     });
-// });
+/**
+ * @openapi
+ * /api/v0/pods:
+ *  post:
+ *   tags:
+ *    - pods
+ *   requestBody:
+ *    description: Pod ID
+ *    required: false
+ *    content:
+ *     application/json:
+ *      schema:
+ *       type: object
+ *       properties:
+ *        id:
+ *         type: string
+ *         example: "TestPod"
+ *        component:
+ *         type: string
+ *         example: "ipfs"
+ *   description: Creates a new pod
+ *   responses:
+ *    200:
+ *     description: A successful response
+ *     content:
+ *      application/json:
+ *       schema:
+ *        type: object
+ *     example: /or
+ */
+router.post('/pods', async function(req: Request, res: Response) {
+    const id = req.body.id;
+    const component = req.body.component ? req.body.component : Component.ORBITDB;
+    await podBay.newPod(new IdReference({id, component: Component.POD}), component);
+    res.send({
+        message: `Pod created`,
+        podId: id,
+        component: component
+    });
+});
 
 
 // /**

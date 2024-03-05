@@ -49,7 +49,7 @@ describe('PodBay', async () => {
     });
 
     it('should create a new pod', async () => {
-        const podId = db.newPod();
+        const podId = await db.newPod();
         expect(db.pods).to.include(db.getPod(podId));
     });
 });

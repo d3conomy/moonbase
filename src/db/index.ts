@@ -1,7 +1,7 @@
 import { LunarPod } from "./pod.js";
 import { IdReference } from "../utils/id.js";
 import { logger } from "../utils/logBook.js";
-import { LogLevel } from "../utils/constants.js";
+import { Component, LogLevel } from "../utils/constants.js";
 
 
 class PodBay {
@@ -15,14 +15,30 @@ class PodBay {
         return this.pods.map(pod => pod.id);
     }
 
-    public checkPodId(id: IdReference): boolean {
+    public checkPodId(id?: IdReference): boolean {
+        if (!id) {
+            throw new Error('IdReference is undefined');
+        }
+
         return this.podIds().includes(id);
     }
 
-    public newPod(): IdReference {
-        const pod = new LunarPod({});
-        this.addPod(pod);
-        return pod.id;
+    public async newPod(id?: IdReference, component?: Component): Promise<IdReference> {
+        if (!id) {
+            id = new IdReference({ component: Component.POD });
+        }
+        if (id && !this.checkPodId(id)) {
+
+            let pod = new LunarPod({id});
+            if (component) {
+                await pod.init(component as Component);
+            }
+            this.addPod(pod);
+            return pod.id;
+        }
+        else {
+            throw new Error(`Pod with id ${id?.getId()} already exists`);
+        }
     }
 
     public addPod(pod: LunarPod): void {

@@ -40,7 +40,7 @@ class LunarPod {
         }
     }
 
-    public async init(): Promise<void> {
+    private async initAll(): Promise<void> {
         if (!this.libp2p) {
             await this.initLibp2p({});
         }
@@ -49,6 +49,28 @@ class LunarPod {
         }
         if (!this.orbitDb) {
             await this.initOrbitDb({});
+        }
+    }
+
+    public async init(component: Component = Component.ORBITDB): Promise<void> {
+        switch (component) {
+            case Component.LIBP2P:
+                await this.initLibp2p({});
+                break;
+            case Component.IPFS:
+                await this.libp2p?.start();
+                await this.initIpfs({});
+                break;
+            case Component.ORBITDB:
+                await this.libp2p?.start();
+                await this.initOrbitDb({});
+                break;
+            case Component.DB:
+                await this.initOpenDb({});
+                break;
+            default:
+                await this.initAll();
+                break;
         }
     }
 
@@ -107,6 +129,7 @@ class LunarPod {
             });
         }
         await this.libp2p.init();
+        await this.libp2p.start();
     }
 
     public async initIpfs({
