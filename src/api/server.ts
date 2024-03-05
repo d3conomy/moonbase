@@ -4,7 +4,7 @@ import swaggerJsdoc from 'swagger-jsdoc';
 
 import {
     // libp2pRouter,
-    managerRouter,
+    podBayRouter,
     metricsRouter,
     // ipfsRouter,
     // orbitdbRouter
@@ -14,7 +14,7 @@ const defaultRouters = [
     // libp2pRouter,
     // ipfsRouter,
     // orbitdbRouter,
-    managerRouter,
+    podBayRouter,
     metricsRouter
 ]
 
@@ -78,11 +78,11 @@ class ApiServer {
 
         this.app.use(express.json());
         this.app.use('/api/v0',
-            managerRouter,
-            metricsRouter
+            metricsRouter,
+            podBayRouter
         );
-        this.app.use('/api/v0/docs', swaggerUi.serve)
-        this.app.get('/api/v0/docs', swaggerUi.setup(specs, { explorer: true }))
+        this.app.use('/api/v0/docs', swaggerUi.serve);
+        this.app.get('/api/v0/docs', swaggerUi.setup(specs, { explorer: true }));
 
 
     }
