@@ -96,7 +96,7 @@ class PodBay {
     public getStatus(id: IdReference): _Status | undefined {
         const pod = this.getPod(id);
         if (pod && pod.libp2p) {
-            return pod.libp2p.status;
+            return pod.libp2p.checkStatus()
         }
     }
 }

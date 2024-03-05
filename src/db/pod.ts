@@ -57,7 +57,7 @@ class LunarPod {
         ].filter(id => id !== undefined) as Array<IdReference>;
 
         const componentStatuses = [
-            this.libp2p?.status,
+            this.libp2p?.checkStatus(),
             this.ipfs?.status,
             this.orbitDb?.status,
             this.db?.status
@@ -280,7 +280,7 @@ class LunarPod {
 
     public status(): {} {
         return {
-            libp2p: this.libp2p?.status, 
+            libp2p: this.libp2p?.checkStatus(), 
             ipfs: this.ipfs?.status,
             orbitdb: this.orbitDb?.status,
             db: this.db?.status

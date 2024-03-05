@@ -29,7 +29,7 @@ router.get('/pods', async function(req: Request, res: Response) {
 
     const pods = podIds.map((id, index) => {
         return {
-            pod: id.getId(),
+            pod: id,
             components: podComponents[index]
         }
     });

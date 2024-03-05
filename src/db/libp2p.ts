@@ -158,7 +158,10 @@ class Libp2pProcess
     }
 
     public checkStatus(): _Status {
-        return this.process?.status ? new _Status({stage: this.process.status}) : new _Status({message: `Libp2p process status not found`})
+        const status = this.process?.status ? this.process.status : "undefined"
+        const multiaddrs = this.process?.getMultiaddrs() ? this.process.getMultiaddrs() : []
+        this.status?.update({stage: status, message: `Multiaddrs: ${multiaddrs}`})
+        return this.status ? this.status : new _Status({stage: status, message: `Multiaddrs: ${multiaddrs}`})
     }
 
     public peerId(): string {
