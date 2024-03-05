@@ -6,7 +6,14 @@ import { IdReference } from "../utils/id.js";
 import { OrbitDbProcess, _OrbitDbOptions } from "./orbitDb.js";
 import { OpenDb, _OpenDbOptions } from "./open.js";
 import { logger } from "../utils/logBook.js";
-import e from "express";
+
+
+const isComponent = (component: string): Component => {
+    if (Object.values(Component).includes(component as Component)) {
+        return component as Component;
+    }
+    throw new Error('Invalid component');
+}
 
 class LunarPod {
     public id: IdReference;
@@ -40,6 +47,15 @@ class LunarPod {
         }
     }
 
+    public getComponents(): Array<IdReference> {
+        return [
+            this.libp2p?.id,
+            this.ipfs?.id,
+            this.orbitDb?.id,
+            this.db?.id
+        ].filter(id => id !== undefined) as Array<IdReference>;
+    }
+
     private async initAll(): Promise<void> {
         if (!this.libp2p) {
             await this.initLibp2p({});
@@ -50,9 +66,18 @@ class LunarPod {
         if (!this.orbitDb) {
             await this.initOrbitDb({});
         }
+        // await this.libp2p?.start();
     }
 
-    public async init(component: Component = Component.ORBITDB): Promise<void> {
+    public async init(component?: string): Promise<void> {
+        if (component) {
+            component = isComponent(component);
+        }
+        else {
+            await this.initAll();
+            return;
+        }
+
         switch (component) {
             case Component.LIBP2P:
                 await this.initLibp2p({});

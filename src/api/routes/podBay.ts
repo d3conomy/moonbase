@@ -24,8 +24,19 @@ const podBay = new PodBay();
  *     example: /or
  * */
 router.get('/pods', async function(req: Request, res: Response) {
-    const podIds = podBay.podIds();
-    res.send(podIds);
+    const podIds = podBay.pods.map(pod => pod.id);
+    const podComponents = podBay.pods.map(pod => pod.getComponents());
+    
+    const pods = podIds.map((id, index) => {
+        return {
+            pod: id.getId(),
+            components: podComponents[index]
+        }
+    });
+
+    res.send({
+        pods: pods
+    });
 });
 
 

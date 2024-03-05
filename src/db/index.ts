@@ -11,8 +11,8 @@ class PodBay {
         this.pods = pods ? pods : new Array<LunarPod>();
     }
 
-    public podIds(): Array<IdReference> {
-        return this.pods.map(pod => pod.id);
+    public podIds(): Array<string> {
+        return this.pods.map(pod => pod.id.getId());
     }
 
     public checkPodId(id?: IdReference): boolean {
@@ -20,10 +20,10 @@ class PodBay {
             throw new Error('IdReference is undefined');
         }
 
-        return this.podIds().includes(id);
+        return this.podIds().includes(id.getId());
     }
 
-    public async newPod(id?: IdReference, component?: Component): Promise<IdReference> {
+    public async newPod(id?: IdReference, component?: Component): Promise<IdReference | undefined> {
         if (!id) {
             id = new IdReference({ component: Component.POD });
         }
@@ -31,13 +31,16 @@ class PodBay {
 
             let pod = new LunarPod({id});
             if (component) {
-                await pod.init(component as Component);
+                await pod.init(component);
             }
             this.addPod(pod);
             return pod.id;
         }
         else {
-            throw new Error(`Pod with id ${id?.getId()} already exists`);
+            logger({
+                level: LogLevel.ERROR,
+                message: `Pod with id ${id.getId()} already exists`
+            });
         }
     }
 
@@ -50,8 +53,27 @@ class PodBay {
         }
     }
 
-    public getPod(id: IdReference): LunarPod | undefined {
-        return this.pods.find(pod => pod.id === id);
+    public getPod(id?: IdReference): LunarPod | undefined {
+        if (!id) {
+            logger({
+                level: LogLevel.ERROR,
+                message: `IdReference is undefined`
+            })
+        }
+        else {
+            const pod = this.pods.find(pod => pod.id.getId() === id.getId());
+            if (pod) {
+                if (pod.id.component === Component.POD) {
+                    return pod;
+                }
+            }
+            else {
+                logger({
+                    level: LogLevel.ERROR,
+                    message: `Pod with id ${id.getId()} not found`
+                });
+            }
+        }
     }
 
     public async removePod(id: IdReference): Promise<void> {
