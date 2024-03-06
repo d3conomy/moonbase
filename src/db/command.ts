@@ -20,12 +20,12 @@ const execute = async ({
         }, timeout ? timeout : 5000);
     });
 
-    const commandPromise = new Promise(async (resolve, reject) => {
+    const commandPromise = await new Promise(async (resolve, reject) => {
         try {
             switch (command) {
                 case 'connections':
                     if(pod.libp2p) {
-                        output = pod.libp2p.connections()
+                        output = pod.libp2p.connections(args?.peerId)
                     }
                     else {
                         throw new Error('Libp2p component not available')
@@ -91,7 +91,7 @@ const execute = async ({
                     if (pod.ipfs !== undefined) {
                         output = await pod.ipfs.getJson(args.cid);
 
-                        if (output.size !== undefined && output.size === 0) {
+                        if (output instanceof ) {
                             throw new Error('No data found');
                         }
                     }
@@ -110,7 +110,7 @@ const execute = async ({
     });
 
     try {
-        await Promise.race([timeoutPromise, commandPromise])
+        Promise.race([timeoutPromise, commandPromise])
     }
     catch (e: any) {
         output = e;

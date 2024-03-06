@@ -12,12 +12,13 @@ import { kadDHT, removePublicAddressesMapper } from '@libp2p/kad-dht'
 import { uPnPNAT } from '@libp2p/upnp-nat'
 import { webRTC } from '@libp2p/webrtc'
 import { bootstrap } from '@libp2p/bootstrap'
+import { peerIdFromString } from '@libp2p/peer-id'
 import { ipnsValidator } from 'ipns/validator'
 import { ipnsSelector } from 'ipns/selector'
 import { mdns } from '@libp2p/mdns'
 import { mplex } from '@libp2p/mplex'
 import { Libp2p, Libp2pOptions, createLibp2p } from 'libp2p'
-import { Libp2pStatus, PeerId, Connection, Stream} from '@libp2p/interface'
+import { Libp2pStatus, PeerId, Connection, Stream } from '@libp2p/interface'
 import { IdReference } from '../utils/id.js'
 import { Component, LogLevel, logger } from '../utils/index.js'
 import { Multiaddr, multiaddr } from '@multiformats/multiaddr'
@@ -165,7 +166,7 @@ class Libp2pProcess
     }
 
     public peerId(): PeerId | string {
-        return this.process?.peerId ? this.process.peerId : ""
+        return this.process?.peerId ? this.process.peerId.toString() : ""
     }
 
     public getMultiaddrs(): Multiaddr[] {
@@ -176,8 +177,13 @@ class Libp2pProcess
         return this.process?.getPeers() ? this.process.getPeers() : []
     }
 
-    public connections(): Connection[] {
-        return this.process?.getConnections() ? this.process.getConnections() : []
+    public connections(peerId?: string): Connection[] | undefined {
+        if (this.process && peerId) {
+            const peerIdObject = peerIdFromString(peerId)
+            return this.process.getConnections(peerIdObject)
+        }
+
+        return this.process?.getConnections()
     }
 
     public getProtocols(): string[] {

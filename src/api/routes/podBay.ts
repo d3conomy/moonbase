@@ -1,13 +1,16 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
+import timeout from "connect-timeout"
 
 import { PodBay } from '../../db/index.js';
 import { Component, LogLevel } from '../../utils/constants.js';
 import { IdReference } from '../../utils/id.js';
 import { execute } from '../../db/command.js';
 import { logger } from '../../utils/logBook.js';
+import { time } from 'console';
 
 const router = express.Router();
 const podBay = new PodBay();
+const timeoutDuration = '7s';
 
 /**
  * @openapi
@@ -151,7 +154,7 @@ router.delete('/pods', async function(req: Request, res: Response) {
  *        type: object
  *     example: /or
  * */
-router.get('/pod/:id', async function(req: Request, res: Response) {
+router.get('/pod/:id', timeout(timeoutDuration), async function(req: Request, res: Response) {
     const podId = req.params.id;
     const command = req.query.info;
     const pod = podBay.getPod(new IdReference({id: podId, component: Component.POD}));
@@ -167,15 +170,11 @@ router.get('/pod/:id', async function(req: Request, res: Response) {
     let result: any;
 
     if (command) {
-           result = await execute({pod, command: command as string});
+           res.send(await execute({pod, command: command as string}))
     }
     else {
-        result = pod.getComponents();
+        res.send(pod.getComponents())
     }
-
-    res.send(
-        result
-    );
 });
 
 
@@ -221,7 +220,7 @@ router.get('/pod/:id', async function(req: Request, res: Response) {
  *        type: object
  *     example: /or
  * */
-router.post('/pod/:id', async function(req: Request, res: Response) {
+router.post('/pod/:id', timeout(timeoutDuration), async function(req: Request, res: Response, next: NextFunction) {
     const podId = req.params.id;
     const command = req.body.command;
     const args = req.body.args;
@@ -234,13 +233,15 @@ router.post('/pod/:id', async function(req: Request, res: Response) {
         });
         return;
     }
-
-    let result = await execute({pod, command: command as string, args});
-    res.send(
-        result
-    );
+    let result;
+    try {
+        result = await execute({pod, command: command as string, args});
+    }
+    catch (e: any) {
+        next(e as Error)
+    }
+    res.send(result);
 });
-
 
 
 export {

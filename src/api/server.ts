@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response, NextFunction} from 'express';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
 
@@ -84,7 +84,10 @@ class ApiServer {
         this.app.use('/api/v0/docs', swaggerUi.serve);
         this.app.get('/api/v0/docs', swaggerUi.setup(specs, { explorer: true }));
 
-
+        this.app.use(function (err: Error, req: Request, res: Response, next: NextFunction): void {
+            console.error(err.stack);
+            res.status(500).send('Something broke!');
+        });
     }
 
     public start() {
