@@ -196,7 +196,7 @@ router.get('/pod/:id', async function(req: Request, res: Response) {
  *      description: Pod ID
  *   requestBody:
  *    description: Pod component
- *    required: false
+ *    required: true
  *    content:
  *     application/json:
  *      schema:
@@ -211,6 +211,7 @@ router.get('/pod/:id', async function(req: Request, res: Response) {
  *           address:
  *            type: string
  *            example: "/ip4/127.0.0.1/tcp/4002/p2p/QmQ9v7t"
+ *      example: {"command": "dial", "args": {"address": "/ip4/"}}
  *   responses:
  *    200:
  *     description: A successful response

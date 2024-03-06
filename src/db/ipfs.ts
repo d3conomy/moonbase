@@ -117,6 +117,7 @@ class IpfsProcess
     }
 
     public async getJson(cid: string): Promise<any | Error | undefined> {
+        let result: any
         if (this.process) {
             try {
                 const dj = dagJson(this.process)
