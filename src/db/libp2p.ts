@@ -17,7 +17,7 @@ import { ipnsSelector } from 'ipns/selector'
 import { mdns } from '@libp2p/mdns'
 import { mplex } from '@libp2p/mplex'
 import { Libp2p, Libp2pOptions, createLibp2p } from 'libp2p'
-import { Libp2pStatus } from '@libp2p/interface'
+import { Libp2pStatus, PeerId, Connection } from '@libp2p/interface'
 import { IdReference } from '../utils/id.js'
 import { Component } from '../utils/index.js'
 import { Multiaddr } from '@multiformats/multiaddr'
@@ -171,6 +171,13 @@ class Libp2pProcess
         return this.process?.getMultiaddrs() ? this.process.getMultiaddrs() : []
     }
 
+    public peers(): PeerId[] {
+        return this.process?.getPeers() ? this.process.getPeers() : []
+    }
+
+    public connections(): Connection[] {
+        return this.process?.getConnections() ? this.process.getConnections() : []
+    }
 }
 
 export {

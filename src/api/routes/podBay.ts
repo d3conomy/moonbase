@@ -134,11 +134,12 @@ router.delete('/pods', async function(req: Request, res: Response) {
  *      example: "TestPod"
  *      description: Node ID
  *    - in: query
- *      name: command
+ *      name: info
  *      required: false
  *      schema:
  *       type: string
- *      description: Command to execute  [ multiaddrs | ... ] 
+ *      description: Additional pod information  [ multiaddrs | peerid | connections | peers ... ]
+ *      example: "peerid"
  *   responses:
  *    200:
  *     description: A successful response
@@ -150,19 +151,48 @@ router.delete('/pods', async function(req: Request, res: Response) {
  * */
 router.get('/pod/:id', async function(req: Request, res: Response) {
     const podId = req.params.id;
-    const command = req.query.command;
+    const command = req.query.info;
     const pod = podBay.getPod(new IdReference({id: podId, component: Component.POD}));
 
-    if (command === 'multiaddrs') {
-        res.send(
-            pod?.libp2p?.getMultiaddrs()
-        );
-    } else {
-        res.send(
-            pod?.getComponents()
-        );
+    if (!pod) {
+        res.status(404).send({
+            message: `Pod not found`,
+            podId: podId
+        });
+        return;
+    }
+
+    switch (command) {
+        case 'multiaddrs':
+            res.send({
+                multiaddrs: pod?.libp2p?.getMultiaddrs()
+            });
+            break;
+        case 'peerid':
+            res.send({
+                peerid: pod?.libp2p?.peerId()
+            });
+            break;
+        case 'peers':
+            res.send({
+                peers: pod?.libp2p?.peers()
+            });
+            break;
+        case 'connections':
+            res.send({
+                connections: pod?.libp2p?.connections()
+            });
+            break;
+        default:
+            res.send({
+                pod: podId,
+                components: pod?.getComponents()
+            });
+            break;
     }
 });
+
+
 
 
 export {
