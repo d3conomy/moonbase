@@ -17,11 +17,12 @@ import { ipnsSelector } from 'ipns/selector'
 import { mdns } from '@libp2p/mdns'
 import { mplex } from '@libp2p/mplex'
 import { Libp2p, Libp2pOptions, createLibp2p } from 'libp2p'
-import { Libp2pStatus, PeerId, Connection } from '@libp2p/interface'
+import { Libp2pStatus, PeerId, Connection, Stream} from '@libp2p/interface'
 import { IdReference } from '../utils/id.js'
 import { Component, LogLevel, logger } from '../utils/index.js'
 import { Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import { _BaseProcess, _Status, _IBaseProcess, _IBaseStatus } from './base.js'
+
 
 
 const defaultBootstrapConfig: any = {
@@ -163,8 +164,8 @@ class Libp2pProcess
         return this.status ? this.status : new _Status({stage: status, message: `Libp2p process status checked`})
     }
 
-    public peerId(): string {
-        return this.process?.peerId.toString() ? this.process.peerId.toString() : ""
+    public peerId(): PeerId | string {
+        return this.process?.peerId ? this.process.peerId : ""
     }
 
     public getMultiaddrs(): Multiaddr[] {
@@ -179,15 +180,33 @@ class Libp2pProcess
         return this.process?.getConnections() ? this.process.getConnections() : []
     }
 
-    public async dial(address: string): Promise<Connection | Error | undefined > {
+    public getProtocols(): string[] {
+        return this.process?.getProtocols() ? this.process.getProtocols() : []
+    }
+
+    public async dial(address: string): Promise<Connection | Error | undefined> {
+        let output: Connection | undefined = undefined;
         try {
-           const output = await this.process?.dial(multiaddr(address))
-           return output
+           output = await this.process?.dial(multiaddr(address))
         }
         catch (error: any) {
-            return error
+            output = error
         }
+        return output
     }
+
+    public async dialProtocol(address: string, protocol: string): Promise<Stream | Error | undefined> {
+        let output: Stream | Error | undefined;
+        try {
+           output = await this.process?.dialProtocol(multiaddr(address), protocol)
+        }
+        catch (error: any) {
+            output = error
+        }
+        return output
+    }
+
+
 }
 
 export {

@@ -1,8 +1,10 @@
 import express, { Request, Response } from 'express';
 
 import { PodBay } from '../../db/index.js';
-import { Component } from '../../utils/constants.js';
+import { Component, LogLevel } from '../../utils/constants.js';
 import { IdReference } from '../../utils/id.js';
+import { execute } from '../../db/command.js';
+import { logger } from '../../utils/logBook.js';
 
 const router = express.Router();
 const podBay = new PodBay();
@@ -138,7 +140,7 @@ router.delete('/pods', async function(req: Request, res: Response) {
  *      required: false
  *      schema:
  *       type: string
- *      description: Additional pod information  [ multiaddrs | peerid | connections | peers ... ]
+ *      description: Additional pod information  [ multiaddrs | peerid | connections | peers | protocols ... ]
  *      example: "peerid"
  *   responses:
  *    200:
@@ -162,34 +164,18 @@ router.get('/pod/:id', async function(req: Request, res: Response) {
         return;
     }
 
-    switch (command) {
-        case 'multiaddrs':
-            res.send({
-                multiaddrs: pod?.libp2p?.getMultiaddrs()
-            });
-            break;
-        case 'peerid':
-            res.send({
-                peerid: pod?.libp2p?.peerId()
-            });
-            break;
-        case 'peers':
-            res.send({
-                peers: pod?.libp2p?.peers()
-            });
-            break;
-        case 'connections':
-            res.send({
-                connections: pod?.libp2p?.connections()
-            });
-            break;
-        default:
-            res.send({
-                pod: podId,
-                components: pod?.getComponents()
-            });
-            break;
+    let result: any;
+
+    if (command) {
+           result = await execute({pod, command: command as string});
     }
+    else {
+        result = pod.getComponents();
+    }
+
+    res.send(
+        result
+    );
 });
 
 
@@ -240,8 +226,6 @@ router.post('/pod/:id', async function(req: Request, res: Response) {
     const args = req.body.args;
     const pod = podBay.getPod(new IdReference({id: podId, component: Component.POD}));
 
-    let output = {};
-
     if (!pod) {
         res.status(404).send({
             message: `Pod not found`,
@@ -250,33 +234,10 @@ router.post('/pod/:id', async function(req: Request, res: Response) {
         return;
     }
 
-    try {
-        switch (command) {
-            case 'dial':
-                const result = await pod?.libp2p?.dial(args.address);
-                if (result instanceof Error) {
-                    throw result;
-                }
-                output = {
-                    message: `Dialing ${args.address}`,
-                    result: result
-                }
-                break;
-            default:
-                res.send({
-                    message: `Command not found`,
-                    command: command
-                });
-                break;
-        }
-        res.send(output)
-    }
-    catch (e) {
-        res.status(500).send({
-            message: `Command failed`,
-            error: e
-        });
-    }
+    let result = await execute({pod, command: command as string, args});
+    res.send(
+        result
+    );
 });
 
 

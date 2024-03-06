@@ -1,6 +1,9 @@
 import { MemoryDatastore } from "datastore-core";
 import { MemoryBlockstore } from "blockstore-core";
 import { Helia, createHelia} from "helia";
+import { dagJson } from "@helia/dag-json";
+import { dagCbor } from "@helia/dag-cbor";
+import { CID } from "multiformats";
 import { Component } from "../utils/index.js";
 import { Libp2pProcess } from "./libp2p.js";
 import { IdReference } from "../utils/id.js";
@@ -98,6 +101,30 @@ class IpfsProcess
             // await this.process.libp2p.stop()
             await this.process.stop()
             this.status?.update({stage: this.process.libp2p.status})
+        }
+    }
+
+    public async addJson(data: any): Promise<CID | Error | undefined> {
+        if (this.process) {
+            try {
+                const dj = dagJson(this.process)
+                return await dj.add(data);
+            }
+            catch (err: any) {
+                return err
+            }
+        }
+    }
+
+    public async getJson(cid: string): Promise<any | Error | undefined> {
+        if (this.process) {
+            try {
+                const dj = dagJson(this.process)
+                return await dj.get(CID.parse(cid));
+            }
+            catch (err: any) {
+                return err
+            }
         }
     }
 }
