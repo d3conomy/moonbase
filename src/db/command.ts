@@ -21,7 +21,7 @@ const execute = async ({
         switch (command) {
             case 'connections':
                 if(pod.libp2p) {
-                    output = pod.libp2p.connections(args?.peerId)
+                    return pod.libp2p.connections(args?.peerId)
                 }
                 else {
                     throw new Error('Libp2p component not available')

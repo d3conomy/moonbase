@@ -177,14 +177,35 @@ class Libp2pProcess
         return this.process?.getPeers() ? this.process.getPeers() : []
     }
 
-    public connections(peerId?: string): Connection[] | undefined {
+    public connections(peerId?: string, max: number = 10): Connection[] | undefined {
         if (this.process && peerId) {
             const peerIdObject = peerIdFromString(peerId);
             return this.process.getConnections(peerIdObject);
-
-        } else {
-            return this.process?.getConnections();
         }
+
+        const peers = this.process?.getPeers();
+        const peerConnections: Connection[] = [];
+        let counter = 0;
+        peers?.forEach((peer: PeerId) => {
+            if (counter >= max) {
+                return peerConnections
+            }
+            
+            const connections = this.process?.getConnections(peer);
+            if (connections) {
+                peerConnections.push(...connections);
+                counter += 1;
+                logger({
+                    level: LogLevel.INFO,
+                    message: `Peer: ${peer.toString()} has ${connections.length} connections`
+                })
+            }
+
+            if (counter >= peers.length) {
+                return peerConnections
+            }
+        })
+        return peerConnections
     }
 
     public getProtocols(): string[] {
