@@ -179,11 +179,12 @@ class Libp2pProcess
 
     public connections(peerId?: string): Connection[] | undefined {
         if (this.process && peerId) {
-            const peerIdObject = peerIdFromString(peerId)
-            return this.process.getConnections(peerIdObject)
-        }
+            const peerIdObject = peerIdFromString(peerId);
+            return this.process.getConnections(peerIdObject);
 
-        return this.process?.getConnections()
+        } else {
+            return this.process?.getConnections();
+        }
     }
 
     public getProtocols(): string[] {
@@ -196,7 +197,7 @@ class Libp2pProcess
            output = await this.process?.dial(multiaddr(address))
         }
         catch (error: any) {
-            output = new Error(error.message)
+            output = error
         }
         return output
     }

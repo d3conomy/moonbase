@@ -154,7 +154,7 @@ router.delete('/pods', async function(req: Request, res: Response) {
  *        type: object
  *     example: /or
  * */
-router.get('/pod/:id', timeout(timeoutDuration), async function(req: Request, res: Response) {
+router.get('/pod/:id', timeout(timeoutDuration), async function(req: Request, res: Response, next: NextFunction) {
     const podId = req.params.id;
     const command = req.query.info;
     const pod = podBay.getPod(new IdReference({id: podId, component: Component.POD}));
@@ -168,13 +168,26 @@ router.get('/pod/:id', timeout(timeoutDuration), async function(req: Request, re
     }
 
     let result: any;
-
-    if (command) {
-           res.send(await execute({pod, command: command as string}))
+    try {
+        if (command) {
+            result = await execute({pod, command: command as string})
+        }
+        else {
+            result = pod.getComponents()
+        }
     }
-    else {
-        res.send(pod.getComponents())
+    catch (e: any) {
+        result = {
+            message: `Command failed`,
+            podId: podId,
+            command: command,
+            error: e.message
+        }
+        next(result);
+        return
     }
+    
+    res.send(result);
 });
 
 
@@ -236,11 +249,24 @@ router.post('/pod/:id', timeout(timeoutDuration), async function(req: Request, r
     let result;
     try {
         result = await execute({pod, command: command as string, args});
+        res.send(result);
+        return
     }
     catch (e: any) {
-        next(e as Error)
+        result = {
+            message: `Command failed`,
+            podId: podId,
+            command: command,
+            error: e.message
+        }
+        next(result);
+        // return
+        // res.status(500).send(result);
     }
-    res.send(result);
+
+
+
+
 });
 
 
