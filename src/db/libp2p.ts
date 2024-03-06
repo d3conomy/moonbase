@@ -185,12 +185,12 @@ class Libp2pProcess
     }
 
     public async dial(address: string): Promise<Connection | Error | undefined> {
-        let output: Connection | undefined = undefined;
+        let output: Connection | Error | undefined = undefined;
         try {
            output = await this.process?.dial(multiaddr(address))
         }
         catch (error: any) {
-            output = error
+            output = new Error(error.message)
         }
         return output
     }

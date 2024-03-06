@@ -1,16 +1,4 @@
-import { Component } from "../utils/index.js"
 import { LunarPod } from "./pod.js"
-
-
-const checkPod = (pod: LunarPod, component: Component): boolean => {
-    const components = pod.getComponents();
-    components.forEach(c => {
-        if (c.id.component === component) {
-            return true;
-        }
-    });
-    return false;
-}
 
 const execute = async ({
     pod,
@@ -21,78 +9,96 @@ const execute = async ({
     command: string,
     args?: any
 }): Promise<any> => {
+    let output: any;
     try {
         switch (command) {
             case 'connections':
                 if(pod.libp2p) {
-                    return pod.libp2p.connections()
+                    output = pod.libp2p.connections()
                 }
                 else {
-                    return new Error('Libp2p component not available')
+                    throw new Error('Libp2p component not available')
                 }
+                break;
             case 'multiaddrs':
                 if(pod.libp2p) {
-                    return pod.libp2p.getMultiaddrs()
+                    output = pod.libp2p.getMultiaddrs()
                 }
                 else {
-                    return new Error('Libp2p component not available')
+                    throw new Error('Libp2p component not available')
                 }
+                break;
             case 'peerid':
                 if(pod.libp2p) {
-                    return pod.libp2p.peerId()
+                    output = pod.libp2p.peerId()
                 }
                 else {
-                    return new Error('Libp2p component not available')
+                    throw new Error('Libp2p component not available')
                 }
+                break;
             case 'peers':
                 if(pod.libp2p) {
-                    return pod.libp2p.peers()
+                    output = pod.libp2p.peers()
                 }
                 else {
-                    return new Error('Libp2p component not available')
+                    throw new Error('Libp2p component not available')
                 }
+                break;
             case 'protocols':
                 if(pod.libp2p) {
-                    return pod.libp2p.getProtocols()
+                    output = pod.libp2p.getProtocols()
                 }
                 else {
-                    return new Error('Libp2p component not available')
+                    throw new Error('Libp2p component not available')
                 }
+                break;
             case 'dial':
                 if(pod.libp2p) {
-                    return await pod.libp2p.dial(args?.address)
+                    output = await pod.libp2p.dial(args?.address)
                 }
                 else {
-                    return new Error('Libp2p component not available')
+                    throw new Error('Libp2p component not available')
                 }
+                break;
             case 'dialprotocol':
                 if (pod.libp2p) {
-                    return await pod.libp2p.dialProtocol(args.address, args.protocol);
+                    output = await pod.libp2p.dialProtocol(args.address, args.protocol);
                 }
                 else {
-                    return new Error('Libp2p component not available')
+                    throw new Error('Libp2p component not available')
                 }
+                break;
             case 'addjson':
-                if (pod.ipfs) {
-                    return await pod.ipfs.addJson(args.data);
+                if (pod.ipfs !== undefined ) {
+                    output = await pod.ipfs.addJson(args.data);
                 }
                 else {
-                    return new Error('IPFS component not available');
+                    throw new Error('IPFS component not available');
                 }
+                break;
             case 'getjson':
-                if (pod.ipfs) {
-                    return await pod.ipfs.getJson(args.cid);
+                if (pod.ipfs !== undefined) {
+                    output = await pod.ipfs.getJson(args.cid);
                 }
                 else {
-                    return new Error('IPFS component not available');
+                    throw new Error('IPFS component not available');
                 }
             default:
-                return new Error('Command not found');
+                throw new Error('Command not found');
         }
     }
     catch (e: any) {
-        return e;
+        output = e
     }
+
+    if (output instanceof Error) {
+        return {
+            error: output.message
+        };
+    }
+
+    return output;
+
 }
 
 export {
