@@ -94,7 +94,6 @@ const execute = async ({
             default:
                 throw new Error('Command not found');
         };
-        // resolve(output);
     }
     catch (e: any) {
         output = {

@@ -143,8 +143,23 @@ router.delete('/pods', async function(req: Request, res: Response) {
  *      required: false
  *      schema:
  *       type: string
- *      description: Additional pod information  [ multiaddrs | peerid | connections | peers | protocols ... ]
- *      example: "peerid"
+ *      description: Requested Pod information
+ *      examples: 
+ *       peerid:
+ *        summary: Get the peer ID
+ *        value: "peerid"
+ *       multiaddrs:
+ *        summary: Get the multiaddresses
+ *        value: "multiaddrs"
+ *       connections:
+ *        summary: Get the connections
+ *        value: "connections"
+ *       peers:
+ *        summary: Get the peers
+ *        value: "peers"
+ *       protocols:
+ *        summary: Get the protocols
+ *        value: "protocols"
  *   responses:
  *    200:
  *     description: A successful response
@@ -207,7 +222,7 @@ router.get('/pod/:id', timeout(timeoutDuration), async function(req: Request, re
  *      example: "TestPod"
  *      description: Pod ID
  *   requestBody:
- *    description: Pod component
+ *    description: Command and arguments
  *    required: true
  *    content:
  *     application/json:
@@ -216,14 +231,32 @@ router.get('/pod/:id', timeout(timeoutDuration), async function(req: Request, re
  *       properties:
  *        command:
  *         type: string
- *         example: "dial"
- *        args:
- *          type: object
- *          properties:
- *           address:
- *            type: string
- *            example: "/ip4/127.0.0.1/tcp/4002/p2p/QmQ9v7t"
- *      example: {"command": "dial", "args": {"address": "/ip4/"}}
+ *      examples: 
+ *       dial:
+ *        summary: Dial a peer
+ *        value:
+ *         command: "dial"
+ *         args:
+ *          address: "/ip4/104.131.131.82/tcp/4001/p2p/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ"
+ *       dialprotocol:
+ *        summary: Dial a peer with a protocol
+ *        value:
+ *         command: "dialprotocol"
+ *         args:
+ *          address: "/ip4/104.131.131.82/tcp/4001/p2p/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ"
+ *          protocol: "/libp2p/circuit/relay/0.2.0/hop"
+ *       addjson:
+ *        summary: Add a JSON object to IPFS
+ *        value:
+ *         command: "addjson"
+ *         args:
+ *          data: {"name": "Test"}
+ *       getjson:
+ *        summary: Get a JSON object from IPFS
+ *        value:
+ *         command: "getjson"
+ *         args:
+ *          cid: "baguqeera7q5beo5vjjs6xapkezg6hai3v2fin4es34xr7gor7unfqf6dswzq"
  *   responses:
  *    200:
  *     description: A successful response
@@ -249,8 +282,7 @@ router.post('/pod/:id', timeout(timeoutDuration), async function(req: Request, r
     let result;
     try {
         result = await execute({pod, command: command as string, args});
-        res.send(result);
-        return
+
     }
     catch (e: any) {
         result = {
@@ -260,13 +292,9 @@ router.post('/pod/:id', timeout(timeoutDuration), async function(req: Request, r
             error: e.message
         }
         next(result);
-        // return
-        // res.status(500).send(result);
+        return
     }
-
-
-
-
+    res.send(result);
 });
 
 
