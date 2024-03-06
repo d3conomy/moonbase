@@ -3,6 +3,7 @@ import { IdReference } from "../utils/id.js";
 import { logger } from "../utils/logBook.js";
 import { Component, LogLevel } from "../utils/constants.js";
 import { _IBaseStatus, _Status } from "./base.js";
+import { OrbitDbTypes, _OpenDbOptions } from "./open.js";
 
 
 class PodBay {
@@ -98,6 +99,72 @@ class PodBay {
         if (pod && pod.libp2p) {
             return pod.libp2p.checkStatus()
         }
+    }
+
+    public getAllOpenDbNames(): Array<string> {
+        const dbNames: Array<string> = [];
+        this.pods.forEach(pod => {
+            pod.db.forEach(db => {
+                dbNames.push(db.id.getId());
+            });
+        });
+        return dbNames;
+    }
+
+    public async openDb({
+        orbitDbId,
+        dbName,
+        dbType,
+        options
+    } : {
+        orbitDbId?: IdReference['name'],
+        dbName: string,
+        dbType: OrbitDbTypes,
+        options?: any
+    }): Promise<string> {
+        //get a pod with an orbitDbProcess
+        let orbitDbPod: LunarPod | undefined;
+        let openDbOptions: _OpenDbOptions;
+
+        if (orbitDbId) {
+            orbitDbPod = this.pods.find(pod => {
+                logger({
+                    level: LogLevel.INFO,
+                    message: `Checking pod ${pod.id.name} for orbitDb`
+                
+                })
+                if (pod.orbitDb) {
+                    if (pod.id.name === orbitDbId) {
+                        return pod;
+                    }
+                }
+            });
+        }
+        else {
+            orbitDbPod = this.pods.find(pod => pod.orbitDb);
+            logger({
+                level: LogLevel.INFO,
+                message: `Checking all pods for orbitDb ${orbitDbPod?.id.name}`
+            
+            })
+        }
+
+        if (!orbitDbPod) {
+            const podId = await this.newPod(new IdReference({component: Component.POD}), Component.ORBITDB);
+            // orbitDbPod = this.pods.find(pod => pod.id.getId() === podId?.getId());
+            orbitDbPod = this.getPod(podId);
+        }
+
+        if (orbitDbPod && orbitDbPod.orbitDb) {
+            openDbOptions = new _OpenDbOptions({
+                orbitDb: orbitDbPod.orbitDb,
+                databaseName: dbName,
+                databaseType: dbType,
+            });
+            return await orbitDbPod?.initOpenDb({openDbOptions});
+        }
+        return `Database ${dbName} not opened`;
+        
     }
 }
 

@@ -1,3 +1,4 @@
+import { OpenDb, _OpenDbOptions } from "./open.js"
 import { LunarPod } from "./pod.js"
 
 const execute = async ({
@@ -81,6 +82,18 @@ const execute = async ({
                 }
                 else {
                     throw new Error('IPFS component not available');
+                }
+            case 'opendb':
+                if (pod.orbitDb !== undefined) {
+                    const openDbOptions: _OpenDbOptions = {
+                        orbitDb: pod.orbitDb,
+                        databaseName: args.dbName,
+                        databaseType: args.dbType
+                    }
+                    return await pod.initOpenDb({openDbOptions});
+                }
+                else {
+                    throw new Error('OrbitDb component not available');
                 }
             default:
                 throw new Error('Command not found');

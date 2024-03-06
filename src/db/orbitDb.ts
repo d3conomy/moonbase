@@ -128,7 +128,7 @@ class OrbitDbProcess
                 code: ResponseCode.NOT_FOUND,
                 message: `No OrbitDb process or options found`
             })
-            new Error(`No OrbitDb process or options found`)
+            // new Error(`No OrbitDb process or options found`)
         }
     }
 
@@ -143,9 +143,63 @@ class OrbitDbProcess
                 code: ResponseCode.NOT_FOUND,
                 message: `No OrbitDb options found`
             })
-            return;
+            const ipfs = new IpfsProcess({});
+            await ipfs.init();
+            await ipfs.start();
+            this.options = new _OrbitDbOptions({
+                ipfs,
+                enableDID: false
+            });
         }
         this.process = await createOrbitDbProcess(this.options);
+    }
+
+    public async open({
+        databaseName,
+        databaseType
+    }: {
+        databaseName: string;
+        databaseType: string;
+    }): Promise<void> {
+        logger({
+            level: LogLevel.INFO,
+            component: Component.ORBITDB,
+            code: ResponseCode.SUCCESS,
+            message: `Opening OrbitDb process`
+        
+        })
+        if (!this.process) {
+            logger({
+                level: LogLevel.ERROR,
+                component: Component.ORBITDB,
+                code: ResponseCode.NOT_FOUND,
+                message: `No OrbitDb process found`
+            })
+            // new Error(`No OrbitDb process found`)
+        }
+        else {
+            try {
+                return await this.process.open(databaseName, {
+                    type: databaseType
+                
+                });
+            }
+            catch (error) {
+                logger({
+                    level: LogLevel.ERROR,
+                    component: Component.ORBITDB,
+                    message: `Error opening OrbitDb process: ${error}`
+                })
+                // new Error(`Error opening OrbitDb process: ${error}`)
+            }
+            
+            // logger({
+            //     level: LogLevel.INFO,
+            //     component: Component.ORBITDB,
+            //     code: ResponseCode.SUCCESS,
+            //     message: `OrbitDb process opened`
+            // })
+        }
     }
 }
 

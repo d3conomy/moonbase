@@ -7,13 +7,13 @@ import {
     podBayRouter,
     metricsRouter,
     // ipfsRouter,
-    // orbitdbRouter
+    dbRouter
 } from './routes/index.js';
 
 const defaultRouters = [
     // libp2pRouter,
     // ipfsRouter,
-    // orbitdbRouter,
+    dbRouter,
     podBayRouter,
     metricsRouter
 ]
@@ -79,7 +79,8 @@ class ApiServer {
         this.app.use(express.json());
         this.app.use('/api/v0',
             metricsRouter,
-            podBayRouter
+            podBayRouter,
+            dbRouter
         );
         this.app.use('/api/v0/docs', swaggerUi.serve);
         this.app.get('/api/v0/docs', swaggerUi.setup(specs, { explorer: true }));

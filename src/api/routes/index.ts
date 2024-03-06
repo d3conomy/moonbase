@@ -2,12 +2,12 @@
 import { metricsRouter } from "./metrics.js";
 import { podBayRouter } from "./podBay.js";
 // import { ipfsRouter } from "./ipfs.js";
-// import { orbitdbRouter } from "./orbitdb.js";
+import { dbRouter } from "./openDb.js";
 
 export {
     // libp2pRouter,
     // ipfsRouter,
-    // orbitdbRouter,
+    dbRouter,
     podBayRouter,
     metricsRouter
 }

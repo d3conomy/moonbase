@@ -7,7 +7,6 @@ import { OrbitDbProcess, _OrbitDbOptions } from "./orbitDb.js";
 import { OpenDb, _OpenDbOptions } from "./open.js";
 import { logger } from "../utils/logBook.js";
 import { _Status } from "./base.js";
-import { open } from "fs";
 
 
 const isComponent = (component: string): Component => {
@@ -238,7 +237,7 @@ class LunarPod {
         openDbOptions
     }: {
         openDbOptions?: _OpenDbOptions
-    }): Promise<void> {
+    }): Promise<string> {
         if ((!this.orbitDb && !openDbOptions) ||
             (!this.orbitDb && openDbOptions && !openDbOptions.orbitDb))
         {
@@ -259,9 +258,14 @@ class LunarPod {
         if (openDbOptions) {
             // check if the orbitdb is already open
             if (this.db.has(openDbOptions.databaseName)) {
-                return;
+                return `Database ${openDbOptions.databaseName} already open`
             }
         }
+
+        logger({
+            level: LogLevel.INFO,
+            message: `Opening database ${openDbOptions?.databaseName}`
+        })
 
         const db = new OpenDb({
             id: new IdReference({
@@ -275,6 +279,28 @@ class LunarPod {
         const orbitDbName = db.options?.orbitDb?.id.getId() ? db.options?.orbitDb?.id.getId() : new IdReference({ component: Component.DB }).getId();
 
         this.db.set(orbitDbName , db);
+
+        return orbitDbName;
+    }
+
+    public getOpenDb(orbitDbName: string): OpenDb | undefined {
+        return this.db.get(orbitDbName);
+    }
+
+    public getAllOpenDbs(): Map<string, OpenDb> {
+        return this.db;
+    }
+
+    public getDbNames(): Array<string> {
+        return Array.from(this.db.keys());
+    }
+
+    public async stopOpenDb(orbitDbName: string): Promise<void> {
+        const db = this.db.get(orbitDbName);
+        if (db) {
+            await db.stop();
+            this.db.delete(orbitDbName);
+        }
     }
 
     public async stop(): Promise<void> {
