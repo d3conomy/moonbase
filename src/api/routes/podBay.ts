@@ -2,11 +2,9 @@ import express, { Request, Response, NextFunction } from 'express';
 import timeout from "connect-timeout"
 
 import { PodBay } from '../../db/index.js';
-import { Component, LogLevel } from '../../utils/constants.js';
+import { Component } from '../../utils/constants.js';
 import { IdReference } from '../../utils/id.js';
 import { execute } from '../../db/command.js';
-import { logger } from '../../utils/logBook.js';
-import { time } from 'console';
 
 const router = express.Router();
 const podBay = new PodBay();

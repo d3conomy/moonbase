@@ -7,6 +7,7 @@ import { OrbitDbProcess, _OrbitDbOptions } from "./orbitDb.js";
 import { OpenDb, _OpenDbOptions } from "./open.js";
 import { logger } from "../utils/logBook.js";
 import { _Status } from "./base.js";
+import { open } from "fs";
 
 
 const isComponent = (component: string): Component => {
@@ -238,16 +239,18 @@ class LunarPod {
     }: {
         openDbOptions?: _OpenDbOptions
     }): Promise<void> {
-        if (!this.orbitDb) {
+        if ((!this.orbitDb && !openDbOptions) ||
+            (!this.orbitDb && openDbOptions && !openDbOptions.orbitDb))
+        {
             await this.initOrbitDb({});
         }
-        else if (openDbOptions && !openDbOptions.orbitDb) {
-            openDbOptions.orbitDb = this.orbitDb;
+        else if (!this.orbitDb && openDbOptions && openDbOptions.orbitDb) {
+            this.orbitDb = openDbOptions.orbitDb;
         }
-        else if (openDbOptions && !openDbOptions.orbitDb && this.orbitDb) {
-            openDbOptions.orbitDb = this.orbitDb;
-        }
-        else {
+
+        if ((this.orbitDb && !openDbOptions) ||
+            (this.orbitDb && openDbOptions && !openDbOptions.orbitDb))
+        {
             openDbOptions = new _OpenDbOptions({
                 orbitDb: this.orbitDb
             });

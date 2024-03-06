@@ -1,19 +1,14 @@
-import { LogLevel } from "../utils/constants.js";
-import { logger } from "../utils/logBook.js";
 import { LunarPod } from "./pod.js"
 
 const execute = async ({
     pod,
     command,
-    args,
-    // timeout = 5000
+    args
 }: {
     pod: LunarPod,
     command: string,
-    args?: any,
-    // timeout?: number
+    args?: any
 }): Promise<any> => {
-    // timeout = timeout ? timeout : 5000;
 
     let output: any = "Command Timed Out"
 
@@ -66,7 +61,6 @@ const execute = async ({
                 else {
                     throw new Error('Libp2p component not available')
                 }
-                break;
             case 'dialprotocol':
                 if (pod.libp2p) {
                     return await pod.libp2p.dialProtocol(args.address, args.protocol);
@@ -74,7 +68,6 @@ const execute = async ({
                 else {
                     throw new Error('Libp2p component not available')
                 }
-                break;
             case 'addjson':
                 if (pod.ipfs !== undefined ) {
                     return await pod.ipfs.addJson(args.data);
@@ -82,7 +75,6 @@ const execute = async ({
                 else {
                     throw new Error('IPFS component not available');
                 }
-                break;
             case 'getjson':
                 if (pod.ipfs !== undefined) {
                     return await pod.ipfs.getJson(args.cid);
@@ -90,7 +82,6 @@ const execute = async ({
                 else {
                     throw new Error('IPFS component not available');
                 }
-                break;
             default:
                 throw new Error('Command not found');
         };
