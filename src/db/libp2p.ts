@@ -19,8 +19,8 @@ import { mplex } from '@libp2p/mplex'
 import { Libp2p, Libp2pOptions, createLibp2p } from 'libp2p'
 import { Libp2pStatus, PeerId, Connection } from '@libp2p/interface'
 import { IdReference } from '../utils/id.js'
-import { Component } from '../utils/index.js'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { Component, LogLevel, logger } from '../utils/index.js'
+import { Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import { _BaseProcess, _Status, _IBaseProcess, _IBaseStatus } from './base.js'
 
 
@@ -177,6 +177,16 @@ class Libp2pProcess
 
     public connections(): Connection[] {
         return this.process?.getConnections() ? this.process.getConnections() : []
+    }
+
+    public async dial(address: string): Promise<Connection | Error | undefined > {
+        try {
+           const output = await this.process?.dial(multiaddr(address))
+           return output
+        }
+        catch (error: any) {
+            return error
+        }
     }
 }
 

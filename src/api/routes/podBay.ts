@@ -193,6 +193,92 @@ router.get('/pod/:id', async function(req: Request, res: Response) {
 });
 
 
+/**
+ * @openapi
+ * /api/v0/pod/{id}:
+ *  post:
+ *   tags:
+ *    - pod
+ *   description: Run a command on a pod
+ *   parameters:
+ *    - in: path
+ *      name: id
+ *      required: true
+ *      schema:
+ *       type: string
+ *      example: "TestPod"
+ *      description: Pod ID
+ *   requestBody:
+ *    description: Pod component
+ *    required: false
+ *    content:
+ *     application/json:
+ *      schema:
+ *       type: object
+ *       properties:
+ *        command:
+ *         type: string
+ *         example: "dial"
+ *        args:
+ *          type: object
+ *          properties:
+ *           address:
+ *            type: string
+ *            example: "/ip4/127.0.0.1/tcp/4002/p2p/QmQ9v7t"
+ *   responses:
+ *    200:
+ *     description: A successful response
+ *     content:
+ *      application/json:
+ *       schema:
+ *        type: object
+ *     example: /or
+ * */
+router.post('/pod/:id', async function(req: Request, res: Response) {
+    const podId = req.params.id;
+    const command = req.body.command;
+    const args = req.body.args;
+    const pod = podBay.getPod(new IdReference({id: podId, component: Component.POD}));
+
+    let output = {};
+
+    if (!pod) {
+        res.status(404).send({
+            message: `Pod not found`,
+            podId: podId
+        });
+        return;
+    }
+
+    try {
+        switch (command) {
+            case 'dial':
+                const result = await pod?.libp2p?.dial(args.address);
+                if (result instanceof Error) {
+                    throw result;
+                }
+                output = {
+                    message: `Dialing ${args.address}`,
+                    result: result
+                }
+                break;
+            default:
+                res.send({
+                    message: `Command not found`,
+                    command: command
+                });
+                break;
+        }
+        res.send(output)
+    }
+    catch (e) {
+        res.status(500).send({
+            message: `Command failed`,
+            error: e
+        });
+    }
+});
+
 
 
 export {
