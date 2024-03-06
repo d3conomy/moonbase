@@ -52,8 +52,8 @@ router.get('/pods', async function(req: Request, res: Response) {
  *   tags:
  *    - pod bay
  *   requestBody:
- *    description: Pod ID
- *    required: false
+ *    description: Pod ID and component type
+ *    required: true
  *    content:
  *     application/json:
  *      schema:
@@ -61,10 +61,24 @@ router.get('/pods', async function(req: Request, res: Response) {
  *       properties:
  *        id:
  *         type: string
- *         example: "TestPod"
  *        component:
  *         type: string
- *         example: "ipfs"
+ *      examples:
+ *       orbitdb:
+ *        summary: Create a new OrbitDB pod
+ *        value:
+ *         id: "TestPod"
+ *         component: "orbitdb"
+ *       libp2p:
+ *        summary: Create a new libp2p pod
+ *        value: 
+ *         id: "TestPod"
+ *         component: "libp2p"
+ *       ipfs:
+ *        summary: Create a new IPFS pod
+ *        value:
+ *         id: "TestPod"
+ *         component: "ipfs"
  *   description: Creates a new pod
  *   responses:
  *    200:
