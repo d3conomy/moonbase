@@ -179,9 +179,14 @@ class OrbitDbProcess
         }
         else {
             try {
+                logger({
+                    level: LogLevel.INFO,
+                    component: Component.ORBITDB,
+                    message: `Opening OrbitDb process right now`
+                
+                })
                 return await this.process.open(databaseName, {
                     type: databaseType
-                
                 });
             }
             catch (error) {

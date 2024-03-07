@@ -237,7 +237,7 @@ class LunarPod {
         openDbOptions
     }: {
         openDbOptions?: _OpenDbOptions
-    }): Promise<string> {
+    }): Promise<string | any> {
         if ((!this.orbitDb && !openDbOptions) ||
             (!this.orbitDb && openDbOptions && !openDbOptions.orbitDb))
         {
@@ -280,7 +280,7 @@ class LunarPod {
 
         this.db.set(orbitDbName , db);
 
-        return orbitDbName;
+        return db;
     }
 
     public getOpenDb(orbitDbName: string): OpenDb | undefined {

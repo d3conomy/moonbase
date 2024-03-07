@@ -2,6 +2,8 @@ import express, { Request, Response, NextFunction } from 'express';
 import timeout from "connect-timeout"
 
 import { podBay } from './podBay.js'
+import { IdReference } from '../../utils/id.js';
+import { Component } from '../../utils/constants.js';
 
 
 const router = express.Router();
@@ -96,14 +98,19 @@ router.get('/db', async function(req: Request, res: Response) {
  *         value: {database: "test"}
  * */
 router.post('/db', async function(req: Request, res: Response) {
-    const orbitDbId = req.body.OrbitDbId;
+    let orbitDbId = req.body.OrbitDbId;
     const dbName = req.body.DbName;
     const dbType = req.body.DbType;
 
-    const db = await podBay.openDb({
-        orbitDbId: orbitDbId,
-        dbName: dbName,
-        dbType: dbType
+    let orbitdb = podBay.getPod(new IdReference({id: orbitDbId, component: Component.ORBITDB}));
+
+    if (!orbitdb) {
+        let neworbitDbId = await podBay.newPod(new IdReference({id: orbitDbId, component: Component.POD}), Component.ORBITDB);
+        orbitdb = podBay.getPod(neworbitDbId);
+    }
+    const db = await orbitdb?.orbitDb?.open({
+        databaseName: dbName,
+        databaseType: dbType
     });
 
     res.send(

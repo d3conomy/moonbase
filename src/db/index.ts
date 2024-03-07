@@ -153,6 +153,11 @@ class PodBay {
             const podId = await this.newPod(new IdReference({component: Component.POD}), Component.ORBITDB);
             // orbitDbPod = this.pods.find(pod => pod.id.getId() === podId?.getId());
             orbitDbPod = this.getPod(podId);
+            logger({
+                level: LogLevel.INFO,
+                message: `New pod ${podId?.getId()} created for orbitDb`
+            
+            })
         }
 
         if (orbitDbPod && orbitDbPod.orbitDb) {
@@ -161,7 +166,8 @@ class PodBay {
                 databaseName: dbName,
                 databaseType: dbType,
             });
-            return await orbitDbPod?.initOpenDb({openDbOptions});
+            await orbitDbPod?.initOpenDb({openDbOptions})
+            return `Database ${dbName} opened`;
         }
         return `Database ${dbName} not opened`;
         
