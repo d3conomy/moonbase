@@ -28,11 +28,11 @@ class _OpenDbOptions {
     }: {
         orbitDb: OrbitDbProcess,
         databaseName?: string,
-        databaseType?: OrbitDbTypes
+        databaseType?: OrbitDbTypes | string
     }) {
         this.orbitDb = orbitDb;
         this.databaseName = databaseName ? databaseName : new IdReference({ component: Component.DB }).getId();
-        this.databaseType = databaseType ? databaseType : OrbitDbTypes.EVENTS;
+        this.databaseType = databaseType ? databaseType as OrbitDbTypes : OrbitDbTypes.EVENTS;
     }
 }
 

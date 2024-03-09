@@ -4,6 +4,7 @@ import timeout from "connect-timeout"
 import { podBay } from './podBay.js'
 import { IdReference } from '../../utils/id.js';
 import { Component } from '../../utils/constants.js';
+import { OpenDb, _OpenDbOptions } from '../../db/open.js';
 
 
 const router = express.Router();
@@ -57,31 +58,31 @@ router.get('/db', async function(req: Request, res: Response) {
  *      schema:
  *       type: object
  *       properties:
- *        DbName:
+ *        dbName:
  *         type: string
- *        DbType:
+ *        dbType:
  *         type: string
  *      examples:
  *       openEvent:
  *        summary: Open an eventlog database
  *        value:
- *         DbName: "test-events"
- *         DbType: "events"
+ *         dbName: "test-events"
+ *         dbType: "events"
  *       openDocument:
  *        summary: Open a document database
  *        value:
- *         DbName: "test-documents"
- *         DbType: "documents"
+ *         dbName: "test-documents"
+ *         dbType: "documents"
  *       openKeyValue:
  *        summary: Open a key-value database
  *        value:
- *         DbName: "test-keyvalue"
- *         DbType: "keyvalue"
+ *         dbName: "test-keyvalue"
+ *         dbType: "keyvalue"
  *       openKeyValueIndexed:
  *        summary: Open a key-value indexed database
  *        value:
- *         DbName: "test-keyvalue-indexed"
- *         DbType: "keyvalueindexed"
+ *         dbName: "test-keyvalue-indexed"
+ *         dbType: "keyvalueindexed"
  *   description: Open a database
  *   responses:
  *    200:
@@ -99,8 +100,8 @@ router.get('/db', async function(req: Request, res: Response) {
  * */
 router.post('/db', async function(req: Request, res: Response) {
     let orbitDbId = req.body.OrbitDbId;
-    const dbName = req.body.DbName;
-    const dbType = req.body.DbType;
+    const dbName = req.body.dbName;
+    const dbType = req.body.dbType;
 
     let orbitdb = podBay.getPod(new IdReference({id: orbitDbId, component: Component.ORBITDB}));
 
@@ -108,16 +109,21 @@ router.post('/db', async function(req: Request, res: Response) {
         let neworbitDbId = await podBay.newPod(new IdReference({id: orbitDbId, component: Component.POD}), Component.ORBITDB);
         orbitdb = podBay.getPod(neworbitDbId);
     }
-    const db = await orbitdb?.orbitDb?.open({
+
+    const db = await orbitdb?.initOpenDb({
         databaseName: dbName,
         databaseType: dbType
-    });
+    })
 
-    res.send(
-        {
-            database: db
-        }
-    );
+    // The below code works but does not add the database to the pod
+    // const db = await orbitdb?.orbitDb?.open({
+    //     databaseName: dbName,
+    //     databaseType: dbType
+    // });
+
+    res.send({
+        database: db
+    });
 });
 
 export { router as dbRouter }

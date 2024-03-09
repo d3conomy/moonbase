@@ -84,17 +84,12 @@ const execute = async ({
                     throw new Error('IPFS component not available');
                 }
             case 'opendb':
-                if (pod.orbitDb !== undefined) {
-                    const openDbOptions: _OpenDbOptions = {
-                        orbitDb: pod.orbitDb,
-                        databaseName: args.dbName,
-                        databaseType: args.dbType
-                    }
-                    return await pod.initOpenDb({openDbOptions});
+                const openDbOptions = {
+                    databaseName: args.dbName,
+                    databaseType: args.dbType
                 }
-                else {
-                    throw new Error('OrbitDb component not available');
-                }
+                return await pod.initOpenDb(openDbOptions);
+
             default:
                 throw new Error('Command not found');
         };

@@ -51,7 +51,7 @@ class PodBay {
             this.pods.push(pod);
         }
         else {
-            throw new Error(`Pod with id ${pod.id} already exists`);
+            throw new Error(`Pod with id ${pod.id.getId()} already exists`);
         }
     }
 
@@ -124,7 +124,7 @@ class PodBay {
     }): Promise<string> {
         //get a pod with an orbitDbProcess
         let orbitDbPod: LunarPod | undefined;
-        let openDbOptions: _OpenDbOptions;
+        let openDbOptions: { databaseName: string, databaseType: OrbitDbTypes | string};
 
         if (orbitDbId) {
             orbitDbPod = this.pods.find(pod => {
@@ -161,12 +161,11 @@ class PodBay {
         }
 
         if (orbitDbPod && orbitDbPod.orbitDb) {
-            openDbOptions = new _OpenDbOptions({
-                orbitDb: orbitDbPod.orbitDb,
+            openDbOptions = {
                 databaseName: dbName,
                 databaseType: dbType,
-            });
-            await orbitDbPod?.initOpenDb({openDbOptions})
+            };
+            await orbitDbPod?.initOpenDb(openDbOptions)
             return `Database ${dbName} opened`;
         }
         return `Database ${dbName} not opened`;

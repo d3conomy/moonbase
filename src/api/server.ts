@@ -52,7 +52,7 @@ class ApiServer {
             definition: {
                 openapi: '3.0.0',
                 info: {
-                    title: 'OrbitDB API',
+                    title: 'Moonbase API',
                     version: '0.0.1',
                 },
                 servers: [

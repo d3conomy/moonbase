@@ -4,7 +4,7 @@ import { _IpfsOptions, IpfsProcess } from "./ipfs.js";
 import { Component, LogLevel } from "../utils/constants.js";
 import { IdReference } from "../utils/id.js";
 import { OrbitDbProcess, _OrbitDbOptions } from "./orbitDb.js";
-import { OpenDb, _OpenDbOptions } from "./open.js";
+import { OpenDb, OrbitDbTypes, _OpenDbOptions } from "./open.js";
 import { logger } from "../utils/logBook.js";
 import { _Status } from "./base.js";
 
@@ -234,53 +234,52 @@ class LunarPod {
     }
 
     public async initOpenDb({
-        openDbOptions
+        databaseName,
+        databaseType
     }: {
-        openDbOptions?: _OpenDbOptions
-    }): Promise<string | any> {
-        if ((!this.orbitDb && !openDbOptions) ||
-            (!this.orbitDb && openDbOptions && !openDbOptions.orbitDb))
-        {
+        databaseName?: string,
+        databaseType?: string
+    }): Promise<string> {
+        if (!this.orbitDb) {
             await this.initOrbitDb({});
         }
-        else if (!this.orbitDb && openDbOptions && openDbOptions.orbitDb) {
-            this.orbitDb = openDbOptions.orbitDb;
-        }
 
-        if ((this.orbitDb && !openDbOptions) ||
-            (this.orbitDb && openDbOptions && !openDbOptions.orbitDb))
-        {
-            openDbOptions = new _OpenDbOptions({
-                orbitDb: this.orbitDb
+        if (this.orbitDb) {
+            const openDbOptions = new _OpenDbOptions({
+                orbitDb: this.orbitDb,
+                databaseName,
+                databaseType
             });
-        }
 
-        if (openDbOptions) {
-            // check if the orbitdb is already open
-            if (this.db.has(openDbOptions.databaseName)) {
-                return `Database ${openDbOptions.databaseName} already open`
+            if (openDbOptions) {
+                // check if the orbitdb is already open
+                if (this.db.has(openDbOptions.databaseName)) {
+                    return `Database ${openDbOptions.databaseName} already open`
+                }
             }
+
+            logger({
+                level: LogLevel.INFO,
+                message: `Opening database ${openDbOptions?.databaseName}`
+            })
+
+            const db = new OpenDb({
+                id: new IdReference({
+                    id: databaseName,
+                    component: Component.DB
+                }),
+                options: openDbOptions
+            });
+
+            await db.init();
+
+            const orbitDbName = databaseName ? databaseName : db.id.name;
+
+            this.db.set(orbitDbName , db);
+
+            return orbitDbName;
         }
-
-        logger({
-            level: LogLevel.INFO,
-            message: `Opening database ${openDbOptions?.databaseName}`
-        })
-
-        const db = new OpenDb({
-            id: new IdReference({
-                component: Component.DB
-            }),
-            options: openDbOptions
-        });
-
-        await db.init();
-
-        const orbitDbName = db.options?.orbitDb?.id.getId() ? db.options?.orbitDb?.id.getId() : new IdReference({ component: Component.DB }).getId();
-
-        this.db.set(orbitDbName , db);
-
-        return db;
+        return `Database ${databaseName} not opened`;
     }
 
     public getOpenDb(orbitDbName: string): OpenDb | undefined {
