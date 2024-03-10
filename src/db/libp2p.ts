@@ -4,13 +4,13 @@ import { circuitRelayServer, circuitRelayTransport } from '@libp2p/circuit-relay
 import { dcutr } from '@libp2p/dcutr'
 import { identify } from '@libp2p/identify'
 import { webSockets } from '@libp2p/websockets'
-// import { webTransport } from '@libp2p/webtransport'
+import { webTransport } from '@libp2p/webtransport'
 import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 import { autoNAT } from '@libp2p/autonat'
 import { tcp } from '@libp2p/tcp'
 import { kadDHT, removePublicAddressesMapper } from '@libp2p/kad-dht'
 import { uPnPNAT } from '@libp2p/upnp-nat'
-// import { webRTC } from '@libp2p/webrtc'
+import { webRTC } from '@libp2p/webrtc'
 import { bootstrap } from '@libp2p/bootstrap'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { ipnsValidator } from 'ipns/validator'
@@ -55,13 +55,13 @@ const defaultLibp2pOptions = (): Libp2pOptions => {
             ],
         },
         transports: [
-            // webSockets(),
-            // webTransport(),
+            webSockets(),
+            webTransport(),
             tcp(),
-            // webRTC(),
-            // circuitRelayTransport({
-            //     discoverRelays: 2
-            // }),
+            webRTC(),
+            circuitRelayTransport({
+                discoverRelays: 2
+            }),
         ],
         connectionEncryption: [
             noise()
@@ -91,9 +91,9 @@ const defaultLibp2pOptions = (): Libp2pOptions => {
             //     peerInfoMapper: removePublicAddressesMapper,
             //     clientMode: false
             // }),
-            // relay: circuitRelayServer({
-            //     advertise: true
-            // }),
+            relay: circuitRelayServer({
+                advertise: true
+            }),
             dcutr: dcutr(),
         },
         peerDiscovery: [
@@ -110,21 +110,25 @@ return libp2pOptions
 }
 
 class _Libp2pOptions {
+    public start: boolean;
     public processOptions: Libp2pOptions
 
     constructor({
-        processOptions
+        processOptions,
+        start
     }: {
-        processOptions?: Libp2pOptions
-    
-    }) {
+        processOptions?: Libp2pOptions,
+        start?: boolean
+    } = {}) {
+        this.start = start ? start : false
         this.processOptions = processOptions ? processOptions : defaultLibp2pOptions()
+        this.processOptions.start = this.start
     }
 }
 
 const createLibp2pProcess = async (options?: _Libp2pOptions): Promise<Libp2p> => {
     if (!options) {
-        options = new _Libp2pOptions({})
+        options = new _Libp2pOptions({start: false})
     }
     
     return await createLibp2p(options.processOptions)
@@ -134,8 +138,8 @@ class Libp2pProcess
     extends _BaseProcess
     implements _IBaseProcess
 {
-    public process?: Libp2p
-    public options?: _Libp2pOptions
+    public declare process?: Libp2p
+    public declare options?: _Libp2pOptions
 
     constructor({
         id,
@@ -145,11 +149,13 @@ class Libp2pProcess
         id?: IdReference,
         process?: Libp2p,
         options?: _Libp2pOptions
-    }) {
-        super({})
-        this.id = id ? id : new IdReference({component: Component.LIBP2P})
-        this.process = process
-        this.options = options
+    } = {}) {
+        super({
+            id: id,
+            component: Component.LIBP2P,
+            process: process,
+            options: options
+        })
     }
 
     public async init(): Promise<void> {

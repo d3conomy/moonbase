@@ -65,9 +65,9 @@ describe('LunarPod', () => {
     })
 
     it('should create an OrbitDB instance', async () => {
-        await peer?.initLibp2p({});
-        await peer?.initIpfs({});
-        await peer?.initOrbitDb({});
+        await peer?.initLibp2p();
+        await peer?.initIpfs();
+        await peer?.initOrbitDb();
         expect(peer).to.be.not.null;
         expect(peer?.id).to.be.not.null;
         expect(peer?.libp2p).to.be.not.null;

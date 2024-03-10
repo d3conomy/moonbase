@@ -22,12 +22,15 @@ class _IpfsOptions {
         blockstore,
         start,
     }: {
-        libp2p: Libp2pProcess,
+        libp2p?: Libp2pProcess,
         datastore?: any,
         blockstore?: any,
         start?: boolean
     }) {
-        this.libp2p = libp2p
+        if (!libp2p) {
+            throw new Error(`No Libp2p process found`)
+        }
+        this.libp2p = libp2p 
         this.datastore = datastore ? datastore : new MemoryDatastore()
         this.blockstore = blockstore ? datastore : new MemoryBlockstore()
         this.start = start ? start : false
@@ -48,8 +51,9 @@ class IpfsProcess
     extends _BaseProcess
     implements _IBaseProcess
 {
-    public process?: Helia
-    public options?: _IpfsOptions
+    public declare process?: Helia
+    public declare options?: _IpfsOptions
+
 
     constructor({
         id,
@@ -60,32 +64,32 @@ class IpfsProcess
         process?: Helia
         options?: _IpfsOptions
     }) {
-        super({})
-        this.id = id ? id : new IdReference({ component: Component.IPFS });
-        this.process = process
-        this.options = options
+        super({
+            id: id,
+            component: Component.IPFS,
+            process: process,
+            options: options as _IpfsOptions
+        })
     }
 
     public async init(): Promise<void> {
         if (this.process !== undefined) {
             this.status = new _Status({
                 stage: this.process.libp2p.status,
-                message: `Ipfs process already initialized`
+                message: `Ipfs process initialized`
             });
             return;
         }
 
         if (!this.options) {
-            this.options = new _IpfsOptions({
-                libp2p: new Libp2pProcess({})
-            });
+            throw new Error(`No Ipfs options found`)
         }
-        this.process = await createIpfsProcess(this.options);
-        this.status = new _Status({
-            stage: this.process.libp2p.status,
-            message: `Ipfs process initialized`
-        });
         
+        if (!this.options.libp2p) {
+            throw new Error(`No Libp2p process found`)
+        }
+
+        this.process = await createIpfsProcess(this.options)
     }
 
     public async start(): Promise<void> {
@@ -98,8 +102,8 @@ class IpfsProcess
 
     public async stop(): Promise<void> {
         if (this.process) {
-            await this.process.libp2p.stop()
             await this.process.stop()
+            await this.process.libp2p.stop()
             this.status?.update({stage: this.process.libp2p.status})
         }
     }

@@ -159,7 +159,7 @@ class LunarPod {
         libp2pOptions
     }: {
         libp2pOptions?: _Libp2pOptions,
-    }): Promise<void> {
+    } = {}): Promise<void> {
         if (!this.libp2p) {
             this.libp2p = new Libp2pProcess({
                 id: new IdReference({
@@ -169,29 +169,29 @@ class LunarPod {
             });
         }
         await this.libp2p.init();
-        await this.libp2p.start();
+
+        if (libp2pOptions?.start) {
+            await this.libp2p.start();
+        }
     }
 
     public async initIpfs({
         ipfsOptions
     }: {
         ipfsOptions?: _IpfsOptions
-    }): Promise<void> {
+    } = {}): Promise<void> {
+        
+        if (!this.libp2p) {
+            await this.initLibp2p();
+        }
+        
         if (!this.ipfs) {
-            if (!this.libp2p) {
-                await this.initLibp2p({});
-            }
-            else if (ipfsOptions && !ipfsOptions.libp2p) {
-                this.libp2p = ipfsOptions.libp2p;
-            }
-            else if (ipfsOptions && !ipfsOptions.libp2p && this.libp2p) {
-                ipfsOptions.libp2p = this.libp2p;
-            }
-            else {
-                ipfsOptions = new _IpfsOptions({
-                    libp2p: this.libp2p as Libp2pProcess
-                });
-            }
+            ipfsOptions = new _IpfsOptions({
+                libp2p: this.libp2p,
+                datastore: ipfsOptions?.datastore,
+                blockstore: ipfsOptions?.blockstore,
+                start: ipfsOptions?.start
+            });
 
             this.ipfs = new IpfsProcess({
                 id: new IdReference({
@@ -200,30 +200,37 @@ class LunarPod {
                 options: ipfsOptions
             });
         }
+        
         await this.ipfs.init();
-        await this.ipfs.start();
+
+        if (ipfsOptions?.start) {
+            await this.ipfs.start();
+        }
     }
 
     public async initOrbitDb({
         orbitDbOptions
     }: {
         orbitDbOptions?: _OrbitDbOptions
-    }): Promise<void> {
+    } = {}): Promise<void> {
+
         if (!this.ipfs) {
-            await this.initIpfs({});
+            await this.initIpfs();
         }
-        else if (orbitDbOptions && !orbitDbOptions.ipfs) {
-            orbitDbOptions.ipfs = this.ipfs;
+
+        if (this.libp2p?.status?.stage !== 'started') {
+            await this.libp2p?.start();
         }
-        else if (orbitDbOptions && !orbitDbOptions.ipfs && this.ipfs) {
-            orbitDbOptions.ipfs = this.ipfs;
-        }
-        else {
-            orbitDbOptions = new _OrbitDbOptions({
-                ipfs: this.ipfs
-            });
-        }
+
         if (!this.orbitDb) {
+            orbitDbOptions = new _OrbitDbOptions({
+                ipfs: this.ipfs,
+                directory: orbitDbOptions?.directory,
+                enableDID: orbitDbOptions?.enableDID,
+                identityProvider: orbitDbOptions?.identityProvider,
+                identitySeed: orbitDbOptions?.identitySeed
+            });
+
             this.orbitDb = new OrbitDbProcess({
                 id: new IdReference({
                     component: Component.ORBITDB

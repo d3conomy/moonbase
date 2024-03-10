@@ -69,12 +69,15 @@ class _OrbitDbOptions {
         identityProvider,
         directory
     }: {
-        ipfs: IpfsProcess;
+        ipfs?: IpfsProcess;
         enableDID?: boolean;
         identitySeed?: Uint8Array;
         identityProvider?: any;
         directory?: string;
     }) {
+        if (!ipfs) {
+            throw new Error(`No Ipfs process found`)
+        }
         this.ipfs = ipfs;
         this.enableDID = enableDID ? enableDID : false;
         this.identitySeed = identitySeed;
@@ -91,7 +94,7 @@ class _OrbitDbOptions {
 }
 
 const createOrbitDbProcess = async (options: _OrbitDbOptions): Promise<typeof OrbitDb> => {
-   if (options.enableDID) {
+    if (options.enableDID) {
         return await createOrbitDB({
             ipfs: options.ipfs.process,
             identity: {
@@ -110,8 +113,8 @@ class OrbitDbProcess
     extends _BaseProcess
     implements _IBaseProcess
 {
-    public process?: typeof OrbitDb;
-    public options?: _OrbitDbOptions;
+    public declare process?: typeof OrbitDb;
+    public declare options?: _OrbitDbOptions;
 
     constructor({
         id,
@@ -122,40 +125,29 @@ class OrbitDbProcess
         process?: typeof OrbitDb,
         options?: _OrbitDbOptions
     }) {
-        super({});
-        this.id = id ? id : new IdReference({ component: Component.ORBITDB });
-        this.process = process;
-        this.options = options;
-
-        if (!this.process && !this.options) {
-            logger({
-                level: LogLevel.ERROR,
-                component: Component.ORBITDB,
-                code: ResponseCode.NOT_FOUND,
-                message: `No OrbitDb process or options found`
-            })
-            // new Error(`No OrbitDb process or options found`)
-        }
+        super({
+            component: Component.ORBITDB,
+            id: id,
+            process: process,
+            options: options
+        });
     }
 
     public async init(): Promise<void> {
         if (this.process) {
+            this.status = new _Status({
+                stage: this.process.libp2p.status,
+                message: `OrbitDb process initialized`
+            });
             return;
         }
+
         if (!this.options) {
-            logger({
-                level: LogLevel.ERROR,
-                component: Component.ORBITDB,
-                code: ResponseCode.NOT_FOUND,
-                message: `No OrbitDb options found`
-            })
-            const ipfs = new IpfsProcess({});
-            await ipfs.init();
-            await ipfs.start();
-            this.options = new _OrbitDbOptions({
-                ipfs,
-                enableDID: false
-            });
+            throw new Error(`No OrbitDb options found`)
+        }
+
+        if (!this.options.ipfs) {
+            throw new Error(`No Ipfs process found`)
         }
         this.process = await createOrbitDbProcess(this.options);
     }
