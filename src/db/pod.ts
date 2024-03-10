@@ -219,12 +219,12 @@ class LunarPod {
                 options
             });
 
-            // if (openDbOptions) {
-            //     // check if the orbitdb is already open
-            //     if (this.db.has(openDbOptions.databaseName)) {
-            //         return `Database ${openDbOptions.databaseName} already open`
-            //     }
-            // }
+            if (openDbOptions) {
+                // check if the orbitdb is already open
+                if (this.db.has(openDbOptions.databaseName)) {
+                    return
+                }
+            }
 
             logger({
                 level: LogLevel.INFO,

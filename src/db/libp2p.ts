@@ -86,11 +86,11 @@ const defaultLibp2pOptions = (): Libp2pOptions => {
                     ipns: ipnsSelector
                 }
             }),
-            // lanDHT: kadDHT({
-            //     protocol: '/ipfs/lan/kad/1.0.0',
-            //     peerInfoMapper: removePublicAddressesMapper,
-            //     clientMode: false
-            // }),
+            lanDHT: kadDHT({
+                protocol: '/ipfs/lan/kad/1.0.0',
+                peerInfoMapper: removePublicAddressesMapper,
+                clientMode: false
+            }),
             // relay: circuitRelayServer({
             //     advertise: true
             // }),

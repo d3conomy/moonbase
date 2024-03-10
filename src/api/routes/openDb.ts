@@ -114,14 +114,16 @@ router.post('/open', async function(req: Request, res: Response) {
         options
     });
 
-    if (!db) {
-        res.status(500).send(`Database ${dbName} not opened`);
-    }
+    // if (db?.address === undefined) {
+    //     res.status(404).send(`Database ${dbName} not found`);
+    //     return
+    // }
 
     res.send({
-        id: db?.id.name,
-        type: db?.options?.databaseType,
-        address: db?.address(),
+        id: dbName,
+        type: db?.openDb.options?.databaseType,
+        address: db?.address,
+        multiaddrs: db?.multiaddrs
     });
 });
 
@@ -303,13 +305,12 @@ router.post('/db/:id', async function(req: Request, res: Response) {
 router.delete('/db/:id', async function(req: Request, res: Response) {
     const id = req.params.id;
 
-    const db = podBay.getOpenDb(new IdReference({id, component: Component.DB}));
+    const result = await podBay.closeDb(new IdReference({id, component: Component.DB}));
 
-    if (!db) {
+    if (!result) {
         res.status(404).send(`Database ${id} not found`);
     }
     else {
-        await db.stop();
         res.send(`Database ${id} stopped`);
     }
 });

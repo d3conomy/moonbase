@@ -4,6 +4,7 @@ import { logger } from "../utils/logBook.js";
 import { Component, LogLevel } from "../utils/constants.js";
 import { _IBaseStatus, _Status } from "./base.js";
 import { OpenDb, OrbitDbTypes, _OpenDbOptions } from "./open.js";
+import { Multiaddr } from "@multiformats/multiaddr";
 
 
 class PodBay {
@@ -120,20 +121,37 @@ class PodBay {
         orbitDbId?: IdReference['name'],
         dbName: string,
         dbType: OrbitDbTypes,
+        dialAddress?: string,
         options?: Map<string, string>
-    }): Promise<OpenDb | undefined> {
+    }): Promise<{
+        openDb: OpenDb,
+        address?: string,
+        podId: IdReference,
+        multiaddrs?: Multiaddr[]
+    } | undefined> {
         //get a pod with an orbitDbProcess
         let orbitDbPod: LunarPod | undefined;
-        let openDbOptions: { databaseName: string, databaseType: OrbitDbTypes | string, options: Map<string, string>};
+        let openDbOptions: {
+            databaseName: string,
+            databaseType: OrbitDbTypes | string,
+            options: Map<string, string>
+        };
+        let openDb: OpenDb | undefined;
 
         if (this.getOpenDb(dbName)) {
             logger({
                 level: LogLevel.INFO,
                 message: `Database ${dbName} already opened`
             });
-            return this.getOpenDb(dbName);
+            const opened = this.getOpenDb(dbName);
+            if (opened !== undefined) {
+                return {
+                    openDb: opened,
+                    address: opened?.address(),
+                    podId: opened?.id,
+                }
+            }
         }
-
 
         if (orbitDbId) {
             orbitDbPod = this.pods.find(pod => {
@@ -146,7 +164,13 @@ class PodBay {
                     pod.id.name === orbitDbId &&
                     pod.db.size > 0
                 ) {
-                    return pod;
+                    openDb = pod.getOpenDb(dbName);
+                    return {
+                        openDb,
+                        type: openDb?.options?.databaseType,
+                        address: openDb?.address(),
+                        multiaddrs: pod.libp2p?.getMultiaddrs(),
+                    }
                 }
             });
         }
@@ -177,7 +201,16 @@ class PodBay {
             };
 
             try {
-                return await orbitDbPod?.initOpenDb(openDbOptions);
+                openDb = await orbitDbPod?.initOpenDb(openDbOptions);
+
+                if (openDb) {
+                    return { 
+                        openDb,
+                        address: openDb.address(),
+                        podId: orbitDbPod.id,
+                        multiaddrs: orbitDbPod.libp2p?.getMultiaddrs()
+                    }
+                }
             }
             catch (error) {
                 logger({
@@ -200,7 +233,7 @@ class PodBay {
         //return the open db
         const orbitDbPod = this.pods.find(pod => {
             if (pod.db.has(orbitDbId)) {
-                return pod;
+                return pod.db.get(orbitDbId);
             }
         });
 
@@ -209,7 +242,7 @@ class PodBay {
         }
     }
 
-    public async closeDb(dbName: string | IdReference): Promise<void> {
+    public async closeDb(dbName: string | IdReference): Promise<string | undefined> {
         let orbitDbId: string;
         if (dbName instanceof IdReference) {
             orbitDbId = dbName.getId();
@@ -228,6 +261,7 @@ class PodBay {
         if (orbitDbPod) {
             await orbitDbPod.stopOpenDb(orbitDbId);
             this.removePod(orbitDbPod.id);
+            return orbitDbId;
         }
     }
 }

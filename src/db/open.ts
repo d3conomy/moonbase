@@ -79,8 +79,8 @@ class OpenDb
     extends _BaseProcess
     implements _IBaseProcess
 {
-    public process?: typeof Database;
-    public options?: _OpenDbOptions;
+    public declare process?: typeof Database;
+    public declare options?: _OpenDbOptions;
 
     constructor({
         id,
@@ -91,10 +91,13 @@ class OpenDb
         process?: typeof Database,
         options?: _OpenDbOptions
     }) {
-        super({});
-        this.id = id ? id : new IdReference({ component: Component.DB });
-        this.process = process;
-        this.options = options;
+        super({
+            id: id,
+            component: Component.DB,
+            process: process,
+            options: options as _OpenDbOptions
+        
+        });
     }
 
     public async init(): Promise<void> {
@@ -106,17 +109,13 @@ class OpenDb
         }
 
         if (!this.options) {
-            this.options = new _OpenDbOptions({
-                orbitDb: new OrbitDbProcess({})
-            });
+            throw new Error(`No OpenDb options found`)
         }
-
-        if (!this.process) {
-            this.process = await openDb(this.options);
-            this.status = new _Status({
-                message: `Database process initialized`
-            });
-        }
+        const process = await openDb(this.options);
+        this.status = new _Status({
+            message: `Database process initialized`
+        });
+        this.process = process;
     }
 
     public async stop(): Promise<void> {

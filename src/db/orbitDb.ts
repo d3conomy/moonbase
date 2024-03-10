@@ -9,7 +9,8 @@ import {
 import {
     useIdentityProvider,
     OrbitDb,
-    createOrbitDB
+    createOrbitDB,
+    Database
 } from '@orbitdb/core';
 
 import {
@@ -160,7 +161,7 @@ class OrbitDbProcess
         databaseName: string;
         databaseType: string;
         options?: Map<string, string>
-    }): Promise<void> {
+    }): Promise<typeof Database> {
         logger({
             level: LogLevel.INFO,
             component: Component.ORBITDB,
