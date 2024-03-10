@@ -72,7 +72,7 @@ const defaultLibp2pOptions = (): Libp2pOptions => {
         ],
         services: {
             pubsub: gossipsub({
-                allowPublishToZeroPeers: true
+                allowPublishToZeroTopicPeers: true
             }),
             autonat: autoNAT(),
             identify: identify(),

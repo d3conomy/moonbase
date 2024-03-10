@@ -61,7 +61,7 @@ describe('LunarPod', () => {
             message: `Peer id: ${peer?.libp2p?.process?.peerId.toString()}`
         })
         await peer?.libp2p?.stop();
-        await peer?.ipfs?.process?.libp2p.stop();
+        await peer?.ipfs?.stop();
     })
 
     it('should create an OrbitDB instance', async () => {

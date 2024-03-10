@@ -35,16 +35,14 @@ class LunarPod {
         orbitDb?: OrbitDbProcess,
     }) {
         this.id = id ? id : new IdReference({ component: Component.POD });
+        if (libp2p) {
+            this.libp2p = libp2p;
+        }
+        if (ipfs) {
+            this.ipfs = ipfs;
+        }
         if (orbitDb) {
             this.orbitDb = orbitDb;
-            this.setOrbitDbProcesses();
-        }
-        else if (ipfs) {
-            this.ipfs = ipfs;
-            this.setIpfsProcesses();
-        }
-        else if (libp2p) {
-            this.libp2p = libp2p;
         }
     }
 
@@ -111,47 +109,6 @@ class LunarPod {
             default:
                 await this.initAll();
                 break;
-        }
-    }
-
-    private setOrbitDbProcesses(): void {
-        if (this.orbitDb) {
-            logger({
-                level: LogLevel.INFO,
-                message: `Setting OrbitDb process and sub-processes, ignoring redundant libp2p and ipfs options.`
-            })
-            this.libp2p = new Libp2pProcess({
-                id: new IdReference({
-                    component: Component.LIBP2P
-                }),
-                process: this.orbitDb.process?.ipfs?.libp2p
-            });
-            this.ipfs = new IpfsProcess({
-                id: new IdReference({
-                    component: Component.IPFS
-                }),
-                options: new _IpfsOptions({
-                    libp2p: this.libp2p
-                })
-            }); 
-
-            return
-        }
-    }
-
-    private setIpfsProcesses(): void {
-        if (this.ipfs) {
-            logger({
-                level: LogLevel.INFO,
-                message: `Setting IPFS process and sub-processes, ignoring redundant libp2p options.`
-            })
-            this.libp2p = new Libp2pProcess({
-                id: new IdReference({
-                    component: Component.LIBP2P
-                }),
-                process: this.ipfs.process?.libp2p
-            });
-            return
         }
     }
 

@@ -75,7 +75,7 @@ class IpfsProcess
     public async init(): Promise<void> {
         if (this.process !== undefined) {
             this.status = new _Status({
-                stage: this.process.libp2p.status,
+                // stage: this.process.libp2p.status,
                 message: `Ipfs process initialized`
             });
             return;
@@ -96,15 +96,15 @@ class IpfsProcess
         if (this.process) {
             // await this.process.libp2p.start()
             await this.process.start()
-            this.status?.update({stage: this.process.libp2p.status})
+            this.status?.update({message: `Ipfs process started`})
         }
     }
 
     public async stop(): Promise<void> {
         if (this.process) {
             await this.process.stop()
-            await this.process.libp2p.stop()
-            this.status?.update({stage: this.process.libp2p.status})
+            await this.process.stop()
+            this.status?.update({message: `Ipfs process stopped`})
         }
     }
 
