@@ -12,7 +12,7 @@ const router = express.Router();
 
 /**
  * @openapi
- * /api/v0/db:
+ * /api/v0/open:
  *  get:
  *   tags:
  *    - db
@@ -33,7 +33,7 @@ const router = express.Router();
  *        test:
  *         value: {databases: ["test"]}
  * */
-router.get('/db', async function(req: Request, res: Response) {
+router.get('/open', async function(req: Request, res: Response) {
     const dbNames = podBay.getAllOpenDbNames();
 
     res.send({
@@ -44,7 +44,7 @@ router.get('/db', async function(req: Request, res: Response) {
 
 /**
  * @openapi
- * /api/v0/db:
+ * /api/v0/open:
  *  post:
  *   tags:
  *    - db
@@ -96,7 +96,7 @@ router.get('/db', async function(req: Request, res: Response) {
  *        test:
  *         value: {database: "test"}
  * */
-router.post('/db', async function(req: Request, res: Response) {
+router.post('/open', async function(req: Request, res: Response) {
     let orbitDbId = req.body.OrbitDbId;
     const dbName = req.body.dbName;
     const dbType = req.body.dbType;
@@ -121,9 +121,67 @@ router.post('/db', async function(req: Request, res: Response) {
     //     databaseType: dbType
     // })
 
+    if (!db) {
+        res.status(500).send(`Database ${dbName} not opened`);
+    }
+
     res.send({
-        database: db
+        id: db?.id.name,
+        type: db?.options?.databaseType,
+        address: db?.address(),
     });
+});
+
+
+/**
+ * @openapi
+ * /api/v0/db/{id}:
+ *  get:
+ *   tags:
+ *    - db
+ *   parameters:
+ *    - in: path
+ *      name: id
+ *      required: true
+ *      description: The database ID
+ *      schema:
+ *       type: string
+ *       example: "test-events"
+ *   description: Return the database details
+ *   responses:
+ *    200:
+ *     description: A successful response
+ *     content:
+ *      application/json:
+ *       schema:
+ *        type: object
+ *        properties:
+ *         id:
+ *          type: string
+ *         type:
+ *          type: string
+ *         address:
+ *          type: string
+ *       examples:
+ *        test:
+ *         value: {id: "test", type: "events", address: "/orbitdb/QmTest/test"}
+ * */
+router.get('/db/:id', async function(req: Request, res: Response) {
+    const id = req.params.id;
+
+    const db = podBay.getOpenDb(new IdReference({id, component: Component.DB}));
+
+    if (!db) {
+        res.status(404).send(`Database ${id} not found`);
+    }
+    else {
+        res.send({
+            id: db.id.name,
+            type: db.options?.databaseType,
+            address: db.address(),
+        });
+    }
+
 });
 
 export { router as dbRouter }

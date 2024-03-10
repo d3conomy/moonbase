@@ -3,7 +3,7 @@ import { IdReference } from "../utils/id.js";
 import { logger } from "../utils/logBook.js";
 import { Component, LogLevel } from "../utils/constants.js";
 import { _IBaseStatus, _Status } from "./base.js";
-import { OrbitDbTypes, _OpenDbOptions } from "./open.js";
+import { OpenDb, OrbitDbTypes, _OpenDbOptions } from "./open.js";
 
 
 class PodBay {
@@ -121,7 +121,7 @@ class PodBay {
         dbName: string,
         dbType: OrbitDbTypes,
         options?: Map<string, string>
-    }): Promise<string> {
+    }): Promise<OpenDb | undefined> {
         //get a pod with an orbitDbProcess
         let orbitDbPod: LunarPod | undefined;
         let openDbOptions: { databaseName: string, databaseType: OrbitDbTypes | string, options: Map<string, string>};
@@ -166,10 +166,32 @@ class PodBay {
                 options: options? options : new Map<string, string>()
             };
             await orbitDbPod?.initOpenDb(openDbOptions)
-            return dbName;
+
+            // get the database from the name
+            const db = orbitDbPod.getOpenDb(dbName);
+            return db;
         }
-        return `Database ${dbName} not opened`;
-        
+    }
+
+    public getOpenDb(dbName: string | IdReference): OpenDb | undefined {
+        let orbitDbId: string;
+        if (dbName instanceof IdReference) {
+            orbitDbId = dbName.getId();
+        }
+        else {
+            orbitDbId = dbName;
+        }
+
+        //return the open db
+        const orbitDbPod = this.pods.find(pod => {
+            if (pod.db.has(orbitDbId)) {
+                return pod;
+            }
+        });
+
+        if (orbitDbPod) {
+            return orbitDbPod.db.get(orbitDbId);
+        }
     }
 }
 

@@ -128,6 +128,10 @@ class OpenDb
         }
     }
 
+    public address(): string {
+        return this.process?.address;
+    }
+
     public async add(data: any): Promise<string> {
         return await this.process?.add(data);
     }
