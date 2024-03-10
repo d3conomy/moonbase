@@ -159,17 +159,23 @@ class PodBay {
             })
         }
 
+
         if (orbitDbPod && orbitDbPod.orbitDb) {
             openDbOptions = {
                 databaseName: dbName,
                 databaseType: dbType,
                 options: options? options : new Map<string, string>()
             };
-            await orbitDbPod?.initOpenDb(openDbOptions)
 
-            // get the database from the name
-            const db = orbitDbPod.getOpenDb(dbName);
-            return db;
+            try {
+                return await orbitDbPod?.initOpenDb(openDbOptions);
+            }
+            catch (error) {
+                logger({
+                    level: LogLevel.ERROR,
+                    message: `Error opening database: ${error}`
+                });
+            }
         }
     }
 

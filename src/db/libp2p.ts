@@ -4,13 +4,13 @@ import { circuitRelayServer, circuitRelayTransport } from '@libp2p/circuit-relay
 import { dcutr } from '@libp2p/dcutr'
 import { identify } from '@libp2p/identify'
 import { webSockets } from '@libp2p/websockets'
-import { webTransport } from '@libp2p/webtransport'
+// import { webTransport } from '@libp2p/webtransport'
 import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 import { autoNAT } from '@libp2p/autonat'
 import { tcp } from '@libp2p/tcp'
 import { kadDHT, removePublicAddressesMapper } from '@libp2p/kad-dht'
 import { uPnPNAT } from '@libp2p/upnp-nat'
-import { webRTC } from '@libp2p/webrtc'
+// import { webRTC } from '@libp2p/webrtc'
 import { bootstrap } from '@libp2p/bootstrap'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { ipnsValidator } from 'ipns/validator'
@@ -55,13 +55,13 @@ const defaultLibp2pOptions = (): Libp2pOptions => {
             ],
         },
         transports: [
-            webSockets(),
-            webTransport(),
+            // webSockets(),
+            // webTransport(),
             tcp(),
-            webRTC(),
-            circuitRelayTransport({
-                discoverRelays: 2
-            }),
+            // webRTC(),
+            // circuitRelayTransport({
+            //     discoverRelays: 2
+            // }),
         ],
         connectionEncryption: [
             noise()
@@ -86,25 +86,25 @@ const defaultLibp2pOptions = (): Libp2pOptions => {
                     ipns: ipnsSelector
                 }
             }),
-            lanDHT: kadDHT({
-                protocol: '/ipfs/lan/kad/1.0.0',
-                peerInfoMapper: removePublicAddressesMapper,
-                clientMode: false
-            }),
-            relay: circuitRelayServer({
-                advertise: true
-            }),
+            // lanDHT: kadDHT({
+            //     protocol: '/ipfs/lan/kad/1.0.0',
+            //     peerInfoMapper: removePublicAddressesMapper,
+            //     clientMode: false
+            // }),
+            // relay: circuitRelayServer({
+            //     advertise: true
+            // }),
             dcutr: dcutr(),
         },
         peerDiscovery: [
             bootstrap(defaultBootstrapConfig),
             mdns(),
         ],
-        connectionGater: {
-            denyDialMultiaddr: async () => {
-                return false
-            }
-        }
+        // connectionGater: {
+        //     denyDialMultiaddr: async () => {
+        //         return false
+        //     }
+        // }
     }
 return libp2pOptions
 }

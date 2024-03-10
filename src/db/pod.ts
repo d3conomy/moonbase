@@ -241,7 +241,7 @@ class LunarPod {
         databaseName?: string,
         databaseType?: string,
         options?: Map<string, string>
-    }): Promise<string> {
+    }): Promise<OpenDb | undefined> {
         if (!this.orbitDb) {
             await this.initOrbitDb({});
         }
@@ -254,12 +254,12 @@ class LunarPod {
                 options
             });
 
-            if (openDbOptions) {
-                // check if the orbitdb is already open
-                if (this.db.has(openDbOptions.databaseName)) {
-                    return `Database ${openDbOptions.databaseName} already open`
-                }
-            }
+            // if (openDbOptions) {
+            //     // check if the orbitdb is already open
+            //     if (this.db.has(openDbOptions.databaseName)) {
+            //         return `Database ${openDbOptions.databaseName} already open`
+            //     }
+            // }
 
             logger({
                 level: LogLevel.INFO,
@@ -274,15 +274,23 @@ class LunarPod {
                 options: openDbOptions
             });
 
-            await db.init();
+            try {
+                await db.init();
+            }
+            catch (error) {
+                logger({
+                    level: LogLevel.ERROR,
+                    message: `Error opening database: ${error}`
+                });
+            }
 
             const orbitDbName = databaseName ? databaseName : db.id.name;
 
             this.db.set(orbitDbName , db);
 
-            return orbitDbName;
+            return db;
         }
-        return `Database ${databaseName} not opened`;
+        // return `Database ${databaseName} not opened`;
     }
 
     public getOpenDb(orbitDbName: string): OpenDb | undefined {
