@@ -45,7 +45,7 @@ describe('PodBay', async () => {
     it('should fail adding a pod with an existing id', async () => {
         const pod = new LunarPod({});
         db.addPod(pod);
-        expect(() => db.addPod(pod)).to.throw(`Pod with id ${pod.id} already exists`);
+        expect(() => db.addPod(pod)).to.throw(`Pod with id ${pod.id.getId()} already exists`);
     });
 
     it('should create a new pod', async () => {

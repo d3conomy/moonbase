@@ -20,19 +20,23 @@ class _OpenDbOptions {
     public orbitDb: OrbitDbProcess;
     public databaseName: string;
     public databaseType: OrbitDbTypes;
+    public options?: Map<string, string>;
 
     constructor({
         orbitDb,
         databaseName,
-        databaseType
+        databaseType,
+        options
     }: {
         orbitDb: OrbitDbProcess,
         databaseName?: string,
-        databaseType?: OrbitDbTypes | string
+        databaseType?: OrbitDbTypes | string,
+        options?: Map<string, string>
     }) {
         this.orbitDb = orbitDb;
         this.databaseName = databaseName ? databaseName : new IdReference({ component: Component.DB }).getId();
         this.databaseType = databaseType ? databaseType as OrbitDbTypes : OrbitDbTypes.EVENTS;
+        this.options = options ? options : new Map<string, string>();
     }
 }
 
@@ -46,7 +50,8 @@ class _OpenDbOptions {
 const openDb = async ({
     orbitDb,
     databaseName,
-    databaseType
+    databaseType,
+    options
 }: _OpenDbOptions): Promise<typeof Database> => {
     logger({
         level: LogLevel.INFO,
@@ -58,7 +63,8 @@ const openDb = async ({
     try {
         return await orbitDb.open({
             databaseName,
-            databaseType
+            databaseType,
+            options
         });
     }
     catch (error) {

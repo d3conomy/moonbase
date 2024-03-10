@@ -120,36 +120,35 @@ class PodBay {
         orbitDbId?: IdReference['name'],
         dbName: string,
         dbType: OrbitDbTypes,
-        options?: any
+        options?: Map<string, string>
     }): Promise<string> {
         //get a pod with an orbitDbProcess
         let orbitDbPod: LunarPod | undefined;
-        let openDbOptions: { databaseName: string, databaseType: OrbitDbTypes | string};
+        let openDbOptions: { databaseName: string, databaseType: OrbitDbTypes | string, options: Map<string, string>};
 
         if (orbitDbId) {
             orbitDbPod = this.pods.find(pod => {
                 logger({
                     level: LogLevel.INFO,
                     message: `Checking pod ${pod.id.name} for orbitDb`
-                
                 })
-                if (pod.orbitDb) {
-                    if (pod.id.name === orbitDbId) {
-                        return pod;
-                    }
+
+                if (pod.orbitDb &&
+                    pod.id.name === orbitDbId &&
+                    pod.db.size > 0
+                ) {
+                    return pod;
                 }
             });
         }
         else {
-            orbitDbPod = this.pods.find(pod => pod.orbitDb);
-            logger({
-                level: LogLevel.INFO,
-                message: `Checking all pods for orbitDb ${orbitDbPod?.id.name}`
-            
-            })
+            orbitDbPod = this.pods.find(pod => pod.db.size === 0);
         }
 
-        if (!orbitDbPod) {
+        if (!orbitDbPod ||
+            !orbitDbPod.orbitDb ||
+            orbitDbPod?.db?.size > 0
+        ) {
             const podId = await this.newPod(new IdReference({component: Component.POD}), Component.ORBITDB);
             // orbitDbPod = this.pods.find(pod => pod.id.getId() === podId?.getId());
             orbitDbPod = this.getPod(podId);
@@ -164,9 +163,10 @@ class PodBay {
             openDbOptions = {
                 databaseName: dbName,
                 databaseType: dbType,
+                options: options? options : new Map<string, string>()
             };
             await orbitDbPod?.initOpenDb(openDbOptions)
-            return `Database ${dbName} opened`;
+            return dbName;
         }
         return `Database ${dbName} not opened`;
         

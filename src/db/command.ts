@@ -86,10 +86,10 @@ const execute = async ({
             case 'opendb':
                 const openDbOptions = {
                     databaseName: args.dbName,
-                    databaseType: args.dbType
+                    databaseType: args.dbType,
+                    options: args.options
                 }
                 return await pod.initOpenDb(openDbOptions);
-
             default:
                 throw new Error('Command not found');
         };

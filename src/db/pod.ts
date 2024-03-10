@@ -235,10 +235,12 @@ class LunarPod {
 
     public async initOpenDb({
         databaseName,
-        databaseType
+        databaseType,
+        options
     }: {
         databaseName?: string,
-        databaseType?: string
+        databaseType?: string,
+        options?: Map<string, string>
     }): Promise<string> {
         if (!this.orbitDb) {
             await this.initOrbitDb({});
@@ -248,7 +250,8 @@ class LunarPod {
             const openDbOptions = new _OpenDbOptions({
                 orbitDb: this.orbitDb,
                 databaseName,
-                databaseType
+                databaseType,
+                options
             });
 
             if (openDbOptions) {

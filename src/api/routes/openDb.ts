@@ -36,11 +36,9 @@ const router = express.Router();
 router.get('/db', async function(req: Request, res: Response) {
     const dbNames = podBay.getAllOpenDbNames();
 
-    res.send(
-        {
-            databases: dbNames
-        }
-    );
+    res.send({
+        databases: dbNames
+    });
 });
 
 
@@ -102,24 +100,26 @@ router.post('/db', async function(req: Request, res: Response) {
     let orbitDbId = req.body.OrbitDbId;
     const dbName = req.body.dbName;
     const dbType = req.body.dbType;
+    const options = req.body.options;
 
-    let orbitdb = podBay.getPod(new IdReference({id: orbitDbId, component: Component.ORBITDB}));
+    const db = await podBay.openDb({
+        orbitDbId,
+        dbName,
+        dbType,
+        options
+    });
 
-    if (!orbitdb) {
-        let neworbitDbId = await podBay.newPod(new IdReference({id: orbitDbId, component: Component.POD}), Component.ORBITDB);
-        orbitdb = podBay.getPod(neworbitDbId);
-    }
+    // let orbitdb = podBay.getPod(new IdReference({id: orbitDbId, component: Component.ORBITDB}));
 
-    const db = await orbitdb?.initOpenDb({
-        databaseName: dbName,
-        databaseType: dbType
-    })
+    // if (!orbitdb) {
+    //     let neworbitDbId = await podBay.newPod(new IdReference({id: orbitDbId, component: Component.POD}), Component.ORBITDB);
+    //     orbitdb = podBay.getPod(neworbitDbId);
+    // }
 
-    // The below code works but does not add the database to the pod
-    // const db = await orbitdb?.orbitDb?.open({
+    // const db = await orbitdb?.initOpenDb({
     //     databaseName: dbName,
     //     databaseType: dbType
-    // });
+    // })
 
     res.send({
         database: db

@@ -60,22 +60,26 @@ class _OrbitDbOptions {
     enableDID: boolean;
     identitySeed?: Uint8Array;
     identityProvider?: any;
+    directory?: string;
 
     constructor({
         ipfs,
         enableDID,
         identitySeed,
         identityProvider,
+        directory
     }: {
         ipfs: IpfsProcess;
         enableDID?: boolean;
         identitySeed?: Uint8Array;
         identityProvider?: any;
+        directory?: string;
     }) {
         this.ipfs = ipfs;
         this.enableDID = enableDID ? enableDID : false;
         this.identitySeed = identitySeed;
         this.identityProvider = identityProvider;
+        this.directory = directory ? directory : `./orbitdb/${new IdReference({component: Component.DB}).getId()}`;
 
         if (this.enableDID) {
             this.identityProvider = createIdentityProvider({
@@ -92,11 +96,13 @@ const createOrbitDbProcess = async (options: _OrbitDbOptions): Promise<typeof Or
             ipfs: options.ipfs.process,
             identity: {
                 provider: options.identityProvider
-            }
+            },
+            directory: options.directory
         });
     }
     return await createOrbitDB({
-        ipfs: options.ipfs.process
+        ipfs: options.ipfs.process,
+        directory: options.directory
     });
 }
 
@@ -156,10 +162,12 @@ class OrbitDbProcess
 
     public async open({
         databaseName,
-        databaseType
+        databaseType,
+        options
     }: {
         databaseName: string;
         databaseType: string;
+        options?: Map<string, string>
     }): Promise<void> {
         logger({
             level: LogLevel.INFO,
@@ -185,9 +193,13 @@ class OrbitDbProcess
                     message: `Opening OrbitDb process right now`
                 
                 })
-                return await this.process.open(databaseName, {
-                    type: databaseType
-                });
+                return await this.process.open(
+                    databaseName, 
+                    {
+                        type: databaseType
+                    },
+                    options?.entries()
+                );
             }
             catch (error) {
                 logger({

@@ -10,7 +10,7 @@ import { autoNAT } from '@libp2p/autonat'
 import { tcp } from '@libp2p/tcp'
 import { kadDHT, removePublicAddressesMapper } from '@libp2p/kad-dht'
 import { uPnPNAT } from '@libp2p/upnp-nat'
-import { webRTC } from '@libp2p/webrtc'
+// import { webRTC } from '@libp2p/webrtc'
 import { bootstrap } from '@libp2p/bootstrap'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { ipnsValidator } from 'ipns/validator'
@@ -43,20 +43,20 @@ const defaultLibp2pOptions = (): Libp2pOptions => {
             listen: [
                 '/ip4/0.0.0.0/udp/0/',
                 '/ip4/0.0.0.0/udp/0/quic-v1',
-                '/ip4/0.0.0.0/udp/0/quic-v1/webtransport',
+                // '/ip4/0.0.0.0/udp/0/quic-v1/webtransport',
                 '/ip4/0.0.0.0/tcp/0/ws/',
                 '/ip4/0.0.0.0/tcp/0',
-                '/webrtc',
+                // '/webrtc',
                 '/ip6/::/udp/0/',
                 '/ip6/::/udp/0/quic-v1',
-                '/ip6/::/udp/0/quic-v1/webtransport',
+                // '/ip6/::/udp/0/quic-v1/webtransport',
                 '/ip6/::/tcp/0/ws/',
                 '/ip6/::/tcp/0'
             ],
         },
         transports: [
             webSockets(),
-            webTransport(),
+            // webTransport(),
             tcp(),
             // webRTC(),
             circuitRelayTransport({
