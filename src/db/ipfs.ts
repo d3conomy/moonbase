@@ -98,7 +98,7 @@ class IpfsProcess
 
     public async stop(): Promise<void> {
         if (this.process) {
-            // await this.process.libp2p.stop()
+            await this.process.libp2p.stop()
             await this.process.stop()
             this.status?.update({stage: this.process.libp2p.status})
         }

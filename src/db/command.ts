@@ -22,34 +22,30 @@ const execute = async ({
                 else {
                     throw new Error('Libp2p component not available')
                 }
-                break;
             case 'multiaddrs':
                 if(pod.libp2p) {
-                    output = pod.libp2p.getMultiaddrs()
+                    return pod.libp2p.getMultiaddrs()
                 }
                 else {
                     throw new Error('Libp2p component not available')
                 }
-                break;
             case 'peerid':
                 if(pod.libp2p) {
-                    output = pod.libp2p.peerId()
+                    return pod.libp2p.peerId()
                 }
                 else {
                     throw new Error('Libp2p component not available')
                 }
-                break;
             case 'peers':
                 if(pod.libp2p) {
-                    output = pod.libp2p.peers()
+                    return pod.libp2p.peers()
                 }
                 else {
                     throw new Error('Libp2p component not available')
                 }
-                break;
             case 'protocols':
                 if(pod.libp2p) {
-                    output = pod.libp2p.getProtocols()
+                    return pod.libp2p.getProtocols()
                 }
                 else {
                     throw new Error('Libp2p component not available')
@@ -83,31 +79,59 @@ const execute = async ({
                 else {
                     throw new Error('IPFS component not available');
                 }
-            case 'opendb':
-                const openDbOptions = {
-                    databaseName: args.dbName,
-                    databaseType: args.dbType,
-                    options: args.options
-                }
-                return await pod.initOpenDb(openDbOptions);
             default:
                 throw new Error('Command not found');
         };
     }
     catch (e: any) {
-        output = {
+        return {
             message: `Command failed`,
             podId: pod.id,
             command: command,
             error: e.message
         }
-        // reject(e.message); 
     }
-
-    return output
 }
 
+const operation = async ({
+    openDb,
+    command,
+    args
+}: {
+    openDb: OpenDb,
+    command: string,
+    args?: any
+}): Promise<any> => {
+
+    try {
+        switch (command) {
+            case 'add':
+                return await openDb.add(args.value)
+            case 'put':
+                return await openDb.put(args.key, args.value)
+            case 'get':
+                return await openDb.get(args.key)
+            case 'del':
+                return await openDb.del(args.key)
+            case 'all':
+                return await openDb.all()
+            case 'query':
+                return await openDb.query(args.query)
+            default:
+                throw new Error('Command not found');
+        };
+    }
+    catch (e: any) {
+        return {
+            message: `Command failed`,
+            dbId: openDb.id,
+            command: command,
+            error: e.message
+        }
+    }
+}
 
 export {
-    execute
+    execute,
+    operation
 }

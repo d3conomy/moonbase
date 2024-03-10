@@ -5,6 +5,7 @@ import { podBay } from './podBay.js'
 import { IdReference } from '../../utils/id.js';
 import { Component } from '../../utils/constants.js';
 import { OpenDb, _OpenDbOptions } from '../../db/open.js';
+import { operation } from '../../db/command.js';
 
 
 const router = express.Router();
@@ -90,11 +91,15 @@ router.get('/open', async function(req: Request, res: Response) {
  *       schema:
  *        type: object
  *        properties:
- *         database:
+ *         id:
+ *          type: string
+ *         type:
+ *          type: string
+ *         address:
  *          type: string
  *       examples:
  *        test:
- *         value: {database: "test"}
+ *         value: {id: "test-events", type: "events", address: "/orbitdb/QmTest/test"}
  * */
 router.post('/open', async function(req: Request, res: Response) {
     let orbitDbId = req.body.OrbitDbId;
@@ -108,18 +113,6 @@ router.post('/open', async function(req: Request, res: Response) {
         dbType,
         options
     });
-
-    // let orbitdb = podBay.getPod(new IdReference({id: orbitDbId, component: Component.ORBITDB}));
-
-    // if (!orbitdb) {
-    //     let neworbitDbId = await podBay.newPod(new IdReference({id: orbitDbId, component: Component.POD}), Component.ORBITDB);
-    //     orbitdb = podBay.getPod(neworbitDbId);
-    // }
-
-    // const db = await orbitdb?.initOpenDb({
-    //     databaseName: dbName,
-    //     databaseType: dbType
-    // })
 
     if (!db) {
         res.status(500).send(`Database ${dbName} not opened`);
@@ -182,6 +175,92 @@ router.get('/db/:id', async function(req: Request, res: Response) {
         });
     }
 
+});
+
+
+/**
+ * @openapi
+ * /api/v0/db/{id}:
+ *  post:
+ *   tags:
+ *    - db
+ *   parameters:
+ *    - in: path
+ *      name: id
+ *      required: true
+ *      description: The database ID
+ *      schema:
+ *       type: string
+ *       example: "test-events"
+ *   requestBody:
+ *    description: Database command and arguments
+ *    required: true
+ *    content:
+ *     application/json:
+ *      schema:
+ *       type: object
+ *       properties:
+ *        command:
+ *         type: string
+ *        args:
+ *         type: object
+ *      examples:
+ *       add:
+ *        summary: Add a record to the database
+ *        value:
+ *         command: "add"
+ *         args: {key: "test", value: "test"}
+ *       get:
+ *        summary: Get a record from the database
+ *        value:
+ *         command: "get"
+ *         args: {key: "test"}
+ *       del:
+ *        summary: Delete a record from the database
+ *        value:
+ *         command: "del"
+ *         args: {key: "test"}
+ *   description: Execute a command on the database
+ *   responses:
+ *    200:
+ *     description: A successful response
+ *     content:
+ *      application/json:
+ *       schema:
+ *        type: object
+ *       examples:
+ *        test:
+ *         value: {key: "test", value: "test"}
+ * */
+router.post('/db/:id', async function(req: Request, res: Response) {
+    const id = req.params.id;
+    const command = req.body.command;
+    const args = req.body.args;
+
+    const db = podBay.getOpenDb(new IdReference({id, component: Component.DB}));
+
+    if (!db) {
+        res.status(404).send(`Database ${id} not found`);
+    }
+    else {
+        let result: any;
+        try {
+            result = await operation({
+                openDb: db, 
+                command: command,
+                args: args
+            })
+        }
+        catch (e: any) {
+            result = {
+                message: `Command failed`,
+                dbId: id,
+                command: command,
+                error: e.message
+            }
+        }
+        res.send(result);
+    }
 });
 
 export { router as dbRouter }

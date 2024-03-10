@@ -53,14 +53,14 @@ class LunarPod {
             this.libp2p?.id,
             this.ipfs?.id,
             this.orbitDb?.id,
-            this.db?.forEach(db => db.id)
+            ...Array.from(this.db.keys()).map(key => new IdReference({id: key, component: Component.DB}))
         ].filter(id => id !== undefined) as Array<IdReference>;
 
         const componentStatuses = [
             this.libp2p?.checkStatus(),
             this.ipfs?.status,
             this.orbitDb?.status,
-            this.db?.forEach(db => db.status)
+            ...Array.from(this.db.values()).map(db => db.status)
         ].filter(status => status !== undefined) as Array<_Status>;
 
         return componentIds.map((id, index) => {
@@ -98,11 +98,11 @@ class LunarPod {
                 await this.initLibp2p({});
                 break;
             case Component.IPFS:
-                await this.libp2p?.start();
+                // await this.libp2p?.start();
                 await this.initIpfs({});
                 break;
             case Component.ORBITDB:
-                await this.libp2p?.start();
+                // await this.libp2p?.start();
                 await this.initOrbitDb({});
                 break;
             case Component.DB:
@@ -201,6 +201,7 @@ class LunarPod {
             });
         }
         await this.ipfs.init();
+        await this.ipfs.start();
     }
 
     public async initOrbitDb({
