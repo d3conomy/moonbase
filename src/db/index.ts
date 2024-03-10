@@ -126,6 +126,15 @@ class PodBay {
         let orbitDbPod: LunarPod | undefined;
         let openDbOptions: { databaseName: string, databaseType: OrbitDbTypes | string, options: Map<string, string>};
 
+        if (this.getOpenDb(dbName)) {
+            logger({
+                level: LogLevel.INFO,
+                message: `Database ${dbName} already opened`
+            });
+            return this.getOpenDb(dbName);
+        }
+
+
         if (orbitDbId) {
             orbitDbPod = this.pods.find(pod => {
                 logger({
@@ -197,6 +206,28 @@ class PodBay {
 
         if (orbitDbPod) {
             return orbitDbPod.db.get(orbitDbId);
+        }
+    }
+
+    public async closeDb(dbName: string | IdReference): Promise<void> {
+        let orbitDbId: string;
+        if (dbName instanceof IdReference) {
+            orbitDbId = dbName.getId();
+        }
+        else {
+            orbitDbId = dbName;
+        }
+
+        //close the open db
+        const orbitDbPod = this.pods.find(pod => {
+            if (pod.db.has(orbitDbId)) {
+                return pod;
+            }
+        });
+
+        if (orbitDbPod) {
+            await orbitDbPod.stopOpenDb(orbitDbId);
+            this.removePod(orbitDbPod.id);
         }
     }
 }

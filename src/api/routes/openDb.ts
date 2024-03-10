@@ -210,6 +210,11 @@ router.get('/db/:id', async function(req: Request, res: Response) {
  *        value:
  *         command: "add"
  *         args: {key: "test", value: "test"}
+ *       put:
+ *        summary: Put a record in the database
+ *        value:
+ *         command: "put"
+ *         args: {key: "test", value: "test"}
  *       get:
  *        summary: Get a record from the database
  *        value:
@@ -220,6 +225,11 @@ router.get('/db/:id', async function(req: Request, res: Response) {
  *        value:
  *         command: "del"
  *         args: {key: "test"}
+ *       all: 
+ *        summary: Get all records from the database
+ *        value:
+ *         command: "all"
+ *         args: {}
  *   description: Execute a command on the database
  *   responses:
  *    200:
@@ -260,6 +270,47 @@ router.post('/db/:id', async function(req: Request, res: Response) {
             }
         }
         res.send(result);
+    }
+});
+
+
+/**
+ * @openapi
+ * /api/v0/db/{id}:
+ *  delete:
+ *   tags:
+ *    - db
+ *   parameters:
+ *    - in: path
+ *      name: id
+ *      required: true
+ *      description: The database ID
+ *      schema:
+ *       type: string
+ *       example: "test-events"
+ *   description: Stop the database
+ *   responses:
+ *    200:
+ *     description: A successful response
+ *     content:
+ *      application/json:
+ *       schema:
+ *        type: object
+ *       examples:
+ *        test:
+ *         value: "Database test-events stopped"
+ * */
+router.delete('/db/:id', async function(req: Request, res: Response) {
+    const id = req.params.id;
+
+    const db = podBay.getOpenDb(new IdReference({id, component: Component.DB}));
+
+    if (!db) {
+        res.status(404).send(`Database ${id} not found`);
+    }
+    else {
+        await db.stop();
+        res.send(`Database ${id} stopped`);
     }
 });
 

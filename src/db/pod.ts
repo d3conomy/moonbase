@@ -33,7 +33,7 @@ class LunarPod {
         libp2p?: Libp2pProcess,
         ipfs?: IpfsProcess,
         orbitDb?: OrbitDbProcess,
-    }) {
+    } = {}) {
         this.id = id ? id : new IdReference({ component: Component.POD });
         if (libp2p) {
             this.libp2p = libp2p;

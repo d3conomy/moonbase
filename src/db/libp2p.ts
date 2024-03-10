@@ -41,27 +41,27 @@ const defaultLibp2pOptions = (): Libp2pOptions => {
         start: false,
         addresses: {
             listen: [
-                '/ip4/0.0.0.0/udp/0/',
-                '/ip4/0.0.0.0/udp/0/quic-v1',
-                '/ip4/0.0.0.0/udp/0/quic-v1/webtransport',
+                // '/ip4/0.0.0.0/udp/0/',
+                // '/ip4/0.0.0.0/udp/0/quic-v1',
+                // '/ip4/0.0.0.0/udp/0/quic-v1/webtransport',
                 '/ip4/0.0.0.0/tcp/0/ws/',
                 '/ip4/0.0.0.0/tcp/0',
-                '/webrtc',
-                '/ip6/::/udp/0/',
-                '/ip6/::/udp/0/quic-v1',
-                '/ip6/::/udp/0/quic-v1/webtransport',
+                // '/webrtc',
+                // '/ip6/::/udp/0/',
+                // '/ip6/::/udp/0/quic-v1',
+                // '/ip6/::/udp/0/quic-v1/webtransport',
                 '/ip6/::/tcp/0/ws/',
                 '/ip6/::/tcp/0'
             ],
         },
         transports: [
             webSockets(),
-            webTransport(),
+            // webTransport(),
             tcp(),
-            webRTC(),
-            circuitRelayTransport({
-                discoverRelays: 2
-            }),
+            // webRTC(),
+            // circuitRelayTransport({
+            //     discoverRelays: 2
+            // }),
         ],
         connectionEncryption: [
             noise()
@@ -91,9 +91,9 @@ const defaultLibp2pOptions = (): Libp2pOptions => {
             //     peerInfoMapper: removePublicAddressesMapper,
             //     clientMode: false
             // }),
-            relay: circuitRelayServer({
-                advertise: true
-            }),
+            // relay: circuitRelayServer({
+            //     advertise: true
+            // }),
             dcutr: dcutr(),
         },
         peerDiscovery: [
