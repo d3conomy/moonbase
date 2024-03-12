@@ -210,21 +210,24 @@ class PodBay {
 
             try {
                 openDb = await orbitDbPod?.initOpenDb(openDbOptions);
-
-                if (openDb) {
-                    return { 
-                        openDb,
-                        address: openDb.address(),
-                        podId: orbitDbPod.id,
-                        multiaddrs: orbitDbPod.libp2p?.getMultiaddrs()
-                    }
-                }
             }
             catch (error) {
                 logger({
                     level: LogLevel.ERROR,
                     message: `Error opening database: ${error}`
                 });
+                await this.closeDb(openDbOptions.databaseName);
+                await this.removePod(orbitDbPod.id);
+                return;
+            }
+
+            if (openDb) {
+                return { 
+                    openDb,
+                    address: openDb.address(),
+                    podId: orbitDbPod.id,
+                    multiaddrs: orbitDbPod.libp2p?.getMultiaddrs()
+                }
             }
         }
     }

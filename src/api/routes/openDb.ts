@@ -114,10 +114,10 @@ router.post('/open', async function(req: Request, res: Response) {
         options
     });
 
-    // if (db?.address === undefined) {
-    //     res.status(404).send(`Database ${dbName} not found`);
-    //     return
-    // }
+    if (db?.address === undefined) {
+        res.status(404).send(`Database ${dbName} not found`);
+        return
+    }
 
     res.send({
         id: dbName,

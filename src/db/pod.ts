@@ -241,19 +241,24 @@ class LunarPod {
 
             try {
                 await db.init();
+
+                const orbitDbName = databaseName ? databaseName : db.id.name;
+
+                this.db.set(orbitDbName , db);
+    
+                return db;
             }
             catch (error) {
                 logger({
                     level: LogLevel.ERROR,
                     message: `Error opening database: ${error}`
                 });
+                await this.stop()
+                throw error;
             }
 
-            const orbitDbName = databaseName ? databaseName : db.id.name;
+            
 
-            this.db.set(orbitDbName , db);
-
-            return db;
         }
         // return `Database ${databaseName} not opened`;
     }

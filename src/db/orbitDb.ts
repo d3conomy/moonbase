@@ -162,13 +162,6 @@ class OrbitDbProcess
         databaseType: string;
         options?: Map<string, string>
     }): Promise<typeof Database> {
-        logger({
-            level: LogLevel.INFO,
-            component: Component.ORBITDB,
-            code: ResponseCode.SUCCESS,
-            message: `Opening OrbitDb process`
-        
-        })
         if (!this.process) {
             logger({
                 level: LogLevel.ERROR,
@@ -180,12 +173,6 @@ class OrbitDbProcess
         }
         else {
             try {
-                logger({
-                    level: LogLevel.INFO,
-                    component: Component.ORBITDB,
-                    message: `Opening OrbitDb process right now`
-                
-                })
                 return await this.process.open(
                     databaseName, 
                     {
@@ -198,17 +185,10 @@ class OrbitDbProcess
                 logger({
                     level: LogLevel.ERROR,
                     component: Component.ORBITDB,
-                    message: `Error opening OrbitDb process: ${error}`
+                    message: `Error opening database process: ${error}`
                 })
-                // new Error(`Error opening OrbitDb process: ${error}`)
+                throw error;
             }
-            
-            // logger({
-            //     level: LogLevel.INFO,
-            //     component: Component.ORBITDB,
-            //     code: ResponseCode.SUCCESS,
-            //     message: `OrbitDb process opened`
-            // })
         }
     }
 }
