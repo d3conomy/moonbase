@@ -90,10 +90,11 @@ router.get('/pods', async function(req: Request, res: Response) {
 router.post('/pods', async function(req: Request, res: Response) {
     const id = req.body.id;
     const component = req.body.component ? req.body.component : Component.ORBITDB;
-    await podBay.newPod(new IdReference({component: Component.POD, id}), component);
+    const idRef: IdReference = new IdReference({component: Component.POD, id});
+    await podBay.newPod(idRef, component);
     res.send({
         message: `Pod created`,
-        podId: id,
+        podId: idRef.getId(),
         component: component
     });
 });

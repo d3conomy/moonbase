@@ -82,6 +82,11 @@ class PodBay {
     public async removePod(id: IdReference): Promise<void> {
         const pod = this.getPod(id);
         if (pod) {
+            if (pod.db.size > 0) {
+                pod.db.forEach(async (db, key) => {
+                    await pod.stopOpenDb(key);
+                });
+            }
             await pod.stop();
             const index = this.pods.indexOf(pod);
             this.pods.splice(index, 1);
