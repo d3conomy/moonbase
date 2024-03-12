@@ -91,7 +91,10 @@ class PodBay {
             });
         }
         else {
-            throw new Error(`Pod with id ${id.getId()} not found`);
+            logger({
+                level: LogLevel.ERROR,
+                message: `Pod with id ${id.getId()} not found`
+            });
         }
     }
 
@@ -266,4 +269,7 @@ class PodBay {
     }
 }
 
-export { PodBay };
+export {
+    PodBay,
+    LunarPod
+};

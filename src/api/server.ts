@@ -1,4 +1,5 @@
 import express, { Request, Response, NextFunction} from 'express';
+import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
 
@@ -75,6 +76,13 @@ class ApiServer {
         };
 
         const specs = swaggerJsdoc(options);
+
+        const corsOptions = {
+            origin: 'http://localhost:3001',
+            optionsSuccessStatus: 200
+        }
+
+        this.app.use(cors(corsOptions));
 
         this.app.use(express.json());
         this.app.use('/api/v0',
