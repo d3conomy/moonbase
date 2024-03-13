@@ -283,19 +283,34 @@ class LunarPod {
         }
     }
 
-    public async stop(): Promise<void> {
-        if (this.db) {
+    public async stop(component: string = 'all'): Promise<void> {
+        if (
+            ( this.db && component === 'all' ) ||
+            ( this.db && component === 'db' )
+        ) {
             this.db.forEach(async db => {
                 await db.stop();
             });
         }
-        if (this.orbitDb) {
+
+        if (
+            ( this.orbitDb && component === 'all' ) ||
+            ( this.orbitDb && component === 'orbitdb' )
+        ) {
             await this.orbitDb.stop();
         }
-        if (this.ipfs) {
+
+        if (
+            ( this.ipfs && component === 'all' ) ||
+            ( this.ipfs && component === 'ipfs' )
+        ) {
             await this.ipfs.stop();
         }
-        if (this.libp2p) {
+
+        if (
+            ( this.libp2p && component === 'all' ) ||
+            ( this.libp2p && component === 'libp2p' )
+        ) {
             await this.libp2p.stop();
         }
     }

@@ -54,6 +54,13 @@ class _Status
     }
 }
 
+interface _IBaseStatusLog {
+    status: _IBaseStatus
+    logs: Array<_IBaseStatus>
+
+    add()
+}
+
 interface _IBaseProcess {
     id: IdReference
     process?: any
@@ -115,8 +122,10 @@ class _BaseProcess {
 
     public async start(): Promise<void> {
         if (this.process) {
-            await this.process.start()
-            this.status?.update({stage: this.process.status})
+            if(this.checkStatus().stage === "stopped") {
+                await this.process.start()
+                this.status?.update({stage: this.process.status})
+            }
         }
     }
 
@@ -129,7 +138,6 @@ class _BaseProcess {
 
     public async restart(): Promise<void> {
         await this.stop()
-        await this.init()
         await this.start()
     }
 
