@@ -94,7 +94,7 @@ class ApiServer {
         this.app.get('/api/v0/docs', swaggerUi.setup(specs, { explorer: true }));
 
         this.app.use(function (err: Error, req: Request, res: Response, next: NextFunction): void {
-            res.status(500).send(err);
+            res.status(500).send(res);
         });
     }
 

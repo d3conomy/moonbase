@@ -173,6 +173,12 @@ class OrbitDbProcess
         }
         else {
             try {
+                if (databaseName.startsWith('/orbitdb')) {
+                    return await this.process.open(
+                        databaseName
+                    )
+                };
+
                 return await this.process.open(
                     databaseName, 
                     {
