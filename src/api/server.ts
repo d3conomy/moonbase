@@ -127,7 +127,12 @@ class ApiServer {
             ]
         };
 
-        const specs = swaggerJsdoc(options);
+        const corsOptions = {
+            origin: 'http://localhost:3001',
+            optionsSuccessStatus: 200
+        }
+
+        this.app.use(cors(corsOptions));
 
         const podBayMiddleware = (req: Request, _res: Response, next: NextFunction) => {
             req.podBay = actievPodBay;
@@ -141,6 +146,8 @@ class ApiServer {
             podBayRouter,
             dbRouter
         );
+
+        const specs = swaggerJsdoc(options);
         this.app.use('/api/v0/docs', swaggerUi.serve);
         this.app.get('/api/v0/docs', swaggerUi.setup(specs, { explorer: true }));
 

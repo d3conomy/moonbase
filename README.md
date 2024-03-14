@@ -16,9 +16,13 @@
 ### Pod Bay
 - Manages pods
 
-### Command Deck
-- Executes commands on pods
+### API
+- Exposes the pods
 
-## Notes
-- Cannot assign two IPFS (Helia) processes to the same Lib2p2 process
-- Cannot assign two OrbitDB processes to the same IPFS process; levelDb errors.
+## Docs
+
+Build the docs using typedoc:
+
+```sh
+npx typedoc --out docs src
+```

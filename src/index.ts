@@ -78,11 +78,11 @@ class Moonbase {
     }
 }
 
-while (loadedConfig === null || loadedConfig === undefined) {
-    setTimeout(() => {
-        console.log('Waiting for config to load...');
-    }, 100);
-}
+// while (loadedConfig === null || loadedConfig === undefined) {
+//     setTimeout(() => {
+//         console.log('Waiting for config to load...');
+//     }, 100);
+// }
 const moonbase = new Moonbase();
 moonbase.init();
 
