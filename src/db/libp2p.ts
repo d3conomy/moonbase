@@ -16,16 +16,26 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import { ipnsValidator } from 'ipns/validator'
 import { ipnsSelector } from 'ipns/selector'
 import { mdns } from '@libp2p/mdns'
-import { mplex } from '@libp2p/mplex'
+// import { mplex } from '@libp2p/mplex'
 import { Libp2p, Libp2pOptions, createLibp2p } from 'libp2p'
 import { Libp2pStatus, PeerId, Connection, Stream } from '@libp2p/interface'
 import { IdReference } from '../utils/id.js'
 import { Component, LogLevel, logger } from '../utils/index.js'
 import { Multiaddr, multiaddr } from '@multiformats/multiaddr'
-import { _BaseProcess, _Status, _IBaseProcess, _IBaseStatus } from './base.js'
+import { _BaseProcess, _IBaseProcess } from './base.js'
+import { ProcessStage, isProcessStage } from '../utils/constants.js'
 
 
-
+/**
+ * Default bootstrap configuration for libp2p
+ * @type {any}
+ * @default
+ * @constant
+ * @private
+ * @since 0.0.1
+ * @category libp2p
+ * @property {string[]} list - List of bootstrap nodes
+ */
 const defaultBootstrapConfig: any = {
     list: [
         "/dnsaddr/bootstrap.libp2p.io/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
@@ -36,6 +46,14 @@ const defaultBootstrapConfig: any = {
     ]
 }
 
+/**
+ * Default libp2p options
+ * @function
+ * @private
+ * @since 0.0.1
+ * @category libp2p
+ * @returns {Libp2pOptions} - Default libp2p options
+ */
 const defaultLibp2pOptions = (): Libp2pOptions => {
     const libp2pOptions: Libp2pOptions = {
         start: false,
@@ -58,7 +76,7 @@ const defaultLibp2pOptions = (): Libp2pOptions => {
             webSockets(),
             webTransport(),
             tcp(),
-            webRTC(),
+            // webRTC(),
             circuitRelayTransport({
                 discoverRelays: 2
             }),
@@ -109,6 +127,15 @@ const defaultLibp2pOptions = (): Libp2pOptions => {
 return libp2pOptions
 }
 
+/**
+ * Options for creating a libp2p process
+ * @class
+ * @public
+ * @since 0.0.1
+ * @category libp2p
+ * @property {boolean} start - Start the process after creation
+ * @property {Libp2pOptions} processOptions - Options for creating the libp2p process
+ */
 class _Libp2pOptions {
     public start: boolean;
     public processOptions: Libp2pOptions
@@ -123,17 +150,58 @@ class _Libp2pOptions {
         this.start = start ? start : false
         this.processOptions = processOptions ? processOptions : defaultLibp2pOptions()
         this.processOptions.start = this.start
+
+        logger({
+            stage: ProcessStage.NEW,
+            level: LogLevel.INFO,
+            processId: new IdReference({component: Component.LIBP2P}),
+            message: `Libp2p options loaded`,
+        })
     }
 }
 
-const createLibp2pProcess = async (options?: _Libp2pOptions): Promise<Libp2p> => {
+/**
+ * Create a libp2p process
+ * @function
+ * @public
+ * @since 0.0.1
+ * @category libp2p
+ * @param {Libp2pOptions} - Options for creating the libp2p process
+ * @returns {Promise<Libp2p>} - A new libp2p process
+ */
+const createLibp2pProcess = async (
+    options?: _Libp2pOptions
+): Promise<Libp2p> => {
     if (!options) {
         options = new _Libp2pOptions({start: false})
     }
-    
-    return await createLibp2p(options.processOptions)
+
+    try {
+        return await createLibp2p(options.processOptions)
+    }
+    catch (error: any) {
+        logger({
+            level: LogLevel.ERROR,
+            stage: ProcessStage.ERROR,
+            message: `Error creating Libp2p process: ${error.message}`,
+            error: error
+        })
+        throw error
+    }
 }
 
+
+/**
+ * A class for managing a libp2p process
+ * @class
+ * @public
+ * @since 0.0.1
+ * @category libp2p
+ * @extends _BaseProcess
+ * @implements _IBaseProcess
+ * @property {Libp2p} process - The libp2p process
+ * @property {_Libp2pOptions} options - Options for creating the libp2p process
+ */
 class Libp2pProcess
     extends _BaseProcess
     implements _IBaseProcess
@@ -158,32 +226,170 @@ class Libp2pProcess
         })
     }
 
+    /**
+     * Initialize the libp2p process
+     * @function
+     * @public
+     * @since 0.0.1
+     * @category libp2p
+     * @returns Promise<void>
+     * @throws Error
+     * @override
+     * @async
+     * @memberof Libp2pProcess
+     */
     public async init(): Promise<void> {
         if (!this.process) {
-            this.process = await createLibp2pProcess(this.options)
+            try {
+                this.process = await createLibp2pProcess(this.options)
+            }
+            catch {
+                const message = `Error initializing process for ${this.id.component}-${this.id.name}`
+                logger({
+                    level: LogLevel.ERROR,
+                    stage: ProcessStage.ERROR,
+                    processId: this.id,
+                    message: message
+                })
+                throw new Error(message)
+            }
+            logger({
+                level: LogLevel.INFO,
+                stage: ProcessStage.INIT,
+                processId: this.id,
+                message: `Process initialized for ${this.id.component}-${this.id.name}`
+            })
         }
-        this.status = new _Status({stage: this.process?.status, message: `Libp2p process initialized`})
     }
 
-    public checkStatus(): _Status {
-        const status = this.process?.status ? this.process.status : "undefined"
-        this.status?.update({stage: status, message: `Libp2p process status checked`})
-        return this.status ? this.status : new _Status({stage: status, message: `Libp2p process status checked`})
+    /**
+     * Start the libp2p process
+     * @function
+     * @public
+     * @since 0.0.1
+     * @category libp2p
+     * @returns Promise<void>
+     * @throws Error
+     * @override
+     * @async
+     * @memberof Libp2pProcess
+     */
+    public checkStatus(): ProcessStage {
+        const status = isProcessStage(
+            this.process?.status ? this.process.status : ProcessStage.UNKNOWN
+        );
+        
+        logger({
+            level: LogLevel.INFO,
+            stage: status,
+            processId: this.id,
+            message: `Process status checked for ${this.id.component}-${this.id.name}: ${status}`
+        })
+        return status
     }
 
-    public peerId(): PeerId | string {
-        return this.process?.peerId ? this.process.peerId.toString() : ""
+    /**
+     * Get the PeerId for the libp2p process
+     * @returns PeerId - The PeerId for the libp2p process
+     * @throws Error
+     * @memberof Libp2pProcess
+     * @public
+     * @since 0.0.1
+     * @category libp2p
+     */
+    public peerId(): PeerId {
+        let peerId: PeerId;
+        try {
+            if (!this.process) {
+                throw new Error(`No process found for ${this.id.component}`)
+            }
+            peerId = this.process.peerId
+        }
+        catch (error: any) {
+            logger({
+                level: LogLevel.ERROR,
+                stage: ProcessStage.ERROR,
+                processId: this.id,
+                message: `Error getting PeerId for ${this.id.component}-${this.id.name}: ${error.message}`,
+                error: error
+            })
+            throw error
+        }
+        return peerId
     }
 
+    /**
+     * Get the multiaddresses for the libp2p process
+     * @returns Multiaddr[] - The multiaddresses for the libp2p process
+     * @throws Error
+     * @memberof Libp2pProcess
+     * @public
+     * @since 0.0.1
+     * @category libp2p
+     */
     public getMultiaddrs(): Multiaddr[] {
-        return this.process?.getMultiaddrs() ? this.process.getMultiaddrs() : []
+        let multiaddrs: Multiaddr[];
+        try {
+            if (!this.process) {
+                throw new Error(`No process found for ${this.id.component}`)
+            }
+            multiaddrs = this.process.getMultiaddrs()
+        }
+        catch (error: any) {
+            logger({
+                level: LogLevel.ERROR,
+                stage: ProcessStage.ERROR,
+                processId: this.id,
+                message: `Error getting multiaddrs for ${this.id.component}-${this.id.name}: ${error.message}`,
+                error: error
+            })
+            throw error
+        }
+        return multiaddrs;
     }
 
+    /**
+     * Get the peers for the libp2p process
+     * @returns PeerId[] - The peers for the libp2p process
+     * @throws Error
+     * @memberof Libp2pProcess
+     * @public
+     * @since 0.0.1
+     * @category libp2p
+     */
     public peers(): PeerId[] {
-        return this.process?.getPeers() ? this.process.getPeers() : []
+        let peers: PeerId[];
+        try {
+            if (!this.process) {
+                throw new Error(`No process found for ${this.id.component}`)
+            }
+            peers = this.process.getPeers()
+        }
+        catch (error: any) {
+            logger({
+                level: LogLevel.ERROR,
+                stage: ProcessStage.ERROR,
+                processId: this.id,
+                message: `Error getting peers for ${this.id.component}-${this.id.name}: ${error.message}`,
+                error: error
+            })
+            throw error
+        }
+        return peers
     }
 
-    public connections(peerId?: string, max: number = 10): Connection[] | undefined {
+    /**
+     * Get the connections for the libp2p process
+     * @param {string} peerId - The peerId for the connections
+     * @param {number} max - The maximum number of connections to return
+     * @returns Connection[] - The connections for the libp2p process
+     * @throws Error
+     * @memberof Libp2pProcess
+     * @public
+     * @since 0.0.1
+     * @category libp2p
+     */
+    public connections(peerId?: string, max: number = 10): Connection[] {
         if (this.process && peerId) {
             const peerIdObject = peerIdFromString(peerId);
             return this.process.getConnections(peerIdObject);
@@ -214,28 +420,107 @@ class Libp2pProcess
         return peerConnections
     }
 
+    /**
+     * Get the protocols for the libp2p process
+     * @returns string[] - The protocols for the libp2p process
+     * @throws Error
+     * @memberof Libp2pProcess
+     * @public
+     * @since 0.0.1
+     * @category libp2p
+     */
     public getProtocols(): string[] {
-        return this.process?.getProtocols() ? this.process.getProtocols() : []
+        let protocols;
+        if (!this.process) {
+            throw new Error(`No process found for ${this.id.component}`)
+        }
+        try {
+            protocols = this.process.getProtocols()
+        }
+        catch (error: any) {
+            logger({
+                level: LogLevel.ERROR,
+                stage: ProcessStage.ERROR,
+                processId: this.id,
+                message: `Error getting protocols for ${this.id.component}-${this.id.name}: ${error.message}`,
+                error: error
+            })
+            throw error
+        }
+        return protocols
     }
 
-    public async dial(address: string): Promise<Connection | Error | undefined> {
-        let output: Connection | Error | undefined = undefined;
+    /**
+     * dial a libp2p address
+     * @param {string} address - The address to dial
+     * @returns Connection - The connection
+     * @throws Error
+     * @memberof Libp2pProcess
+     * @public
+     * @since 0.0.1
+     * @category libp2p
+     * @async
+     */
+    public async dial(address: string): Promise<Connection | undefined> {
+        let output: Connection | undefined = undefined;
         try {
            output = await this.process?.dial(multiaddr(address))
         }
         catch (error: any) {
-            output = error
+            logger({
+                level: LogLevel.ERROR,
+                stage: ProcessStage.ERROR,
+                processId: this.id,
+                message: `Error dialing for ${this.id.component}-${this.id.name}: ${error.message}`,
+                error: error
+            })
+            throw error
+        }
+        if (!output) {
+            logger({
+                level: LogLevel.ERROR,
+                stage: ProcessStage.ERROR,
+                processId: this.id,
+                message: `Dialed but no Connection was return for ${this.id.component}-${this.id.name}: unknown error`
+            })
         }
         return output
     }
 
-    public async dialProtocol(address: string, protocol: string): Promise<Stream | Error | undefined> {
-        let output: Stream | Error | undefined;
+    /**
+     * Dial a libp2p address and protocol
+     * @param {string} address - The address to dial
+     * @param {string} protocol - The protocol to dial
+     * @returns Stream - The stream
+     * @throws Error
+     * @memberof Libp2pProcess
+     * @public
+     * @since 0.0.1
+     * @category libp2p
+     * @async
+     */ 
+    public async dialProtocol(address: string, protocol: string): Promise<Stream | undefined> {
+        let output: Stream | undefined = undefined;
         try {
            output = await this.process?.dialProtocol(multiaddr(address), protocol)
         }
         catch (error: any) {
-            output = error
+            logger({
+                level: LogLevel.ERROR,
+                stage: ProcessStage.ERROR,
+                processId: this.id,
+                message: `Error dialing protocol for ${this.id.component}-${this.id.name}: ${error.message}`,
+                error: error
+            })
+            throw error
+        }
+        if (!output) {
+            logger({
+                level: LogLevel.ERROR,
+                stage: ProcessStage.ERROR,
+                processId: this.id,
+                message: `Dialed protocol but no Stream was return for ${this.id.component}-${this.id.name}: unknown error`
+            })
         }
         return output
     }

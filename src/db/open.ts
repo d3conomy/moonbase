@@ -7,7 +7,7 @@ import {
     Database
 } from '@orbitdb/core';
 import { OrbitDbProcess } from './orbitDb.js';
-import { _BaseProcess, _IBaseProcess, _Status } from './base.js';
+import { _BaseProcess, _IBaseProcess } from './base.js';
 
 enum OrbitDbTypes {
     EVENTS = 'events',
@@ -101,29 +101,54 @@ class OpenDb
     }
 
     public async init(): Promise<void> {
-        if (this.process) {
-            this.status = new _Status({
-                message: `Database process already initialized`
+        if (this.checkProcess()) {
+            logger({
+                level: LogLevel.WARN,
+                processId: this.id,
+                message: `Database process already exists`
             });
             return;
         }
 
-        if (!this.options) {
-            throw new Error(`No OpenDb options found`)
+        if (this.options) {
+            this.process = await openDb({
+                orbitDb: this.options.orbitDb,
+                databaseName: this.options.databaseName,
+                databaseType: this.options.databaseType,
+                options: this.options.options
+            });
         }
-        const process = await openDb(this.options);
-        this.status = new _Status({
-            message: `Database process initialized`
+        else {
+            logger({
+                level: LogLevel.ERROR,
+                processId: this.id,
+                message: `No database options found`
+            });
+            throw new Error(`No database options found`);
+        }
+        logger({
+            level: LogLevel.INFO,
+            processId: this.id,
+            message: `Database process created`
         });
-        this.process = process;
     }
 
     public async stop(): Promise<void> {
-        if (this.process) {
-            await this.process.close();
-            this.status = new _Status({
-                message: `Database process closed`
+        if (this.checkProcess()) {
+            await this.process?.close();
+            logger({
+                level: LogLevel.INFO,
+                processId: this.id,
+                message: `Database process stopped`
             });
+        }
+        else {
+            logger({
+                level: LogLevel.ERROR,
+                processId: this.id,
+                message: `No database process found`
+            });
+            throw new Error(`No database process found`);
         }
     }
 

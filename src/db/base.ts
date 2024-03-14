@@ -1,5 +1,5 @@
 import { Libp2p } from "libp2p"
-import { Component } from "../utils/constants.js"
+import { Component, LogLevel, ProcessStage, isProcessStage } from "../utils/constants.js"
 import { IdReference } from "../utils/id.js"
 import { Helia } from "helia"
 import { OrbitDb, Database } from "@orbitdb/core"
@@ -7,68 +7,16 @@ import { _Libp2pOptions } from "./libp2p.js"
 import { _IpfsOptions } from "./ipfs.js"
 import { _OrbitDbOptions } from "./orbitDb.js"
 import { _OpenDbOptions } from "./open.js"
+import { logger } from "../utils/logBook.js"
 
-interface _IBaseStatus {
-    stage: string
-    message?: string
-    updated: Date
-
-    update({
-        stage,
-        message
-    }: {
-        stage?: string,
-        message?: string
-    }): void
-}
-
-class _Status
-    implements _IBaseStatus
-{
-    public stage: string
-    public message?: string
-    public updated: Date = new Date()
-
-    constructor({
-        stage,
-        message
-    }: {
-        stage?: string,
-        message?: string,
-    }) {
-        this.stage = stage ? stage : "init"
-        this.message = message
-        this.updated = new Date()
-    }
-
-    public update({
-        stage,
-        message,
-    }: {
-        stage?: string,
-        message?: string,
-    }): void {
-        this.stage = stage ? stage : this.stage
-        this.message = message
-        this.updated = new Date()
-    }
-}
-
-interface _IBaseStatusLog {
-    status: _IBaseStatus
-    logs: Array<_IBaseStatus>
-
-    add()
-}
 
 interface _IBaseProcess {
     id: IdReference
     process?: any
     options?: any
-    status?: _IBaseStatus
 
     checkProcess(): boolean
-    checkStatus(force?: boolean): _IBaseStatus
+    checkStatus(force?: boolean): ProcessStage
     init(): Promise<void>
     start(): Promise<void>
     stop(): Promise<void>
@@ -80,13 +28,10 @@ type _ProcessOptions = _Libp2pOptions | _IpfsOptions | _OrbitDbOptions | _OpenDb
 
 class _BaseProcess {
     public id: IdReference
-    public component: Component
     public process?: _ProcessType
     public options?: _ProcessOptions
-    public status?: _Status
 
     constructor({
-        component,
         id,
         process,
         options
@@ -96,24 +41,74 @@ class _BaseProcess {
         process?: _ProcessType
         options?: _ProcessOptions
     } = {}) {
-        this.component = component ? component : Component.PROCESS
-        this.id = id ? id : new IdReference({ component: this.component });
+        this.id = id ? id : new IdReference({ component: Component.PROCESS });
         this.process = process
         this.options = options
+        logger({
+            level: LogLevel.INFO,
+            stage: ProcessStage.NEW,
+            message: `New Base process ready for ${this.id.component}-${this.id.name}`
+        })
     }
 
     public checkProcess(): boolean {
-        return this.process ? true : false
+        if (!this.process) {
+            logger({
+                level: LogLevel.ERROR,
+                stage: ProcessStage.ERROR,
+                processId: this.id,
+                message: `Process not found for ${this.id.component}-${this.id.name}`
+            })
+            return false
+        }
+        return true
     }
 
-    public checkStatus(update: boolean = true): _Status {
-        if (update || !this.status) {
-            this.status = new _Status({
-                stage: this.process?.status,
-                message: `${this.id.component} process status checked`
-            })
+    public checkStatus(update: boolean = true): ProcessStage {
+        let stage: ProcessStage = ProcessStage.UNKNOWN;
+        try {
+            if (!this.process) {
+                logger({
+                    level: LogLevel.ERROR,
+                    stage: ProcessStage.ERROR,
+                    processId: this.id,
+                    message: `Process not found for ${this.id.component}-${this.id.name}`
+                })
+                return ProcessStage.ERROR
+            }
+            const status = this.process.status
+
+            try {
+                stage = isProcessStage(status) ? status : ProcessStage.UNKNOWN
+            }
+            catch (error: any) {
+                logger({
+                    level: LogLevel.ERROR,
+                    stage: ProcessStage.ERROR,
+                    processId: this.id,
+                    message: `Error checking process status for ${this.id.component}-${this.id.name}: ${error.message}`,
+                    error: error
+                })
+            }
+            if (update) {
+                logger({
+                    level: LogLevel.INFO,
+                    stage: stage,
+                    message: `Process status checked for ${this.id.component}: ${stage}`
+                })
+            }
         }
-        return this.status
+        catch (error: any) {
+            logger({
+                level: LogLevel.ERROR,
+                stage: ProcessStage.ERROR,
+                message: `Error checking process status for ${this.id.component}: ${error.message}`,
+                error: error
+            })
+            throw error
+        }
+
+        return stage as ProcessStage
     }
 
     public async init(): Promise<void> {
@@ -121,18 +116,87 @@ class _BaseProcess {
     }
 
     public async start(): Promise<void> {
-        if (this.process) {
-            if(this.checkStatus().stage === "stopped") {
+        if (
+            this.process &&
+            this.checkStatus() === "stopped"
+        ) {
+            try {
                 await this.process.start()
-                this.status?.update({stage: this.process.status})
             }
+            catch (error: any) {
+                logger({
+                    level: LogLevel.ERROR,
+                    stage: ProcessStage.ERROR,
+                    processId: this.id,
+                    message: `Error starting process for ${this.id.component}-${this.id.name}: ${error.message}`,
+                    error: error
+                })
+                throw error
+            }
+            logger(({
+                level: LogLevel.INFO,
+                stage: ProcessStage.STARTED,
+                processId: this.id,
+                message: `Process started for ${this.id.component}-${this.id.name}`
+            }))
+        }
+        else if (
+            this.process &&
+            this.checkStatus() === "starting"
+        ) {
+            logger({
+                level: LogLevel.WARN,
+                stage: ProcessStage.WARNING,
+                processId: this.id,
+                message: `Process already starting for ${this.id.component}-${this.id.name}`
+            })
+        }
+        else {
+            logger({
+                level: LogLevel.ERROR,
+                stage: ProcessStage.ERROR,
+                processId: this.id,
+                message: `Process not found for ${this.id.component}-${this.id.name}`
+            })
+            throw new Error(`Process not found for ${this.id.component}-${this.id.name}`)
         }
     }
 
     public async stop(): Promise<void> {
-        if (this.process) {
-            await this.process.stop()
-            this.status?.update({stage: this.process.status})
+        if (
+            this.process &&
+            this.checkStatus() === "started"
+        ){
+            try {
+                await this.process.stop()
+            }
+            catch (error: any) {
+                logger({
+                    level: LogLevel.ERROR,
+                    stage: ProcessStage.ERROR,
+                    processId: this.id,
+                    message: `Error stopping process for ${this.id.component}-${this.id.name}: ${error.message}`,
+                    error: error
+                })
+                throw error
+            }
+            logger({
+                level: LogLevel.INFO,
+                stage: ProcessStage.STOPPED,
+                processId: this.id,
+                message: `Process stopped for ${this.id.component}-${this.id.name}`
+            })
+        }
+        else if (
+            this.process &&
+            this.checkStatus() === "stopping"
+        ) {
+            logger({
+                level: LogLevel.WARN,
+                stage: ProcessStage.WARNING,
+                processId: this.id,
+                message: `Process already stopping for ${this.id.component}-${this.id.name}`
+            })
         }
     }
 
@@ -140,13 +204,10 @@ class _BaseProcess {
         await this.stop()
         await this.start()
     }
-
 }
 
 
 export {
     _IBaseProcess,
-    _IBaseStatus,
-    _Status,
     _BaseProcess
 }

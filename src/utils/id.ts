@@ -1,20 +1,10 @@
 import { Component } from "./constants";
 
-const createRandomId = () => {
-    return Math.random().toString(36).substring(2, 15);
+
+const createRandomId = (): string => {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 }
 
-const createNodeId = (type: Component) => {
-    return `${type}-${createRandomId()}`;
-}
-
-const createCommandId = (nodeId: string, action: string) => {
-    return `command-${action}-${nodeId}-${createRandomId()}`;
-}
-
-const createDbId = (dbType: string, dbName: string) => {
-    return `${dbType}-${dbName}`;
-}
 
 class IdReference {
     public name: string;
@@ -45,16 +35,13 @@ class IdReference {
     }
 
     public randomId(): string {
-        return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        return createRandomId();
     }
 }
 
 
 export {
     createRandomId,
-    createNodeId,
-    createCommandId,
-    createDbId,
     IdReference
 }
 

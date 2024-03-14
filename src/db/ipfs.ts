@@ -4,11 +4,21 @@ import { Helia, createHelia} from "helia";
 import { dagJson } from "@helia/dag-json";
 import { dagCbor } from "@helia/dag-cbor";
 import { CID } from "multiformats";
-import { Component } from "../utils/index.js";
+import { Component, LogLevel, ProcessStage, logger } from "../utils/index.js";
 import { Libp2pProcess } from "./libp2p.js";
 import { IdReference } from "../utils/id.js";
-import { _BaseProcess, _Status, _IBaseProcess } from "./base.js";
+import { _BaseProcess, _IBaseProcess } from "./base.js";
 
+
+/**
+ * @class _IpfsOptions
+ * @classdesc The options for creating an Ipfs process
+ * @property {Libp2pProcess} libp2p - The libp2p process to use
+ * @property {any} datastore - The datastore to use
+ * @property {any} blockstore - The blockstore to use
+ * @property {boolean} start - Whether to start the process
+ * @public
+ */
 class _IpfsOptions {
     libp2p: Libp2pProcess
     datastore: any
@@ -37,6 +47,13 @@ class _IpfsOptions {
     }
 }
 
+/**
+ * @function createIpfsProcess
+ * @description Create an Ipfs process
+ * @param {any} options - The options for creating the process
+ * @returns {Promise<Helia>} - The created process
+ * @public
+ */
 const createIpfsProcess = async (options: _IpfsOptions): Promise<Helia> => {
     return await createHelia({
         libp2p: options.libp2p.process,
@@ -47,6 +64,15 @@ const createIpfsProcess = async (options: _IpfsOptions): Promise<Helia> => {
 }
 
 
+/**
+ * @class IpfsProcess
+ * @classdesc The Ipfs process
+ * @property {Helia} process - The Helia instance
+ * @property {_IpfsOptions} options - The options for creating the process
+ * @public
+ * @extends _BaseProcess
+ * @implements _IBaseProcess
+ */
 class IpfsProcess 
     extends _BaseProcess
     implements _IBaseProcess
@@ -72,65 +98,187 @@ class IpfsProcess
         })
     }
 
+    /**
+     * @function init
+     * @returns {boolean} - Whether the process exists
+     * @public
+     * @memberof IpfsProcess
+     * @instance
+     * @override
+     * @async
+     */
     public async init(): Promise<void> {
         if (this.process !== undefined) {
-            this.status = new _Status({
-                // stage: this.process.libp2p.status,
-                message: `Ipfs process initialized`
-            });
+            logger({
+                level: LogLevel.WARN,
+                processId: this.id,
+                message: `Ipfs process already exists`
+            })
             return;
         }
 
         if (!this.options) {
+            logger({
+                level: LogLevel.ERROR,
+                processId: this.id,
+                message: `No Ipfs options found`
+            })
             throw new Error(`No Ipfs options found`)
         }
         
         if (!this.options.libp2p) {
+            logger({
+                level: LogLevel.ERROR,
+                processId: this.id,
+                message: `No Libp2p process found`
+            })
             throw new Error(`No Libp2p process found`)
         }
 
-        this.process = await createIpfsProcess(this.options)
+        try {
+            this.process = await createIpfsProcess(this.options)
+        }
+        catch (error: any) {
+            logger({
+                level: LogLevel.ERROR,
+                processId: this.id,
+                message: `Error creating Ipfs process: ${error.message}`,
+                error: error
+            })
+            throw error
+        }
+        logger({
+            level: LogLevel.INFO,
+            processId: this.id,
+            message: `Ipfs process created and initialized`,
+            stage: ProcessStage.INIT
+        })
     }
 
+    /**
+     * @function start
+     * @description Start the process
+     * @returns {void}
+     * @public
+     * @memberof IpfsProcess
+     * @instance
+     * @override
+     * @async
+     */
     public async start(): Promise<void> {
-        if (this.process) {
-            // await this.process.libp2p.start()
-            await this.process.start()
-            this.status?.update({message: `Ipfs process started`})
-        }
-    }
-
-    public async stop(): Promise<void> {
-        if (this.process) {
-            await this.process.stop()
-            await this.process.stop()
-            this.status?.update({message: `Ipfs process stopped`})
-        }
-    }
-
-    public async addJson(data: any): Promise<CID | Error | undefined> {
-        if (this.process) {
+        if (this.checkProcess()) {
             try {
-                const dj = dagJson(this.process)
-                return await dj.add(data);
+                await this.process?.start()
+                logger({
+                    level: LogLevel.INFO,
+                    processId: this.id,
+                    message: `Ipfs process started`,
+                    stage: ProcessStage.STARTED
+                })
             }
-            catch (err: any) {
-                return err
+            catch (error: any) {
+                logger({
+                    level: LogLevel.ERROR,
+                    processId: this.id,
+                    message: `Error starting Ipfs process: ${error.message}`,
+                    error: error
+                })
+                throw error
             }
         }
     }
 
+    /**
+     * @function stop
+     * @description Stop the process
+     * @returns {void}
+     * @public
+     * @memberof IpfsProcess
+     * @instance
+     * @override
+     * @async
+     */
+    public async stop(): Promise<void> {
+        if (this.checkProcess()) {
+            try {
+                await this.process?.stop()
+                logger({
+                    level: LogLevel.INFO,
+                    processId: this.id,
+                    message: `Ipfs process stopped`,
+                    stage: ProcessStage.STOPPED
+                })
+            }
+            catch (error: any) {
+                logger({
+                    level: LogLevel.ERROR,
+                    processId: this.id,
+                    message: `Error stopping Ipfs process: ${error.message}`,
+                    error: error
+                })
+                throw error
+            }
+        }
+    }
+
+    /**
+     * @function addJson
+     * @description Add a JSON object to IPFS
+     * @param {any} data - The JSON object to add
+     * @returns {Promise<CID | Error | undefined>} - The CID of the added object
+     * @public
+     * @memberof IpfsProcess
+     * @instance
+     * @async
+     */
+    public async addJson(data: any): Promise<CID | undefined> {
+        let cid: CID | undefined = undefined
+        if (this.checkProcess()) {
+            try {
+                const dj = dagJson(this.process as Helia)
+                cid = await dj.add(data);
+            }
+            catch (error: any) {
+                logger({
+                    level: LogLevel.ERROR,
+                    processId: this.id,
+                    message: `Error adding JSON to Ipfs: ${error.message}`,
+                    error: error
+                })
+                throw error
+            }
+        }
+        return cid
+    }
+
+    /**
+     * @function getJson
+     * @description Get a JSON object from IPFS
+     * @param {string} cid - The CID of the object
+     * @returns {Promise<any | Error | undefined>} - The JSON object
+     * @public
+     * @memberof IpfsProcess
+     * @instance
+     * @async
+     */
     public async getJson(cid: string): Promise<any | Error | undefined> {
         let result: any
         if (this.process) {
             try {
                 const dj = dagJson(this.process)
-                return await dj.get(CID.parse(cid));
+                result = await dj.get(CID.parse(cid));
             }
             catch (err: any) {
-                return err
+                logger({
+                    level: LogLevel.ERROR,
+                    processId: this.id,
+                    message: `Error getting JSON from Ipfs: ${err.message}`,
+                    error: err
+                })
+                throw err
             }
         }
+        return result
     }
 }
 

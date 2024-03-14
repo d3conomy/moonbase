@@ -19,9 +19,6 @@ import {
     logger
 } from '../utils/logBook.js';
 
-import {
-    Database
-} from '@orbitdb/core';
 import { IdReference } from '../utils/id.js';
 import { OrbitDbProcess, _OrbitDbOptions } from '../db/orbitDb.js';
 import { Libp2pProcess } from '../db/libp2p.js';

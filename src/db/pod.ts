@@ -1,20 +1,12 @@
 
 import { Libp2pProcess, _Libp2pOptions } from "./libp2p.js";
 import { _IpfsOptions, IpfsProcess } from "./ipfs.js";
-import { Component, LogLevel } from "../utils/constants.js";
+import { Component, LogLevel, ProcessStage, isComponent } from "../utils/constants.js";
 import { IdReference } from "../utils/id.js";
 import { OrbitDbProcess, _OrbitDbOptions } from "./orbitDb.js";
-import { OpenDb, OrbitDbTypes, _OpenDbOptions } from "./open.js";
+import { OpenDb, _OpenDbOptions } from "./open.js";
 import { logger } from "../utils/logBook.js";
-import { _Status } from "./base.js";
 
-
-const isComponent = (component: string): Component => {
-    if (Object.values(Component).includes(component as Component)) {
-        return component as Component;
-    }
-    throw new Error('Invalid component');
-}
 
 class LunarPod {
     public id: IdReference;
@@ -46,7 +38,7 @@ class LunarPod {
         }
     }
 
-    public getComponents(): Array<{id: IdReference, status: _Status}> {
+    public getComponents(): Array<{id: IdReference, status: ProcessStage}> {
         const componentIds = [
             this.libp2p?.id,
             this.ipfs?.id,
@@ -56,10 +48,10 @@ class LunarPod {
 
         const componentStatuses = [
             this.libp2p?.checkStatus(),
-            this.ipfs?.status,
-            this.orbitDb?.status,
-            ...Array.from(this.db.values()).map(db => db.status)
-        ].filter(status => status !== undefined) as Array<_Status>;
+            this.ipfs?.checkStatus(),
+            this.orbitDb?.checkStatus(),
+            ...Array.from(this.db.values()).map(db => db.checkStatus())
+        ].filter(status => status !== undefined) as Array<ProcessStage>;
 
         return componentIds.map((id, index) => {
             return {
@@ -79,7 +71,6 @@ class LunarPod {
         if (!this.orbitDb) {
             await this.initOrbitDb({});
         }
-        // await this.libp2p?.start();
     }
 
     public async init(component?: string): Promise<void> {
@@ -96,11 +87,9 @@ class LunarPod {
                 await this.initLibp2p({});
                 break;
             case Component.IPFS:
-                // await this.libp2p?.start();
                 await this.initIpfs({});
                 break;
             case Component.ORBITDB:
-                // await this.libp2p?.start();
                 await this.initOrbitDb({});
                 break;
             case Component.DB:
@@ -175,7 +164,7 @@ class LunarPod {
             await this.initIpfs();
         }
 
-        if (this.libp2p?.status?.stage !== 'started') {
+        if (this.libp2p?.checkStatus() !== 'started') {
             await this.libp2p?.start();
         }
 
@@ -228,7 +217,9 @@ class LunarPod {
 
             logger({
                 level: LogLevel.INFO,
-                message: `Opening database ${openDbOptions?.databaseName}`
+                podId: this.id,
+                stage: ProcessStage.INIT,
+                message: `Opening database ${openDbOptions?.databaseName} on OrbitDb ${this.orbitDb.id.name} in LunarPod ${this.id.name}`
             })
 
             const db = new OpenDb({
@@ -280,6 +271,7 @@ class LunarPod {
         if (db) {
             await db.stop();
             this.db.delete(orbitDbName);
+
         }
     }
 
@@ -315,12 +307,17 @@ class LunarPod {
         }
     }
 
-    public status(): {} {
+    public status(): {
+        libp2p?: ProcessStage,
+        ipfs?: ProcessStage,
+        orbitdb?: ProcessStage,
+        db?: Array<ProcessStage>
+    } {
         return {
             libp2p: this.libp2p?.checkStatus(), 
-            ipfs: this.ipfs?.status,
-            orbitdb: this.orbitDb?.status,
-            db: this.db?.forEach(db => db.status)
+            ipfs: this.ipfs?.checkStatus(),
+            orbitdb: this.orbitDb?.checkStatus(),
+            db: Array.from(this.db.values()).map(db => db.checkStatus())
         }
     }
 }

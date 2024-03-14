@@ -8,6 +8,13 @@ enum Component {
     SYSTEM = 'system'
 }
 
+const isComponent = (component: string): Component => {
+    if (Object.values(Component).includes(component as Component)) {
+        return component as Component;
+    }
+    throw new Error('Invalid component');
+}
+
 enum LogLevel {
     INFO = 'info',
     WARN = 'warn',
@@ -27,20 +34,32 @@ enum ResponseCode {
     UNKNOWN = 520
 }
 
-enum WorkStatus {
+enum ProcessStage {
     NEW = 'new',
     INIT = 'init',
     STARTED = 'started',
+    STARTING = 'starting',
     PENDING = 'pending',
     COMPLETED = 'completed',
+    STOPPING = 'stopping',
     STOPPED = 'stopped',
     ERROR = 'error',
-    WARNING = 'warning'
+    WARNING = 'warning',
+    UNKNOWN = 'unknown',
+}
+
+const isProcessStage = (stage: string): ProcessStage => {
+    if (Object.values(ProcessStage).includes(stage as ProcessStage)) {
+        return stage as ProcessStage;
+    }
+    throw new Error('Invalid process stage');
 }
 
 export {
     ResponseCode,
     Component,
+    isComponent,
     LogLevel,
-    WorkStatus
+    ProcessStage,
+    isProcessStage
 }

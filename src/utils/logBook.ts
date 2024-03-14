@@ -1,53 +1,84 @@
+
 import {
     Component,
     ResponseCode,
-    LogLevel
+    LogLevel,
+    ProcessStage
 } from './constants.js';
 
+import {
+    IdReference
+} from './id.js';
+
+
+/**
+ * @interface ILogEntry
+ * @description Interface for a log entry
+ */
 interface ILogEntry {
+    podId?: IdReference;
+    processId?: IdReference;
     level?: LogLevel;
     code?: ResponseCode;
+    stage?: ProcessStage | string;
     timestamp: Date;
     message: string;
-    workerId?: string;
-    processId?: string;
+    error?: Error;
 
     print: () => void;
 }
 
+/**
+ * @class LogEntry
+ * @implements ILogEntry
+ * @description A class to represent a log entry
+ */
 class LogEntry
     implements ILogEntry
 {
+    public podId?: IdReference;
+    public processId?: IdReference;
     public level?: LogLevel;
     public code?: ResponseCode;
+    public stage?: ProcessStage | string;
     public timestamp: Date;
     public message: string;
-    public workerId?: string;
-    public processId?: string;
+    public error?: Error;
 
     public constructor({
+        podId,
+        processId,
         message,
         level,
         code,
-        workerId,
-        processId,
+        stage,
+        error
     }: {
+        podId?: IdReference,
+        processId?: IdReference
         message: string,
         level?: LogLevel,
         code?: ResponseCode,
-        workerId?: string,
-        processId?: string,
+        stage?: ProcessStage | string,
+        error?: Error
     }) {
-        this.level = level ? level : LogLevel.INFO;
-        this.code = code ? code : ResponseCode.UNKNOWN;
-        this.timestamp = new Date();
-        this.message = message;
-        this.workerId = workerId;
+        this.podId = podId;
         this.processId = processId;
+        this.message = message;
+        this.level = level ? level : LogLevel.INFO;
+        this.code = code;
+        this.stage = stage;
+        this.timestamp = new Date();
+        this.error = error;
 
         this.print();
     }
 
+    /**
+     * @function print
+     * @returns void
+     * @description Prints the log entry to the console
+     */
     public print = (): void => {
         const timestamp = this.timestamp.toUTCString();
         const output = `[${timestamp}] ${this.message}`;
@@ -72,6 +103,11 @@ class LogEntry
     }
 }
 
+
+/**
+ * @interface ILogBook
+ * @description Interface for a log book
+ */
 interface ILogBook {
     name: string;
     entries: Map<number, ILogEntry>;
@@ -81,9 +117,9 @@ interface ILogBook {
     delete: (id: number) => void;
     clear: () => void;
     getAll: () => Map<number, ILogEntry>;
-    getWorkerHistory: (workerId: string) => Map<number, ILogEntry>;
+    getPodHistory: (podId: string) => Map<number, ILogEntry>;
     getProcessHistory: (processId: string) => Map<number, ILogEntry>;
-    getLastEntries: (count: number) => Map<number, ILogEntry>;
+    getLast: (count: number) => Map<number, ILogEntry>;
 }
 
 
@@ -163,58 +199,81 @@ class LogBook
      * @param count : number = 1 - The number of entries to return
      * @returns Map<number, ILogEntry> - A map of the last entries
      */
-    public getLastEntries(count: number = 1): Map<number, LogEntry> {
-        const lastEntries: Map<number, LogEntry> = new Map<number, LogEntry>();
-        const historyArray = Array.from(this.entries);
-        const lastEntriesArray = historyArray.slice(-count);
-        lastEntriesArray.forEach((entry) => {
-            lastEntries.set(entry[0], entry[1]);
+    public getLast(count: number = 1): Map<number, LogEntry> {
+        let lastEntries: Map<number, LogEntry> = new Map<number, LogEntry>();
+        let historyArray = Array.from(this.entries);
+        let lastEntriesArray = historyArray.slice(-count);
+        lastEntriesArray.forEach((entry, index) => {
+            lastEntries.set(index, entry[1]);
         });
         return lastEntries;
     }
 
     /**
-     * @function getWorkerHistory
-     * @param workerId : string - The worker id to get the history for
-     * @returns Map<number, ILogEntry> - A map of the history for the worker
-     * @description Returns a map of the history for the worker
+     * @function getPodHistory
+     * @param podId : string - The pod id to get the history for
+     * @returns Map<number, ILogEntry> - A map of the history for the pod
+     * @description Returns a map of the history for the pod
      * 
      */
-    public getWorkerHistory(workerId: string): Map<number, LogEntry> {
-        const workerHistory: Map<number, LogEntry> = new Map<number, LogEntry>();
+    public getPodHistory(podId: string): Map<number, LogEntry> {
+        let podHistory: Map<number, LogEntry> = new Map<number, LogEntry>();
         this.entries.forEach((entry, key) => {
-            if (entry.workerId === workerId) {
-                workerHistory.set(key, entry);
+            if (
+                entry.podId?.name === podId &&
+                entry.podId?.component === `${Component.POD}`
+            ) {
+                podHistory.set(key, entry);
             }
         });
-        return workerHistory;
+        return podHistory;
     }
 
     /**
-     * @function getJobHistory
+     * @function getProcessHistory
      * @param processId : string - The job id to get the history for
-     * @returns Map<number, ILogEntry> - A map of the history for the job
+     * @returns Map<number, LogEntry> - A map of the history for the job
      * @description Returns a map of the history for the job
      */
     public getProcessHistory(processId: string): Map<number, LogEntry> {
-        const jobHistory: Map<number, LogEntry> = new Map<number, LogEntry>();
+        let jobHistory: Map<number, LogEntry> = new Map<number, LogEntry>();
         this.entries.forEach((entry, key) => {
-            if (entry.processId === processId) {
+            if (entry.processId?.name === processId) {
                 jobHistory.set(key, entry);
             }
         });
         return jobHistory;
     }
+
+    /**
+     * @function getLevelHistory
+     * @param level : LogLevel - The log level to get the history for
+     * @returns Map<number, LogEntry> - A map of the history for the log level
+     * @description Returns a map of the history for the log level
+     */
+    public getLevelHistory(level: LogLevel): Map<number, LogEntry> {
+        let levelHistory: Map<number, LogEntry> = new Map<number, LogEntry>();
+        this.entries.forEach((entry, key) => {
+            if (entry.level === level) {
+                levelHistory.set(key, entry);
+            }
+        });
+        return levelHistory;
+    }
 }
 
-
+/**
+ * @interface ILogBooksManager
+ * @description Interface for a log books manager
+ */
 interface ILogBooksManager {
     books: Map<string, ILogBook>;
 
-    create: (name: Component) => void;
-    get: (name: Component) => ILogBook;
-    delete: (name: Component) => void;
+    create: (name: string) => void;
+    get: (name: string) => ILogBook;
+    delete: (name: string) => void;
     clear: () => void;
+    getAllEntries: () => Map<number, ILogEntry>;
 }
 
 /**
@@ -227,10 +286,6 @@ class LogBooksManager
     public books: Map<string, LogBook> = new Map<string, LogBook>();
 
     public constructor() {
-        this.create(Component.DB);
-        this.create(Component.IPFS);
-        this.create(Component.LIBP2P);
-        this.create(Component.ORBITDB);
         this.create(Component.SYSTEM);
     }
 
@@ -241,7 +296,7 @@ class LogBooksManager
      * @description Creates a new log book and adds it to the collection
      */
     public create(
-        logBookName: Component
+        logBookName: string
     ) {
         const newLogBook = new LogBook(logBookName);
         this.books.set(newLogBook.name, newLogBook);
@@ -254,14 +309,14 @@ class LogBooksManager
      * @description Gets a log book from the collection
      */
     public get(
-        name: Component
+        name: string
     ): LogBook {
         const logBook: LogBook | undefined = this.books.get(name);
         if (logBook) {
             return logBook;
         }
         else {
-            throw new Error("Log Book not found");
+            throw new Error("Log book not found");
         }
     }
 
@@ -272,7 +327,7 @@ class LogBooksManager
      * @description Deletes a log book from the collection
      */
     public delete(
-        name: Component
+        name: string
     ) {
         this.books.delete(name);
     }
@@ -290,16 +345,16 @@ class LogBooksManager
 
     /**
      * @function getAllEntries
-     * @returns Map<number, LogBook> - A map of all the entries
+     * @returns Map<number, LogEntry> - A map of all the entries
      * @description Returns a map of all the entries
      */
     public getAllEntries() {
-        const allEntries: Map<string, LogBook> = new Map<string, LogBook>();
+        let allEntries: Map<number, LogEntry> = new Map<number, LogEntry>();
         for (const logBook of this.books) {
-            for (const entry of logBook[1].entries) {
-                const entryKey = `${logBook[0]}-${entry[0]}`;
-                allEntries.set(entryKey, logBook[1]);
-            }
+            const entries = logBook[1].getAll();
+            entries.forEach((entry, key) => {
+                allEntries.set(key, entry);
+            });
         }
         return allEntries;
     }
@@ -309,35 +364,52 @@ class LogBooksManager
 const logBookManager = new LogBooksManager();
 
 const logger = ({
+    name,
     level,
     code,
-    component,
+    stage,
     message,
+    error,
     processId,
-    workerId
+    podId
 }: {
+    name?: string,
     level?: LogLevel,
     message: string,
     code?: ResponseCode,
-    component?: Component,
-    processId?: string,
-    workerId?: string
-}) => { 
-    const logBook = logBookManager.get(component ? component : Component.SYSTEM);
+    stage?: ProcessStage | string,
+    error?: Error,
+    processId?: IdReference,
+    podId?: IdReference
+}) => {
+    let logBook: LogBook;
+
+    if (!name) {
+        name = Component.SYSTEM;
+    }
+
+    try {
+        logBook = logBookManager.get(name);
+    }
+    catch (error) {
+        logBookManager.create(name);
+    }
+
+    logBook = logBookManager.get(name);
+
     const entry: LogEntry = new LogEntry({
         level: level ? level : LogLevel.INFO,
-        code: code ? code : ResponseCode.UNKNOWN,
+        code: code,
+        stage: stage,
         message: message,
-        workerId: workerId,
+        error: error,
+        podId: podId,
         processId: processId
     })
     logBook.add(entry);
-    
-
 }
 
-    
-const getLogBook = (logBookName: Component): LogBook => {
+const getLogBook = (logBookName: string): LogBook => {
     return logBookManager.get(logBookName);
 }
 

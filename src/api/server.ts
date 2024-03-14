@@ -4,16 +4,12 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
 
 import {
-    // libp2pRouter,
     podBayRouter,
     metricsRouter,
-    // ipfsRouter,
     dbRouter
 } from './routes/index.js';
 
 const defaultRouters = [
-    // libp2pRouter,
-    // ipfsRouter,
     dbRouter,
     podBayRouter,
     metricsRouter

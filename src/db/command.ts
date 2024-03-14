@@ -13,7 +13,7 @@ const execute = async ({
 
     let output: any = "Command Timed Out"
 
-    console.log(`Executing command: ${command} on pod: ${pod.id}`)
+    console.log(`Executing command: ${command} args: ${JSON.stringify(args)} on pod: ${pod.id.getId()}`)
 
     try {
         switch (command) {
@@ -76,7 +76,7 @@ const execute = async ({
                 }
             case 'getjson':
                 if (pod.ipfs !== undefined) {
-                    return await pod.ipfs.getJson(args.cid);
+                    return await pod.ipfs.getJson(args.data.cid);
                 }
                 else {
                     throw new Error('IPFS component not available');

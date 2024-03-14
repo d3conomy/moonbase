@@ -285,8 +285,6 @@ router.post('/pod/:id', timeout(timeoutDuration), async function(req: Request, r
     const args = req.body.args;
     const pod = podBay.getPod(new IdReference({id: podId, component: Component.POD}));
 
-    console.log(podId, command, args, pod)
-
     if (!pod) {
         res.status(404).send({
             message: `Pod not found`,
@@ -306,7 +304,7 @@ router.post('/pod/:id', timeout(timeoutDuration), async function(req: Request, r
             command: command,
             error: e.message
         }
-        next(result);
+        // next(result);
         return
     }
     res.send(result);

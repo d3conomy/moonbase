@@ -1,8 +1,7 @@
 import { LunarPod } from "./pod.js";
 import { IdReference } from "../utils/id.js";
 import { logger } from "../utils/logBook.js";
-import { Component, LogLevel } from "../utils/constants.js";
-import { _IBaseStatus, _Status } from "./base.js";
+import { Component, LogLevel, ProcessStage } from "../utils/constants.js";
 import { OpenDb, OrbitDbTypes, _OpenDbOptions } from "./open.js";
 import { Multiaddr } from "@multiformats/multiaddr";
 
@@ -103,10 +102,15 @@ class PodBay {
         }
     }
 
-    public getStatus(id: IdReference): _Status | undefined {
+    public getStatus(id: IdReference): {
+        libp2p?: ProcessStage,
+        orbitDb?: ProcessStage,
+        ipfs?: ProcessStage,
+        db?: Array<ProcessStage>
+    } | undefined{
         const pod = this.getPod(id);
-        if (pod && pod.libp2p) {
-            return pod.libp2p.checkStatus()
+        if (pod) {
+            return pod.status();
         }
     }
 
