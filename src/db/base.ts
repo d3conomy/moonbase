@@ -47,7 +47,7 @@ class _BaseProcess {
         logger({
             level: LogLevel.INFO,
             stage: ProcessStage.NEW,
-            message: `New Base process ready for ${this.id.component}-${this.id.name}`
+            message: `Process container ready for init on ${this.id.component}-${this.id.name}`
         })
     }
 
@@ -92,7 +92,7 @@ class _BaseProcess {
             }
             if (update) {
                 logger({
-                    level: LogLevel.INFO,
+                    level: LogLevel.DEBUG,
                     stage: stage,
                     message: `Process status checked for ${this.id.component}: ${stage}`
                 })

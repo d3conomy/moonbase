@@ -2,7 +2,11 @@ export {
     LogLevel,
     ResponseCode,
     Component,
-    ProcessStage
+    isComponent,
+    ProcessStage,
+    isProcessStage,
+    Config,
+    loadConfig
 } from './constants.js';
 
 export {
@@ -12,7 +16,10 @@ export {
 
 export {
     logger,
-    logBookManager,
+    logBooksManager,
+    LogBook,
+    LogBooksManager,
+    LogEntry,
     getLogBook
 } from './logBook.js';
 

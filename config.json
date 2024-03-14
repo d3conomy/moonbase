@@ -1,0 +1,12 @@
+{
+    "logs" :{
+        "dir": "logs",
+        "level": "debug"
+    },
+    "general": {
+        "names": "name"
+    },
+    "server": {
+        "port": 3000
+    }
+}

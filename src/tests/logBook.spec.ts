@@ -10,7 +10,7 @@ import {
 
 import {
     logger,
-    logBookManager as logBookManagerSample,
+    logBooksManager as logBookManagerSample,
     getLogBook,
     LogBooksManager,
     LogBook,

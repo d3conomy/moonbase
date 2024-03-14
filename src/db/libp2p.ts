@@ -280,7 +280,7 @@ class Libp2pProcess
         );
         
         logger({
-            level: LogLevel.INFO,
+            level: LogLevel.DEBUG,
             stage: status,
             processId: this.id,
             message: `Process status checked for ${this.id.component}-${this.id.name}: ${status}`

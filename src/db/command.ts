@@ -13,8 +13,6 @@ const execute = async ({
 
     let output: any = "Command Timed Out"
 
-    console.log(`Executing command: ${command} args: ${JSON.stringify(args)} on pod: ${pod.id.getId()}`)
-
     try {
         switch (command) {
             case 'connections':

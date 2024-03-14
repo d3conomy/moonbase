@@ -5,9 +5,9 @@ import { PodBay } from '../../db/index.js';
 import { Component } from '../../utils/constants.js';
 import { IdReference } from '../../utils/id.js';
 import { execute } from '../../db/command.js';
+import { actievPodBay } from '../server.js';
 
 const router = express.Router();
-const podBay = new PodBay();
 const timeoutDuration = '7s';
 
 /**
@@ -27,6 +27,7 @@ const timeoutDuration = '7s';
  *     example: /or
  * */
 router.get('/pods', async function(req: Request, res: Response) {
+    const podBay = req.podBay
     const podIds = podBay.pods.map(pod => pod.id);
     const podComponents = podBay.pods.map(pod => pod.getComponents());
 
@@ -88,6 +89,7 @@ router.get('/pods', async function(req: Request, res: Response) {
  *     example: /or
  */
 router.post('/pods', async function(req: Request, res: Response) {
+    const podBay = req.podBay;
     const id = req.body.id;
     const component = req.body.component ? req.body.component : Component.ORBITDB;
     const idRef: IdReference = new IdReference({component: Component.POD, id});
@@ -128,6 +130,7 @@ router.post('/pods', async function(req: Request, res: Response) {
  *     example: /or
  * */
 router.delete('/pods', async function(req: Request, res: Response) {
+    const podBay = req.podBay;
     const nodeId = req.body.id;
     await podBay.removePod(new IdReference({id: nodeId, component: Component.POD}));
     res.send({
@@ -183,6 +186,7 @@ router.delete('/pods', async function(req: Request, res: Response) {
  *     example: /or
  * */
 router.get('/pod/:id', timeout(timeoutDuration), async function(req: Request, res: Response, next: NextFunction) {
+    const podBay = req.podBay;
     const podId = req.params.id;
     const command = req.query.info;
     const pod = podBay.getPod(new IdReference({id: podId, component: Component.POD}));
@@ -280,6 +284,7 @@ router.get('/pod/:id', timeout(timeoutDuration), async function(req: Request, re
  *     example: /or
  * */
 router.post('/pod/:id', timeout(timeoutDuration), async function(req: Request, res: Response, next: NextFunction) {
+    const podBay = req.podBay;
     const podId = req.params.id;
     const command = req.body.command;
     const args = req.body.args;
@@ -312,6 +317,5 @@ router.post('/pod/:id', timeout(timeoutDuration), async function(req: Request, r
 
 
 export {
-    router as podBayRouter,
-    podBay
+    router as podBayRouter
 };

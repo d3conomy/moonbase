@@ -1,7 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express';
 import timeout from "connect-timeout"
 
-import { podBay } from './podBay.js'
 import { IdReference } from '../../utils/id.js';
 import { Component } from '../../utils/constants.js';
 import { OpenDb, _OpenDbOptions } from '../../db/open.js';
@@ -35,6 +34,7 @@ const router = express.Router();
  *         value: {databases: ["test"]}
  * */
 router.get('/open', async function(req: Request, res: Response) {
+    const podBay = req.podBay;
     const dbNames = podBay.getAllOpenDbNames();
 
     res.send({
@@ -102,6 +102,7 @@ router.get('/open', async function(req: Request, res: Response) {
  *         value: {id: "test-events", type: "events", address: "/orbitdb/QmTest/test"}
  * */
 router.post('/open', async function(req: Request, res: Response) {
+    const podBay = req.podBay;
     let orbitDbId = req.body.OrbitDbId;
     const dbName = req.body.dbName;
     const dbType = req.body.dbType;
@@ -162,6 +163,7 @@ router.post('/open', async function(req: Request, res: Response) {
  *         value: {id: "test", type: "events", address: "/orbitdb/QmTest/test"}
  * */
 router.get('/db/:id', async function(req: Request, res: Response) {
+    const podBay = req.podBay;
     const id = req.params.id;
 
     const db = podBay.getOpenDb(new IdReference({id, component: Component.DB}));
@@ -245,6 +247,7 @@ router.get('/db/:id', async function(req: Request, res: Response) {
  *         value: {key: "test", value: "test"}
  * */
 router.post('/db/:id', async function(req: Request, res: Response) {
+    const podBay = req.podBay;
     const id = req.params.id;
     const command = req.body.command;
     const args = req.body.args;
@@ -303,6 +306,7 @@ router.post('/db/:id', async function(req: Request, res: Response) {
  *         value: "Database test-events stopped"
  * */
 router.delete('/db/:id', async function(req: Request, res: Response) {
+    const podBay = req.podBay;
     const id = req.params.id;
 
     const result = await podBay.closeDb(new IdReference({id, component: Component.DB}));

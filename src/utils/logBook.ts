@@ -3,7 +3,9 @@ import {
     Component,
     ResponseCode,
     LogLevel,
-    ProcessStage
+    ProcessStage,
+    isLogLevel,
+    isIdReferenceType
 } from './constants.js';
 
 import {
@@ -24,8 +26,9 @@ interface ILogEntry {
     timestamp: Date;
     message: string;
     error?: Error;
+    printLevel: LogLevel;
 
-    print: () => void;
+    print: (logLevel: LogLevel) => void;
 }
 
 /**
@@ -44,8 +47,10 @@ class LogEntry
     public timestamp: Date;
     public message: string;
     public error?: Error;
+    public printLevel: LogLevel;
 
     public constructor({
+        printLevel,
         podId,
         processId,
         message,
@@ -54,6 +59,7 @@ class LogEntry
         stage,
         error
     }: {
+        printLevel?: LogLevel,
         podId?: IdReference,
         processId?: IdReference
         message: string,
@@ -70,8 +76,9 @@ class LogEntry
         this.stage = stage;
         this.timestamp = new Date();
         this.error = error;
+        this.printLevel = printLevel ? printLevel : LogLevel.INFO;
 
-        this.print();
+        this.print(this.printLevel);
     }
 
     /**
@@ -79,21 +86,37 @@ class LogEntry
      * @returns void
      * @description Prints the log entry to the console
      */
-    public print = (): void => {
+    public print = (printLevel: LogLevel): void => {
         const timestamp = this.timestamp.toUTCString();
         const output = `[${timestamp}] ${this.message}`;
         
         switch (this.level) {
             case LogLevel.ERROR:
-                console.error(output);
+                if (printLevel === LogLevel.ERROR ||
+                    printLevel === LogLevel.WARN ||
+                    printLevel === LogLevel.INFO ||
+                    printLevel === LogLevel.DEBUG
+                ) {
+                    console.error(output);
+                }
                 break;
             case LogLevel.WARN:
-                console.warn(output);
+                if (printLevel === LogLevel.WARN ||
+                    printLevel === LogLevel.INFO ||
+                    printLevel === LogLevel.DEBUG
+                ) {
+                    console.warn(output);
+                }
                 break;
             case LogLevel.INFO:
-                console.info(output);
+                if (printLevel === LogLevel.INFO ||
+                    printLevel === LogLevel.DEBUG
+                ) {
+                    console.info(output);
+                }
                 break;
             case LogLevel.DEBUG:
+                if (printLevel === LogLevel.DEBUG)
                 console.debug(output);
                 break;
             default:
@@ -133,9 +156,11 @@ class LogBook
 {
     public name: string;
     public entries: Map<number, LogEntry>;
+    public printLevel: LogLevel = LogLevel.INFO;
 
-    public constructor(name: string) {
+    public constructor(name: string, printLevel: LogLevel = LogLevel.INFO) {
         this.name = name
+        this.printLevel = printLevel;
         this.entries = new Map<number, LogEntry>();
     }
 
@@ -146,6 +171,11 @@ class LogBook
      * @description Adds an entry to the log book
      */
     public add(entry: LogEntry):  void {
+        if (!entry.printLevel ||
+            entry.printLevel !== this.printLevel
+        ) {
+            entry.printLevel = this.printLevel;
+        }
         const counter = this.entries.size + 1;
         this.entries.set(counter, entry);
     }
@@ -203,8 +233,8 @@ class LogBook
         let lastEntries: Map<number, LogEntry> = new Map<number, LogEntry>();
         let historyArray = Array.from(this.entries);
         let lastEntriesArray = historyArray.slice(-count);
-        lastEntriesArray.forEach((entry, index) => {
-            lastEntries.set(index, entry[1]);
+        lastEntriesArray.forEach((entry) => {
+            lastEntries.set(entry[0], entry[1]);
         });
         return lastEntries;
     }
@@ -268,8 +298,14 @@ class LogBook
  */
 interface ILogBooksManager {
     books: Map<string, ILogBook>;
+    printLevel: LogLevel;
 
-    create: (name: string) => void;
+    init: (config: {
+        dir: string,
+        level: string,
+        names: string
+    }) => void;
+    create: (name: string, printLevel: LogLevel) => void;
     get: (name: string) => ILogBook;
     delete: (name: string) => void;
     clear: () => void;
@@ -284,8 +320,23 @@ class LogBooksManager
     implements ILogBooksManager
 {
     public books: Map<string, LogBook> = new Map<string, LogBook>();
+    public printLevel: LogLevel = LogLevel.INFO;
+    public dir: string = "";
 
     public constructor() {
+        this.books = new Map<string, LogBook>();
+    }
+
+    public init({
+        dir,
+        level,
+    }: {
+        dir?: string,
+        level?: string,
+    }) {
+        console.log("Initializing log books manager, dir: ", dir, "level: ", level);
+        this.printLevel = isLogLevel(level ? level : LogLevel.INFO);
+        this.dir = dir ? dir : "";
         this.create(Component.SYSTEM);
     }
 
@@ -296,9 +347,9 @@ class LogBooksManager
      * @description Creates a new log book and adds it to the collection
      */
     public create(
-        logBookName: string
+        logBookName: string,
     ) {
-        const newLogBook = new LogBook(logBookName);
+        const newLogBook = new LogBook(logBookName, this.printLevel);
         this.books.set(newLogBook.name, newLogBook);
     }
 
@@ -348,20 +399,36 @@ class LogBooksManager
      * @returns Map<number, LogEntry> - A map of all the entries
      * @description Returns a map of all the entries
      */
-    public getAllEntries() {
+    public getAllEntries(item: number = 10): Map<number, LogEntry> {
         let allEntries: Map<number, LogEntry> = new Map<number, LogEntry>();
-        for (const logBook of this.books) {
-            const entries = logBook[1].getAll();
+        for (const logBook of this.books.values()) {
+            const entries = logBook.getLast(item);
             entries.forEach((entry, key) => {
                 allEntries.set(key, entry);
             });
+            
+            // sort the entries by timestamp
+            allEntries = new Map([...allEntries.entries()].sort((a, b) => {
+                return a[1].timestamp.getTime() - b[1].timestamp.getTime();
+            }));
         }
         return allEntries;
     }
 }
 
 
-const logBookManager = new LogBooksManager();
+/**
+ * @constant logBooksManager
+ * @description The system's log books manager
+ * @type LogBooksManager
+ * @default new LogBooksManager()
+ * @example
+ * const logBooksManager = new LogBooksManager();
+ * logBooksManager.create("system");
+ * logBooksManager.get("system");
+ * 
+ */
+const logBooksManager = new LogBooksManager();
 
 const logger = ({
     name,
@@ -389,15 +456,16 @@ const logger = ({
     }
 
     try {
-        logBook = logBookManager.get(name);
+        logBook = logBooksManager.get(name);
     }
     catch (error) {
-        logBookManager.create(name);
+        logBooksManager.create(name);
     }
 
-    logBook = logBookManager.get(name);
+    logBook = logBooksManager.get(name);
 
     const entry: LogEntry = new LogEntry({
+        printLevel: logBooksManager.printLevel,
         level: level ? level : LogLevel.INFO,
         code: code,
         stage: stage,
@@ -410,11 +478,11 @@ const logger = ({
 }
 
 const getLogBook = (logBookName: string): LogBook => {
-    return logBookManager.get(logBookName);
+    return logBooksManager.get(logBookName);
 }
 
 export {
-    logBookManager,
+    logBooksManager,
     logger,
     getLogBook,
     LogEntry,

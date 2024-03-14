@@ -27,7 +27,7 @@ class PodBay {
 
     public async newPod(id?: IdReference, component?: Component): Promise<IdReference | undefined> {
         if (!id) {
-            id = new IdReference({ component: Component.POD });
+            id = new IdReference({ component: Component.POD});
         }
         if (id && !this.checkPodId(id)) {
 
@@ -194,7 +194,7 @@ class PodBay {
             !orbitDbPod.orbitDb ||
             orbitDbPod?.db?.size > 0
         ) {
-            const podId = await this.newPod(new IdReference({component: Component.POD}), Component.ORBITDB);
+            const podId = await this.newPod(new IdReference({component: Component.POD }), Component.ORBITDB);
             // orbitDbPod = this.pods.find(pod => pod.id.getId() === podId?.getId());
             orbitDbPod = this.getPod(podId);
             logger({

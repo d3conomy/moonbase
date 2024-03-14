@@ -8,43 +8,99 @@ import {
     metricsRouter,
     dbRouter
 } from './routes/index.js';
+import { logger } from '../utils/logBook.js';
+import { LogLevel } from '../utils/constants.js';
+import { PodBay } from '../db/index.js';
 
+let actievPodBay: PodBay;
+
+/**
+* The default routers for the API server
+* @type {Array<express.Router>}
+* @const
+* @default
+*/
 const defaultRouters = [
     dbRouter,
     podBayRouter,
     metricsRouter
 ]
 
+declare global {
+    namespace Express {
+        interface Request {
+            podBay?: PodBay;
+        }
+    }
+}
 
+declare module 'express-serve-static-core' {
+    interface Request {
+        podBay: PodBay;
+    }
+}
+
+/**
+ * The options for the API server
+ * @class
+ * @classdesc The options for the API server
+ * @property {number} port - The port for the API server to listen on
+ * @public
+ * @default port: 3000
+ */
 class ApiServerOptions {
+    public podBay: PodBay;
     public port: number;
-    public routers: express.Router[];
 
-    public constructor(
-        routers?: express.Router[],
+    public constructor({
+        podBay,
+        port
+    }: {
+        podBay?: PodBay,
         port?: number
-    ) {
+    }) {
+        if (!podBay) {
+            throw new Error('ApiServerOptions requires a PodBay');
+        }
+        this.podBay = podBay;
         this.port = port ? port : 3000;
-        this.routers = routers ? routers : defaultRouters;
     }
 }
 
 
+/**
+ * The API server
+ * @class
+ * @classdesc The API server
+ * @property {express.Application} app - The express application
+ * @property {number} port - The port for the API server to listen on
+ * @public
+ */
 class ApiServer {
     public app: express.Application;
     public port: number;
-    private routers: express.Router[];
 
     constructor(
-        options?: ApiServerOptions,
+        options: ApiServerOptions,
     ) {
         this.port = options?.port || 3000;
         this.app = express();
-        this.routers = options?.routers || [];
+
+        if (options?.podBay) {
+            actievPodBay = options.podBay;
+        }
     }
 
+    /**
+     * Initializes the API server
+     * @public
+     * @returns {void}
+     * @method
+     * @memberof ApiServer
+     * @summary '''Initializes the API server'''
+     * @description '''Initializes the API server'''
+     */
     public init() {
-
         const options = {
             definition: {
                 openapi: '3.0.0',
@@ -54,7 +110,7 @@ class ApiServer {
                 },
                 servers: [
                     {
-                        url: 'http://0.0.0.0:3000',
+                        url: `http://0.0.0.0:${this.port}`,
                         description: 'Development server',
                     },
                 ],
@@ -73,15 +129,14 @@ class ApiServer {
 
         const specs = swaggerJsdoc(options);
 
-        const corsOptions = {
-            origin: 'http://localhost:3001',
-            optionsSuccessStatus: 200
+        const podBayMiddleware = (req: Request, _res: Response, next: NextFunction) => {
+            req.podBay = actievPodBay;
+            next();
         }
-
-        this.app.use(cors(corsOptions));
 
         this.app.use(express.json());
         this.app.use('/api/v0',
+            podBayMiddleware,
             metricsRouter,
             podBayRouter,
             dbRouter
@@ -94,15 +149,28 @@ class ApiServer {
         });
     }
 
+    /**
+     * Starts the API server
+     * @public
+     * @returns {void}
+     * @method
+     * @memberof ApiServer
+     * @summary '''Starts the API server'''
+     * @description '''Starts the API server'''
+     */
     public start() {
         this.init()
         this.app.listen(this.port, () => {
-            console.log(`API Server is running on port ${this.port}`);
+            logger({
+                level: LogLevel.INFO,
+                message: `API Server listening on port ${this.port}`
+            });
         })
     }
 }
 
 export {
+    actievPodBay,
     ApiServer,
     ApiServerOptions
 }
