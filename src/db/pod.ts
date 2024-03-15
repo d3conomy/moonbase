@@ -20,7 +20,7 @@ class LunarPod {
     public db: Map<string, OpenDb> = new Map<string, OpenDb>();
 
     /**
-     * The Lunar Pod class constructor
+     * Construct a new Lunar Pod that is ready for initialization.
      */
     constructor({
         id,
@@ -46,7 +46,7 @@ class LunarPod {
     }
 
     /**
-     * The Lunar Pod class constructor
+     * Get the components and their statuses for this pod.
      */
     public getComponents(): Array<{id: IdReference, status: ProcessStage}> {
         const componentIds = [
@@ -72,9 +72,17 @@ class LunarPod {
     }
 
     /**
-     * The Lunar Pod class constructor
+     * Initialize all components and databases in the pod.
      */
     private async initAll(): Promise<void> {
+        if ((this.orbitDb && !this.ipfs)  || (this.orbitDb && !this.libp2p)) {
+            throw new Error('OrbitDb requires both IPFS and libp2p to be initialized');
+        }
+
+        if (this.ipfs && !this.libp2p) {
+            throw new Error('IPFS requires libp2p to be initialized');
+        }
+
         if (!this.libp2p) {
             await this.initLibp2p({});
         }
@@ -87,7 +95,7 @@ class LunarPod {
     }
 
     /**
-     * The Lunar Pod class constructor
+     * Initialize a specific component or all components in the pod.
      */
     public async init(component?: string): Promise<void> {
         if (component) {
@@ -118,7 +126,7 @@ class LunarPod {
     }
 
     /**
-     * The Lunar Pod class constructor
+     * Start the Libp2p process in the pod.
      */
     public async initLibp2p({
         libp2pOptions
@@ -142,7 +150,7 @@ class LunarPod {
     }
 
     /**
-     * The Lunar Pod class constructor
+     * Start the IPFS process in the pod.
      */
     public async initIpfs({
         ipfsOptions
@@ -179,7 +187,7 @@ class LunarPod {
     }
 
     /**
-     * The Lunar Pod class constructor
+     * Start the OrbitDb process in the pod.
      */
     public async initOrbitDb({
         orbitDbOptions
@@ -216,7 +224,7 @@ class LunarPod {
     }
 
     /**
-     * The Lunar Pod class constructor
+     * Start the OrbitDb process in the pod.
      */
     public async initOpenDb({
         databaseName,
@@ -283,40 +291,67 @@ class LunarPod {
     }
 
     /**
-     * The Lunar Pod class constructor
+     * Get the OrbitDb process in the pod.
      */
     public getOpenDb(orbitDbName: string): OpenDb | undefined {
         return this.db.get(orbitDbName);
     }
 
     /**
-     * The Lunar Pod class constructor
+     * Get all Open Databases in the pod.
      */
     public getAllOpenDbs(): Map<string, OpenDb> {
         return this.db;
     }
 
     /**
-     * The Lunar Pod class constructor
+     * Get the names of all Open Databases in the pod.
      */
     public getDbNames(): Array<string> {
         return Array.from(this.db.keys());
     }
 
     /**
-     * The Lunar Pod class constructor
+     * Start a component or all components in the pod.
+     */
+    public async start(
+        component: string = 'all'
+    ): Promise<void> {
+        if (
+            ( this.libp2p && component === 'all' ) ||
+            ( this.libp2p && component === 'libp2p' )
+        ) {
+            await this.libp2p.start();
+        }
+
+        if (
+            ( this.ipfs && component === 'all' ) ||
+            ( this.ipfs && component === 'ipfs' )
+        ) {
+            await this.ipfs.start();
+        }
+
+        if (
+            ( this.orbitDb && component === 'all' ) ||
+            ( this.orbitDb && component === 'orbitdb' )
+        ) {
+            await this.orbitDb.start();
+        }
+    }
+
+    /**
+     * Stop a specific open database in the pod.
      */
     public async stopOpenDb(orbitDbName: string): Promise<void> {
         const db = this.db.get(orbitDbName);
         if (db) {
             await db.stop();
             this.db.delete(orbitDbName);
-
         }
     }
 
     /**
-     * The Lunar Pod class constructor
+     * Stop specific components or all components in the pod.
      */
     public async stop(component: string = 'all'): Promise<void> {
         if (
@@ -351,7 +386,14 @@ class LunarPod {
     }
 
     /**
-     * The Lunar Pod class constructor
+     * Restart specific components or all components in the pod.
+     */
+    public async restart(component: string = 'all'): Promise<void> {
+        return this.stop(component).then( async () => await this.start(component));
+    }
+
+    /**
+     * Get the status of all components and databases in the pod.
      */
     public status(): {
         libp2p?: ProcessStage,

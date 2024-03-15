@@ -322,6 +322,107 @@ router.post('/pod/:id', timeout(timeoutDuration), async function(req: Request, r
 });
 
 
+/**
+ * @openapi
+ * /api/v0/pod/{id}:
+ *  put:
+ *   tags:
+ *    - pod
+ *   description: Start, stop, or restart a pod
+ *   parameters:
+ *    - in: path
+ *      name: id
+ *      required: true
+ *      schema:
+ *       type: string
+ *      example: "TestPod"
+ *      description: Pod ID
+ *   requestBody:
+ *    description: Command and arguments
+ *    required: true
+ *    content:
+ *     application/json:
+ *      schema:
+ *       type: object
+ *       properties:
+ *        state:
+ *         type: string
+ *        args:
+ *         type: object
+ *      examples: 
+ *       start:
+ *        summary: Start a pod
+ *        value:
+ *         state: "start"
+ *         args:
+ *          component: "orbitdb"
+ *       stop:
+ *        summary: Stop a pod
+ *        value:
+ *         state: "stop"
+ *         args:
+ *          component: "orbitdb"
+ *       restart:
+ *        summary: Restart a pod
+ *        value:
+ *         state: "restart"
+ *         args:
+ *          component: "orbitdb"
+ *   responses:
+ *    200:
+ *     description: A successful response
+ *     content:
+ *      application/json:
+ *       schema:
+ *        type: object
+ *     example: /or
+ * */
+router.put('/pod/:id', async function(req: Request, res: Response) {
+    const podBay = req.podBay;
+    const podId = req.params.id;
+    const state = req.body.state;
+    const args = req.body.args;
+    const pod = podBay.getPod(new IdReference({id: podId, component: Component.POD}));
+
+    if (!pod) {
+        res.status(404).send({
+            message: `Pod not found`,
+            podId: podId
+        });
+        return;
+    }
+    let result;
+    try {
+        switch (state) {
+            case "start":
+                await pod.start(args?.component);
+                break;
+            case "stop":
+                await pod.stop(args?.component);
+                break;
+            case "restart":
+                await pod.restart(args?.component);
+                break;
+        }
+        result = {
+            message: `Command succeeded`,
+            podId: podId,
+            command: state
+        }
+
+    }
+    catch (e: any) {
+        result = {
+            message: `Command failed`,
+            podId: podId,
+            command: state,
+            error: e.message
+        }
+    }
+    res.send(result);
+})
+
+
 export {
     router as podBayRouter
 };
