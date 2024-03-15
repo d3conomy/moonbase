@@ -1,5 +1,8 @@
 
 {
-    "extends": ["../typedoc.base.json"],
+    "$schema": "https://typedoc.org/schema.json",
     "entryPoints": ["./src/index.ts"],
+    "entryPointStrategy": "expand",
+    "name": "Moonbase",
+    "exclude": ["node_modules/**", "test/**", ]
 }
