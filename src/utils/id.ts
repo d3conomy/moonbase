@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import chance from 'chance';
 
 import { Component, IdReferenceType, LogLevel, isIdReferenceType } from "./constants.js";
-import { nameType as configNameType } from '../index.js';
+// import { nameType as configNameType } from '../index.js';
 
 
 /**
@@ -16,14 +16,7 @@ import { nameType as configNameType } from '../index.js';
  *             console.log(id) // "johnny-zebra"
  */
 const createRandomId = (overrideNameType?: string): string => {
-    let nameType = configNameType;
-    if (overrideNameType) {
-        try {
-            nameType = isIdReferenceType(overrideNameType);
-        } catch (e) {
-            nameType = configNameType;
-        }
-    }
+    let nameType = isIdReferenceType(overrideNameType);
 
     switch (nameType) {
         case IdReferenceType.NAME:
@@ -49,6 +42,7 @@ const createRandomId = (overrideNameType?: string): string => {
 class IdReference {
     public name: string;
     public component: Component;
+    public nameType: string;
 
     constructor({
         component,
@@ -60,11 +54,12 @@ class IdReference {
         type?: string
     }) {
         this.component = component;
+        this.nameType = type ? isIdReferenceType(type) : IdReferenceType.UUID;
         if (id) {
             this.name = id;
         }
         else {
-            this.name = IdReference.randomId(type);
+            this.name = IdReference.randomId(this.nameType);
         }
     }
 
@@ -96,6 +91,23 @@ class IdReference {
      */
     public static randomId(type?: string): string {
         return createRandomId(type);
+    }
+
+    public newId({
+        component,
+        id,
+        type
+    }: {
+        component: Component
+        id?: string,
+        type?: string
+    }): IdReference {
+        type = type ? type : this.nameType;
+        return new IdReference({
+            component,
+            id,
+            type
+        });
     }
 }
 

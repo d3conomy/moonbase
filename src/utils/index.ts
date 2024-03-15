@@ -5,6 +5,7 @@ export {
     isComponent,
     ProcessStage,
     isProcessStage,
+    IdReferenceType,
     Config,
     loadConfig
 } from './constants.js';
@@ -17,8 +18,11 @@ export {
 export {
     logger,
     logBooksManager,
+    ILogBook,
     LogBook,
+    ILogBooksManager,
     LogBooksManager,
+    ILogEntry,
     LogEntry,
     getLogBook
 } from './logBook.js';

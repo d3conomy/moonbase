@@ -11,13 +11,8 @@ import { _BaseProcess, _IBaseProcess } from "./base.js";
 
 
 /**
- * @class _IpfsOptions
- * @classdesc The options for creating an Ipfs process
- * @property {Libp2pProcess} libp2p - The libp2p process to use
- * @property {any} datastore - The datastore to use
- * @property {any} blockstore - The blockstore to use
- * @property {boolean} start - Whether to start the process
- * @public
+ * The options for creating an Ipfs process
+ * @category IPFS
  */
 class _IpfsOptions {
     libp2p: Libp2pProcess
@@ -48,11 +43,8 @@ class _IpfsOptions {
 }
 
 /**
- * @function createIpfsProcess
- * @description Create an Ipfs process
- * @param {any} options - The options for creating the process
- * @returns {Promise<Helia>} - The created process
- * @public
+ * Create an IPFS process
+ * @category IPFS
  */
 const createIpfsProcess = async (options: _IpfsOptions): Promise<Helia> => {
     return await createHelia({
@@ -65,13 +57,10 @@ const createIpfsProcess = async (options: _IpfsOptions): Promise<Helia> => {
 
 
 /**
- * @class IpfsProcess
- * @classdesc The Ipfs process
- * @property {Helia} process - The Helia instance
- * @property {_IpfsOptions} options - The options for creating the process
- * @public
- * @extends _BaseProcess
- * @implements _IBaseProcess
+ * The process container for the IPFS process
+ * 
+ * Helia is used as the IPFS process
+ * @category IPFS
  */
 class IpfsProcess 
     extends _BaseProcess
@@ -80,7 +69,9 @@ class IpfsProcess
     public declare process?: Helia
     public declare options?: _IpfsOptions
 
-
+    /**
+     * Constructor for the Ipfs process
+     */
     constructor({
         id,
         process,
@@ -99,13 +90,7 @@ class IpfsProcess
     }
 
     /**
-     * @function init
-     * @returns {boolean} - Whether the process exists
-     * @public
-     * @memberof IpfsProcess
-     * @instance
-     * @override
-     * @async
+     * Initialize the IPFS Process
      */
     public async init(): Promise<void> {
         if (this.process !== undefined) {
@@ -156,14 +141,7 @@ class IpfsProcess
     }
 
     /**
-     * @function start
-     * @description Start the process
-     * @returns {void}
-     * @public
-     * @memberof IpfsProcess
-     * @instance
-     * @override
-     * @async
+     * Start the IPFS process
      */
     public async start(): Promise<void> {
         if (this.checkProcess()) {
@@ -189,14 +167,7 @@ class IpfsProcess
     }
 
     /**
-     * @function stop
-     * @description Stop the process
-     * @returns {void}
-     * @public
-     * @memberof IpfsProcess
-     * @instance
-     * @override
-     * @async
+     * Stop the IPFS process
      */
     public async stop(): Promise<void> {
         if (this.checkProcess()) {
@@ -222,14 +193,7 @@ class IpfsProcess
     }
 
     /**
-     * @function addJson
-     * @description Add a JSON object to IPFS
-     * @param {any} data - The JSON object to add
-     * @returns {Promise<CID | Error | undefined>} - The CID of the added object
-     * @public
-     * @memberof IpfsProcess
-     * @instance
-     * @async
+     * Add a JSON object to IPFS
      */
     public async addJson(data: any): Promise<CID | undefined> {
         let cid: CID | undefined = undefined
@@ -252,14 +216,7 @@ class IpfsProcess
     }
 
     /**
-     * @function getJson
-     * @description Get a JSON object from IPFS
-     * @param {string} cid - The CID of the object
-     * @returns {Promise<any | Error | undefined>} - The JSON object
-     * @public
-     * @memberof IpfsProcess
-     * @instance
-     * @async
+     * Get a JSON object from IPFS
      */
     public async getJson(cid: string): Promise<any | Error | undefined> {
         let result: any

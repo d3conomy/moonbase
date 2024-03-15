@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { logger } from './logBook.js';
+import { LunarPod } from '../db/pod.js';
 
 /**
  * Component enum
@@ -129,9 +130,11 @@ class Config {
     public general: {
         names: string
     }
-    public server: {
+    public api: {
         port: number
+        corsOrigin: string
     }
+    public pods?: Array<LunarPod> = undefined
 
     // env variables override config.json
     constructor(config?: any) {
@@ -142,9 +145,11 @@ class Config {
         this.general = {
             names: process.env.NAMES ? process.env.NAMES : config?.general?.names || IdReferenceType.UUID
         }
-        this.server = {
-            port: process.env.PORT ? process.env.PORT : config?.server?.port  || 3000
+        this.api = {
+            port: process.env.PORT ? process.env.PORT : config?.server?.port  || 4343,
+            corsOrigin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN : config?.api?.corsOrigin || '*'
         }
+        this.pods = config?.pods;
     }
 }
 
@@ -162,13 +167,12 @@ const loadConfig = async (): Promise<Config> => {
 
     try {
         const data = await fs.readFile(configPath, 'utf8');
-        // parse JSON string to JSON object
+
         config = new Config(JSON.parse(data));
-        console.log('Config data after parsing json data from file:', config.general.names, config.logs.level, config.logs.dir, config.server.port);
-        // print all data
+
         logger({
             level: LogLevel.DEBUG,
-            message: `Config data: ${config.general.names} ${config.logs.level} ${config.logs.dir} ${config.server.port}`
+            message: `Config data: ${config.general.names} ${config.logs.level} ${config.logs.dir} ${config.api.port}`
         });
     } catch (err: any) {
         const mesg = `Using default configuation - Error reading file from disk: ${err}`;

@@ -1,22 +1,51 @@
 import { LunarPod } from "./pod.js";
 import { IdReference } from "../utils/id.js";
 import { logger } from "../utils/logBook.js";
-import { Component, LogLevel, ProcessStage } from "../utils/constants.js";
+import { Component, IdReferenceType, LogLevel, ProcessStage, isIdReferenceType } from "../utils/constants.js";
 import { OpenDb, OrbitDbTypes, _OpenDbOptions } from "./open.js";
 import { Multiaddr } from "@multiformats/multiaddr";
 
 
+/**
+ * Represents a collection of LunarPods and provides methods for managing and interacting with them.
+ * @category PodBay 
+*/
 class PodBay {
+    /**
+     * The array of LunarPods in the PodBay.
+     */
     public pods: Array<LunarPod>;
 
-    constructor(pods?: Array<LunarPod>) {
-        this.pods = pods ? pods : new Array<LunarPod>();
+    /**
+     * The options for the PodBay.
+     */
+    public options: {
+        nameType: IdReferenceType
+    };
+
+    /**
+     * Creates a new instance of the PodBay class.
+     */
+    constructor(options?: {
+        nameType: IdReferenceType | string,
+        pods?: Array<LunarPod>, 
+    }) {
+        this.pods = options?.pods ? options.pods : new Array<LunarPod>();
+        this.options = {
+            nameType: isIdReferenceType(options?.nameType)
+        };
     }
 
+    /**
+     * Returns an array of pod IDs in the PodBay.
+     */
     public podIds(): Array<string> {
         return this.pods.map(pod => pod.id.getId());
     }
 
+    /**
+     * Checks if a pod ID exists in the PodBay.
+     */
     public checkPodId(id?: IdReference): boolean {
         if (!id) {
             throw new Error('IdReference is undefined');
@@ -25,9 +54,12 @@ class PodBay {
         return this.podIds().includes(id.getId());
     }
 
+    /**
+     * Creates a new pod in the PodBay.
+     */
     public async newPod(id?: IdReference, component?: Component): Promise<IdReference | undefined> {
         if (!id) {
-            id = new IdReference({ component: Component.POD});
+            id = new IdReference({ component: Component.POD, type: this.options.nameType });
         }
         if (id && !this.checkPodId(id)) {
 
@@ -46,6 +78,9 @@ class PodBay {
         }
     }
 
+    /**
+     * Adds a pod to the PodBay.
+     */
     public addPod(pod: LunarPod): void {
         if (!this.checkPodId(pod.id)) {
             this.pods.push(pod);
@@ -55,6 +90,9 @@ class PodBay {
         }
     }
 
+    /**
+     * Gets a pod from the PodBay.
+     */
     public getPod(id?: IdReference): LunarPod | undefined {
         if (!id) {
             logger({
@@ -78,6 +116,9 @@ class PodBay {
         }
     }
 
+    /**
+     * Removes a pod from the PodBay.
+     */
     public async removePod(id: IdReference): Promise<void> {
         const pod = this.getPod(id);
         if (pod) {
@@ -102,6 +143,9 @@ class PodBay {
         }
     }
 
+    /**
+     * Gets the status of a pod in the PodBay.
+     */
     public getStatus(id: IdReference): {
         libp2p?: ProcessStage,
         orbitDb?: ProcessStage,
@@ -114,6 +158,10 @@ class PodBay {
         }
     }
 
+    /**
+     * Gets the names of all open databases in the PodBay.
+     * @returns An array of database names.
+     */
     public getAllOpenDbNames(): Array<string> {
         const dbNames: Array<string> = [];
         this.pods.forEach(pod => {
@@ -124,6 +172,14 @@ class PodBay {
         return dbNames;
     }
 
+    /**
+     * Opens a database in the PodBay.
+     * @param orbitDbId The ID of the OrbitDB.
+     * @param dbName The name of the database.
+     * @param dbType The type of the database.
+     * @param options Additional options for opening the database.
+     * @returns A promise that resolves to the opened database and related information, or undefined if the database cannot be opened.
+     */
     public async openDb({
         orbitDbId,
         dbName,
@@ -194,7 +250,7 @@ class PodBay {
             !orbitDbPod.orbitDb ||
             orbitDbPod?.db?.size > 0
         ) {
-            const podId = await this.newPod(new IdReference({component: Component.POD }), Component.ORBITDB);
+            const podId = await this.newPod(new IdReference({component: Component.POD, type: this.options.nameType}), Component.ORBITDB);
             // orbitDbPod = this.pods.find(pod => pod.id.getId() === podId?.getId());
             orbitDbPod = this.getPod(podId);
             logger({
@@ -236,6 +292,11 @@ class PodBay {
         }
     }
 
+    /**
+     * Gets the open database with the specified name or ID.
+     * @param dbName The name or ID of the database.
+     * @returns The open database, or undefined if not found.
+     */
     public getOpenDb(dbName: string | IdReference): OpenDb | undefined {
         let orbitDbId: string;
         if (dbName instanceof IdReference) {
@@ -257,6 +318,11 @@ class PodBay {
         }
     }
 
+    /**
+     * Closes the open database with the specified name or ID.
+     * @param dbName The name or ID of the database.
+     * @returns A promise that resolves to the closed database name or ID, or undefined if the database cannot be closed.
+     */
     public async closeDb(dbName: string | IdReference): Promise<string | undefined> {
         let orbitDbId: string;
         if (dbName instanceof IdReference) {
@@ -285,3 +351,11 @@ export {
     PodBay,
     LunarPod
 };
+
+export * from "./open.js";
+export * from "./pod.js";
+export * from "./orbitDb.js";
+export * from "./ipfs.js";
+export * from "./libp2p.js";
+export * from "./command.js";
+export * from "./base.js"

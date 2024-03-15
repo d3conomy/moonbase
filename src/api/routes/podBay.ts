@@ -1,11 +1,10 @@
 import express, { Request, Response, NextFunction } from 'express';
 import timeout from "connect-timeout"
 
-import { PodBay } from '../../db/index.js';
 import { Component } from '../../utils/constants.js';
 import { IdReference } from '../../utils/id.js';
 import { execute } from '../../db/command.js';
-import { actievPodBay } from '../server.js';
+import { PodBay } from '../../db/index.js';
 
 const router = express.Router();
 const timeoutDuration = '7s';
@@ -89,10 +88,10 @@ router.get('/pods', async function(req: Request, res: Response) {
  *     example: /or
  */
 router.post('/pods', async function(req: Request, res: Response) {
-    const podBay = req.podBay;
+    const podBay: PodBay = req.podBay;
     const id = req.body.id;
     const component = req.body.component ? req.body.component : Component.ORBITDB;
-    const idRef: IdReference = new IdReference({component: Component.POD, id});
+    const idRef: IdReference = new IdReference({component: Component.POD, id, type: podBay.options.nameType});
     await podBay.newPod(idRef, component);
     res.send({
         message: `Pod created`,

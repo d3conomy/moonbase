@@ -12,20 +12,10 @@ import { logger } from '../utils/logBook.js';
 import { LogLevel } from '../utils/constants.js';
 import { PodBay } from '../db/index.js';
 
-let actievPodBay: PodBay;
 
 /**
-* The default routers for the API server
-* @type {Array<express.Router>}
-* @const
-* @default
-*/
-const defaultRouters = [
-    dbRouter,
-    podBayRouter,
-    metricsRouter
-]
-
+ * The active podBay
+ */
 declare global {
     namespace Express {
         interface Request {
@@ -34,6 +24,9 @@ declare global {
     }
 }
 
+/**
+ * The active podBay
+ */
 declare module 'express-serve-static-core' {
     interface Request {
         podBay: PodBay;
@@ -42,63 +35,57 @@ declare module 'express-serve-static-core' {
 
 /**
  * The options for the API server
- * @class
- * @classdesc The options for the API server
- * @property {number} port - The port for the API server to listen on
- * @public
- * @default port: 3000
+ * @category API
  */
 class ApiServerOptions {
     public podBay: PodBay;
     public port: number;
+    public corsOrigin: string;
 
     public constructor({
         podBay,
-        port
+        port,
+        corsOrigin
     }: {
         podBay?: PodBay,
-        port?: number
+        port?: number,
+        corsOrigin?: string
     }) {
         if (!podBay) {
             throw new Error('ApiServerOptions requires a PodBay');
         }
         this.podBay = podBay;
-        this.port = port ? port : 3000;
+        this.port = port ? port : 4343;
+        this.corsOrigin = corsOrigin ? corsOrigin : '*';
     }
 }
 
 
 /**
  * The API server
- * @class
- * @classdesc The API server
- * @property {express.Application} app - The express application
- * @property {number} port - The port for the API server to listen on
- * @public
+ * @category API
  */
 class ApiServer {
     public app: express.Application;
-    public port: number;
+    public options: {
+        port: number,
+        corsOrigin: string
+        podBay: PodBay
+    }
 
     constructor(
         options: ApiServerOptions,
     ) {
-        this.port = options?.port || 3000;
         this.app = express();
-
-        if (options?.podBay) {
-            actievPodBay = options.podBay;
+        this.options = {
+            port: options.port,
+            corsOrigin: options.corsOrigin,
+            podBay: options.podBay
         }
     }
 
     /**
      * Initializes the API server
-     * @public
-     * @returns {void}
-     * @method
-     * @memberof ApiServer
-     * @summary '''Initializes the API server'''
-     * @description '''Initializes the API server'''
      */
     public init() {
         const options = {
@@ -110,7 +97,7 @@ class ApiServer {
                 },
                 servers: [
                     {
-                        url: `http://0.0.0.0:${this.port}`,
+                        url: `http://0.0.0.0:${this.options.port}`,
                         description: 'Development server',
                     },
                 ],
@@ -128,14 +115,14 @@ class ApiServer {
         };
 
         const corsOptions = {
-            origin: 'http://localhost:3001',
+            origin: this.options.corsOrigin,
             optionsSuccessStatus: 200
         }
 
         this.app.use(cors(corsOptions));
 
         const podBayMiddleware = (req: Request, _res: Response, next: NextFunction) => {
-            req.podBay = actievPodBay;
+            req.podBay = this.options.podBay;
             next();
         }
 
@@ -158,26 +145,19 @@ class ApiServer {
 
     /**
      * Starts the API server
-     * @public
-     * @returns {void}
-     * @method
-     * @memberof ApiServer
-     * @summary '''Starts the API server'''
-     * @description '''Starts the API server'''
      */
     public start() {
         this.init()
-        this.app.listen(this.port, () => {
+        this.app.listen(this.options.port, () => {
             logger({
                 level: LogLevel.INFO,
-                message: `API Server listening on port ${this.port}`
+                message: `API Server listening on port ${this.options.port}`
             });
         })
     }
 }
 
 export {
-    actievPodBay,
     ApiServer,
     ApiServerOptions
 }

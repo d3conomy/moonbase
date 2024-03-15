@@ -24,5 +24,5 @@
 Build the docs using typedoc:
 
 ```sh
-npx typedoc --out docs src
+npx typedoc --cleanOutputDir --gitRemote https://github.com/d3conomy/moonbase --gitRevision setup --out docs src
 ```

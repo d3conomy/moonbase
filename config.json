@@ -6,7 +6,8 @@
     "general": {
         "names": "name"
     },
-    "server": {
-        "port": 3000
+    "api": {
+        "port": 4343,
+        "corsOrigin": "*"
     }
 }

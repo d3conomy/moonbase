@@ -9,6 +9,9 @@ import {
 import { OrbitDbProcess } from './orbitDb.js';
 import { _BaseProcess, _IBaseProcess } from './base.js';
 
+/**
+ * The Types of OrbitDb databases.
+ */
 enum OrbitDbTypes {
     EVENTS = 'events',
     DOCUMENTS = 'documents',
@@ -16,12 +19,18 @@ enum OrbitDbTypes {
     KEYVALUEINDEXED = 'keyvalueindexed'
 }
 
+/**
+ * The options for opening a database.
+ */
 class _OpenDbOptions {
     public orbitDb: OrbitDbProcess;
     public databaseName: string;
     public databaseType: OrbitDbTypes;
     public options?: Map<string, string>;
 
+    /**
+     * Constructs a new instance of the _OpenDbOptions class.
+     */
     constructor({
         orbitDb,
         databaseName,
@@ -41,11 +50,7 @@ class _OpenDbOptions {
 }
 
 /**
- * @constant openDb
- * @param orbitDb - The OrbitDb node
- * @param databaseName - The name of the database to open
- * @param databaseType - The type of the database to open
- * @returns [typeof Database] The opened database
+ * Opens a database.
  */
 const openDb = async ({
     orbitDb,
@@ -75,31 +80,36 @@ const openDb = async ({
     }
 }
 
-class OpenDb
-    extends _BaseProcess
-    implements _IBaseProcess
-{
+/**
+ * Represents a class for opening a database.
+ */
+class OpenDb extends _BaseProcess implements _IBaseProcess {
     public declare process?: typeof Database;
     public declare options?: _OpenDbOptions;
 
+    /**
+     * Constructs a new instance of the OpenDb class.
+     */
     constructor({
         id,
         process,
         options
     }: {
-        id?: IdReference,
-        process?: typeof Database,
-        options?: _OpenDbOptions
+        id?: IdReference;
+        process?: typeof Database;
+        options?: _OpenDbOptions;
     }) {
         super({
             id: id,
             component: Component.DB,
             process: process,
             options: options as _OpenDbOptions
-        
         });
     }
 
+    /**
+     * Initializes the database process.
+     */
     public async init(): Promise<void> {
         if (this.checkProcess()) {
             logger({
@@ -117,8 +127,7 @@ class OpenDb
                 databaseType: this.options.databaseType,
                 options: this.options.options
             });
-        }
-        else {
+        } else {
             logger({
                 level: LogLevel.ERROR,
                 processId: this.id,
@@ -133,6 +142,9 @@ class OpenDb
         });
     }
 
+    /**
+     * Stops the database process.
+     */
     public async stop(): Promise<void> {
         if (this.checkProcess()) {
             await this.process?.close();
@@ -141,8 +153,7 @@ class OpenDb
                 processId: this.id,
                 message: `Database process stopped`
             });
-        }
-        else {
+        } else {
             logger({
                 level: LogLevel.ERROR,
                 processId: this.id,
@@ -152,39 +163,61 @@ class OpenDb
         }
     }
 
+    /**
+     * Gets the address of the database process.
+     */
     public address(): string {
         return this.process?.address;
     }
 
+    /**
+     * Adds data to the database.
+     */
     public async add(data: any): Promise<string> {
         return await this.process?.add(data);
     }
 
+    /**
+     * Retrieves all data from the database.
+     */
     public async all(): Promise<any> {
         return await this.process?.all();
     }
 
+    /**
+     * Retrieves data from the database based on the given hash.
+     */
     public async get(hash: string): Promise<any> {
         return await this.process?.get(hash);
     }
 
+    /**
+     * Puts data into the database with the given key and value.
+     */
     public async put(key: string, value: any): Promise<string> {
         return await this.process?.put(key, value);
     }
 
+    /**
+     * Puts a document into the database.
+     */
     public async putDoc(doc: any): Promise<string> {
         return await this.process?.put(doc);
     }
 
+    /**
+     * Deletes data from the database based on the given key.
+     */
     public async del(key: string): Promise<void> {
         await this.process?.del(key);
     }
 
+    /**
+     * Queries the database using the given mapper function.
+     */
     public async query(mapper: any): Promise<any> {
         return await this.process?.query(mapper);
     }
-
-
 }
 
 

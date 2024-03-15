@@ -14,8 +14,8 @@ import {
 
 
 /**
- * @interface ILogEntry
- * @description Interface for a log entry
+ * Interface for a log entry
+ * @category Logging
  */
 interface ILogEntry {
     podId?: IdReference;
@@ -32,9 +32,8 @@ interface ILogEntry {
 }
 
 /**
- * @class LogEntry
- * @implements ILogEntry
- * @description A class to represent a log entry
+ * A class to represent a log entry
+ * @category Logging
  */
 class LogEntry
     implements ILogEntry
@@ -82,9 +81,7 @@ class LogEntry
     }
 
     /**
-     * @function print
-     * @returns void
-     * @description Prints the log entry to the console
+     * Prints the log entry to the console
      */
     public print = (printLevel: LogLevel): void => {
         const timestamp = this.timestamp.toUTCString();
@@ -128,8 +125,8 @@ class LogEntry
 
 
 /**
- * @interface ILogBook
- * @description Interface for a log book
+ * Interface for a log book
+ * @category Logging
  */
 interface ILogBook {
     name: string;
@@ -147,9 +144,8 @@ interface ILogBook {
 
 
 /**
- * @class LogBook
- * @implements ILogBook
- * @description A class to manage an individual log book
+ * A class to manage an individual log book
+ * @category Logging
  */
 class LogBook
     implements ILogBook
@@ -165,10 +161,7 @@ class LogBook
     }
 
     /**
-     * @function add
-     * @param entry : ILogEntry - The entry to add to the log book
-     * @returns void
-     * @description Adds an entry to the log book
+     * Adds an entry to the log book
      */
     public add(entry: LogEntry):  void {
         if (!entry.printLevel ||
@@ -181,10 +174,7 @@ class LogBook
     }
 
     /**
-     * @function get
-     * @param entryId : number - The id of the entry to get
-     * @returns ILogEntry - The entry
-     * @description Gets an entry from the log book
+     * Gets an entry from the log book
      */
     public get(entryId: number): LogEntry {
         const entry: LogEntry | undefined = this.entries.get(entryId);
@@ -197,37 +187,28 @@ class LogBook
     }
 
     /**
-     * @function delete
-     * @param entryId : number - The id of the entry to delete
-     * @returns void
-     * @description Deletes an entry from the log book
+     * Deletes an entry from the log book
      */
     public delete(entryId: number): void {
         this.entries.delete(entryId);
     }
 
     /**
-     * @function getAll
-     * @returns Map<number, ILogEntry> - A map of all the entries
-     * @description Returns a map of all the entries
+     * Returns a map of all the entries
      */
     public getAll(): Map<number, ILogEntry> {
         return this.entries;
     }
 
     /**
-     * @function clear
-     * @returns void
-     * @description Clears the entire log book
+     * Clears the entire log book
      */
     public clear(): void {
         this.entries = new Map<number, LogEntry>();
     }
 
     /**
-     * @function getLastEntries
-     * @param count : number = 1 - The number of entries to return
-     * @returns Map<number, ILogEntry> - A map of the last entries
+     * Retrieve the last n entries from the log book
      */
     public getLast(count: number = 1): Map<number, LogEntry> {
         let lastEntries: Map<number, LogEntry> = new Map<number, LogEntry>();
@@ -240,11 +221,7 @@ class LogBook
     }
 
     /**
-     * @function getPodHistory
-     * @param podId : string - The pod id to get the history for
-     * @returns Map<number, ILogEntry> - A map of the history for the pod
-     * @description Returns a map of the history for the pod
-     * 
+     * Returns a map of the history for the pod
      */
     public getPodHistory(podId: string): Map<number, LogEntry> {
         let podHistory: Map<number, LogEntry> = new Map<number, LogEntry>();
@@ -260,10 +237,7 @@ class LogBook
     }
 
     /**
-     * @function getProcessHistory
-     * @param processId : string - The job id to get the history for
-     * @returns Map<number, LogEntry> - A map of the history for the job
-     * @description Returns a map of the history for the job
+     * Returns a map of the history for the job
      */
     public getProcessHistory(processId: string): Map<number, LogEntry> {
         let jobHistory: Map<number, LogEntry> = new Map<number, LogEntry>();
@@ -276,10 +250,7 @@ class LogBook
     }
 
     /**
-     * @function getLevelHistory
-     * @param level : LogLevel - The log level to get the history for
-     * @returns Map<number, LogEntry> - A map of the history for the log level
-     * @description Returns a map of the history for the log level
+     * Returns a map of the history for the log level
      */
     public getLevelHistory(level: LogLevel): Map<number, LogEntry> {
         let levelHistory: Map<number, LogEntry> = new Map<number, LogEntry>();
@@ -293,8 +264,8 @@ class LogBook
 }
 
 /**
- * @interface ILogBooksManager
- * @description Interface for a log books manager
+ * Interface for a log books manager
+ * @category Logging
  */
 interface ILogBooksManager {
     books: Map<string, ILogBook>;
@@ -313,20 +284,30 @@ interface ILogBooksManager {
 }
 
 /**
- * @class LogBooksManager
- * @description A class to manage the system's collection of log books
+ * A class to manage the system's collection of log books
+ * @category Logging
  */
 class LogBooksManager 
     implements ILogBooksManager
 {
+    /* The collection of log books */
     public books: Map<string, LogBook> = new Map<string, LogBook>();
+
+    /* The log level to print */
     public printLevel: LogLevel = LogLevel.INFO;
+
+    /* The directory to store the log files 
+    * TODO: Implement file storage
+    */
     public dir: string = "";
 
     public constructor() {
         this.books = new Map<string, LogBook>();
     }
 
+    /**
+     * Initializes the log books manager
+     */
     public init({
         dir,
         level,
@@ -334,17 +315,13 @@ class LogBooksManager
         dir?: string,
         level?: string,
     }) {
-        console.log("Initializing log books manager, dir: ", dir, "level: ", level);
         this.printLevel = isLogLevel(level ? level : LogLevel.INFO);
         this.dir = dir ? dir : "";
         this.create(Component.SYSTEM);
     }
 
     /**
-     * @function create
-     * @param logBookName : LogBookNames - The name of the log book to create
-     * @returns void
-     * @description Creates a new log book and adds it to the collection
+     * Creates a new log book and adds it to the collection
      */
     public create(
         logBookName: string,
@@ -354,10 +331,7 @@ class LogBooksManager
     }
 
     /**
-     * @function get
-     * @param name  : LogBookNames - The name of the log book to get
-     * @returns LogBook - The log book
-     * @description Gets a log book from the collection
+     * Gets a log book from the collection
      */
     public get(
         name: string
@@ -372,10 +346,7 @@ class LogBooksManager
     }
 
     /**
-     * @function delete
-     * @param name : LogBookNames - The name of the log book to delete
-     * @returns void
-     * @description Deletes a log book from the collection
+     * Deletes a log book from the collection
      */
     public delete(
         name: string
@@ -384,9 +355,7 @@ class LogBooksManager
     }
 
     /**
-     * @function clear
-     * @returns void
-     * @description Clears all the log books
+     * Clears all the log books
      */
     public clear() {
         for (const logBook of this.books.values()) {
@@ -395,9 +364,7 @@ class LogBooksManager
     }
 
     /**
-     * @function getAllEntries
-     * @returns Map<number, LogEntry> - A map of all the entries
-     * @description Returns a map of all the entries
+     * Returns a map of all the entries
      */
     public getAllEntries(item: number = 10): Map<number, LogEntry> {
         let allEntries: Map<number, LogEntry> = new Map<number, LogEntry>();
@@ -418,18 +385,30 @@ class LogBooksManager
 
 
 /**
- * @constant logBooksManager
- * @description The system's log books manager
- * @type LogBooksManager
- * @default new LogBooksManager()
+ * The log books manager
+ * @category Logging
  * @example
  * const logBooksManager = new LogBooksManager();
  * logBooksManager.create("system");
  * logBooksManager.get("system");
- * 
  */
 const logBooksManager = new LogBooksManager();
 
+/**
+ * Log a message to the console
+ * @category Logging
+ * @example
+ * logger({
+ *     name: "system",
+ *     level: LogLevel.INFO,
+ *     code: ResponseCode.OK,
+ *     stage: ProcessStage.START,
+ *     message: "System started",
+ *     error: undefined,
+ *     processId: undefined,
+ *     podId: undefined
+ * });
+ */
 const logger = ({
     name,
     level,
@@ -477,6 +456,12 @@ const logger = ({
     logBook.add(entry);
 }
 
+/**
+ * Get the log book by name
+ * @category Logging
+ * @example
+ * const logBook = getLogBook("system");
+ */
 const getLogBook = (logBookName: string): LogBook => {
     return logBooksManager.get(logBookName);
 }
@@ -485,7 +470,10 @@ export {
     logBooksManager,
     logger,
     getLogBook,
+    ILogEntry,
     LogEntry,
+    ILogBook,
     LogBook,
+    ILogBooksManager,
     LogBooksManager
 }

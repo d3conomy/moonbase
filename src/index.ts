@@ -1,4 +1,3 @@
-import { time } from 'console';
 import {
     ApiServer,
     ApiServerOptions
@@ -7,7 +6,7 @@ import {
 import {
     PodBay
 } from './db/index.js';
-import { IdReferenceType } from './utils/constants.js';
+import { IdReferenceType } from './utils/index.js';
 
 import {
     Config,
@@ -19,8 +18,6 @@ import {
     logger,
 } from './utils/index.js';
 
-let nameType: IdReferenceType | string = IdReferenceType.NAME;
-let loadedConfig = await loadConfig();
 
 /**
  * The main class for the Moonbase
@@ -41,17 +38,23 @@ class Moonbase {
     constructor(
         config?: Config
     ) {
-        this.podBay = new PodBay();
-        this.config = loadedConfig
+        
+        this.config = config ? config : loadedConfig
+        loadedConfig = this.config;
 
-        console.log('Config data after loadConfig:', this.config.general.names, this.config.logs.level, this.config.logs.dir, this.config.server.port);
         this.logs.init(this.config.logs);
 
-        nameType = this.config.general.names;
+        const podBayOptions = {
+            nameType: this.config.general.names,
+            pods: this.config?.pods,
+        };
+
+        this.podBay = new PodBay(podBayOptions);
 
         const options = new ApiServerOptions({
-            port: this.config.server.port,
-            podBay: this.podBay
+            port: this.config.api.port,
+            podBay: this.podBay,
+            corsOrigin: this.config.api.corsOrigin
         });
 
         if (!options) {
@@ -78,19 +81,21 @@ class Moonbase {
     }
 }
 
-// while (loadedConfig === null || loadedConfig === undefined) {
-//     setTimeout(() => {
-//         console.log('Waiting for config to load...');
-//     }, 100);
-// }
+let loadedConfig = await loadConfig();
+while (loadedConfig === null || loadedConfig === undefined) {
+    setTimeout(() => {
+        console.log('Waiting for config to load...');
+    }, 100);
+}
 const moonbase = new Moonbase();
 moonbase.init();
 
 export {
     Moonbase,
     moonbase,
-    nameType
+    // nameType,
 }
 
 export * from './utils/index.js';
 export * from './db/index.js';
+export * from './api/index.js';

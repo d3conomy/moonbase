@@ -252,7 +252,7 @@ router.post('/db/:id', async function(req: Request, res: Response) {
     const command = req.body.command;
     const args = req.body.args;
 
-    const db = podBay.getOpenDb(new IdReference({id, component: Component.DB}));
+    const db = podBay.getOpenDb(new IdReference({id, component: Component.DB, type: podBay.options.nameType}));
 
     if (!db) {
         res.status(404).send(`Database ${id} not found`);
@@ -309,7 +309,7 @@ router.delete('/db/:id', async function(req: Request, res: Response) {
     const podBay = req.podBay;
     const id = req.params.id;
 
-    const result = await podBay.closeDb(new IdReference({id, component: Component.DB}));
+    const result = await podBay.closeDb(new IdReference({id, component: Component.DB }));
 
     if (!result) {
         res.status(404).send(`Database ${id} not found`);

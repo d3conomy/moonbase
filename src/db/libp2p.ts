@@ -28,13 +28,7 @@ import { ProcessStage, isProcessStage } from '../utils/constants.js'
 
 /**
  * Default bootstrap configuration for libp2p
- * @type {any}
- * @default
- * @constant
- * @private
- * @since 0.0.1
  * @category libp2p
- * @property {string[]} list - List of bootstrap nodes
  */
 const defaultBootstrapConfig: any = {
     list: [
@@ -48,11 +42,7 @@ const defaultBootstrapConfig: any = {
 
 /**
  * Default libp2p options
- * @function
- * @private
- * @since 0.0.1
  * @category libp2p
- * @returns {Libp2pOptions} - Default libp2p options
  */
 const defaultLibp2pOptions = (): Libp2pOptions => {
     const libp2pOptions: Libp2pOptions = {
@@ -129,12 +119,7 @@ return libp2pOptions
 
 /**
  * Options for creating a libp2p process
- * @class
- * @public
- * @since 0.0.1
  * @category libp2p
- * @property {boolean} start - Start the process after creation
- * @property {Libp2pOptions} processOptions - Options for creating the libp2p process
  */
 class _Libp2pOptions {
     public start: boolean;
@@ -162,12 +147,7 @@ class _Libp2pOptions {
 
 /**
  * Create a libp2p process
- * @function
- * @public
- * @since 0.0.1
  * @category libp2p
- * @param {Libp2pOptions} - Options for creating the libp2p process
- * @returns {Promise<Libp2p>} - A new libp2p process
  */
 const createLibp2pProcess = async (
     options?: _Libp2pOptions
@@ -193,14 +173,7 @@ const createLibp2pProcess = async (
 
 /**
  * A class for managing a libp2p process
- * @class
- * @public
- * @since 0.0.1
  * @category libp2p
- * @extends _BaseProcess
- * @implements _IBaseProcess
- * @property {Libp2p} process - The libp2p process
- * @property {_Libp2pOptions} options - Options for creating the libp2p process
  */
 class Libp2pProcess
     extends _BaseProcess
@@ -209,6 +182,9 @@ class Libp2pProcess
     public declare process?: Libp2p
     public declare options?: _Libp2pOptions
 
+    /**
+     * Create a new libp2p process
+     */
     constructor({
         id,
         process,
@@ -228,15 +204,6 @@ class Libp2pProcess
 
     /**
      * Initialize the libp2p process
-     * @function
-     * @public
-     * @since 0.0.1
-     * @category libp2p
-     * @returns Promise<void>
-     * @throws Error
-     * @override
-     * @async
-     * @memberof Libp2pProcess
      */
     public async init(): Promise<void> {
         if (!this.process) {
@@ -263,39 +230,7 @@ class Libp2pProcess
     }
 
     /**
-     * Start the libp2p process
-     * @function
-     * @public
-     * @since 0.0.1
-     * @category libp2p
-     * @returns Promise<void>
-     * @throws Error
-     * @override
-     * @async
-     * @memberof Libp2pProcess
-     */
-    public checkStatus(): ProcessStage {
-        const status = isProcessStage(
-            this.process?.status ? this.process.status : ProcessStage.UNKNOWN
-        );
-        
-        logger({
-            level: LogLevel.DEBUG,
-            stage: status,
-            processId: this.id,
-            message: `Process status checked for ${this.id.component}-${this.id.name}: ${status}`
-        })
-        return status
-    }
-
-    /**
      * Get the PeerId for the libp2p process
-     * @returns PeerId - The PeerId for the libp2p process
-     * @throws Error
-     * @memberof Libp2pProcess
-     * @public
-     * @since 0.0.1
-     * @category libp2p
      */
     public peerId(): PeerId {
         let peerId: PeerId;
@@ -320,12 +255,6 @@ class Libp2pProcess
 
     /**
      * Get the multiaddresses for the libp2p process
-     * @returns Multiaddr[] - The multiaddresses for the libp2p process
-     * @throws Error
-     * @memberof Libp2pProcess
-     * @public
-     * @since 0.0.1
-     * @category libp2p
      */
     public getMultiaddrs(): Multiaddr[] {
         let multiaddrs: Multiaddr[];
@@ -350,12 +279,6 @@ class Libp2pProcess
 
     /**
      * Get the peers for the libp2p process
-     * @returns PeerId[] - The peers for the libp2p process
-     * @throws Error
-     * @memberof Libp2pProcess
-     * @public
-     * @since 0.0.1
-     * @category libp2p
      */
     public peers(): PeerId[] {
         let peers: PeerId[];
@@ -380,14 +303,6 @@ class Libp2pProcess
 
     /**
      * Get the connections for the libp2p process
-     * @param {string} peerId - The peerId for the connections
-     * @param {number} max - The maximum number of connections to return
-     * @returns Connection[] - The connections for the libp2p process
-     * @throws Error
-     * @memberof Libp2pProcess
-     * @public
-     * @since 0.0.1
-     * @category libp2p
      */
     public connections(peerId?: string, max: number = 10): Connection[] {
         if (this.process && peerId) {
@@ -422,12 +337,6 @@ class Libp2pProcess
 
     /**
      * Get the protocols for the libp2p process
-     * @returns string[] - The protocols for the libp2p process
-     * @throws Error
-     * @memberof Libp2pProcess
-     * @public
-     * @since 0.0.1
-     * @category libp2p
      */
     public getProtocols(): string[] {
         let protocols;
@@ -452,14 +361,6 @@ class Libp2pProcess
 
     /**
      * dial a libp2p address
-     * @param {string} address - The address to dial
-     * @returns Connection - The connection
-     * @throws Error
-     * @memberof Libp2pProcess
-     * @public
-     * @since 0.0.1
-     * @category libp2p
-     * @async
      */
     public async dial(address: string): Promise<Connection | undefined> {
         let output: Connection | undefined = undefined;
@@ -489,15 +390,6 @@ class Libp2pProcess
 
     /**
      * Dial a libp2p address and protocol
-     * @param {string} address - The address to dial
-     * @param {string} protocol - The protocol to dial
-     * @returns Stream - The stream
-     * @throws Error
-     * @memberof Libp2pProcess
-     * @public
-     * @since 0.0.1
-     * @category libp2p
-     * @async
      */ 
     public async dialProtocol(address: string, protocol: string): Promise<Stream | undefined> {
         let output: Stream | undefined = undefined;

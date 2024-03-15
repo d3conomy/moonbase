@@ -9,7 +9,10 @@ import { _OrbitDbOptions } from "./orbitDb.js"
 import { _OpenDbOptions } from "./open.js"
 import { logger } from "../utils/logBook.js"
 
-
+/**
+ * Interface for process containers
+ * @category Process
+ */
 interface _IBaseProcess {
     id: IdReference
     process?: any
@@ -23,13 +26,27 @@ interface _IBaseProcess {
     restart(): Promise<void>
 }
 
+/**
+ * Type for process containers
+ * @category Process
+ */
 type _ProcessType = Libp2p | Helia | typeof OrbitDb | typeof Database
+
+/**
+ * Type for process options
+ * @category Process
+ */
 type _ProcessOptions = _Libp2pOptions | _IpfsOptions | _OrbitDbOptions | _OpenDbOptions
 
+/**
+ * Base class for process containers
+ * @category Process
+ */
 class _BaseProcess {
     public id: IdReference
     public process?: _ProcessType
     public options?: _ProcessOptions
+    public status: ProcessStage = ProcessStage.UNKNOWN;
 
     constructor({
         id,
@@ -51,6 +68,10 @@ class _BaseProcess {
         })
     }
 
+
+    /**
+     * Check if the process exists
+     */
     public checkProcess(): boolean {
         if (!this.process) {
             logger({
@@ -64,37 +85,28 @@ class _BaseProcess {
         return true
     }
 
-    public checkStatus(update: boolean = true): ProcessStage {
+    /**
+     * Check the status of the process
+     */
+    public checkStatus(): ProcessStage {
         let stage: ProcessStage = ProcessStage.UNKNOWN;
         try {
-            if (!this.process) {
-                logger({
-                    level: LogLevel.ERROR,
-                    stage: ProcessStage.ERROR,
-                    processId: this.id,
-                    message: `Process not found for ${this.id.component}-${this.id.name}`
-                })
-                return ProcessStage.ERROR
-            }
-            const status = this.process.status
+            if (!this.checkProcess()) {
+                this.status = ProcessStage.ERROR
+                return stage;
+            }  
 
-            try {
-                stage = isProcessStage(status) ? status : ProcessStage.UNKNOWN
-            }
-            catch (error: any) {
+            const status = this.process.status;
+
+            stage = isProcessStage(status)
+
+            if (this.status !== stage) {
+                this.status = stage
                 logger({
-                    level: LogLevel.ERROR,
-                    stage: ProcessStage.ERROR,
-                    processId: this.id,
-                    message: `Error checking process status for ${this.id.component}-${this.id.name}: ${error.message}`,
-                    error: error
-                })
-            }
-            if (update) {
-                logger({
-                    level: LogLevel.DEBUG,
+                    level: LogLevel.INFO,
                     stage: stage,
-                    message: `Process status checked for ${this.id.component}: ${stage}`
+                    processId: this.id,
+                    message: `Process status updated for ${this.id.component}-${this.id.name}: ${stage}`
                 })
             }
         }
@@ -108,13 +120,19 @@ class _BaseProcess {
             throw error
         }
 
-        return stage as ProcessStage
+        return stage
     }
 
+    /**
+     * Initialize the process
+     */
     public async init(): Promise<void> {
         return;
     }
 
+    /**
+     * Start the process
+     */
     public async start(): Promise<void> {
         if (
             this.process &&
@@ -162,6 +180,9 @@ class _BaseProcess {
         }
     }
 
+    /**
+     * Stop the process
+     */
     public async stop(): Promise<void> {
         if (
             this.process &&
@@ -200,6 +221,9 @@ class _BaseProcess {
         }
     }
 
+    /**
+     * Restart the process
+     */
     public async restart(): Promise<void> {
         await this.stop()
         await this.start()
@@ -209,5 +233,7 @@ class _BaseProcess {
 
 export {
     _IBaseProcess,
-    _BaseProcess
+    _BaseProcess,
+    _ProcessType,
+    _ProcessOptions
 }
