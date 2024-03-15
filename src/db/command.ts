@@ -1,6 +1,17 @@
 import { OpenDb, _OpenDbOptions } from "./open.js"
 import { LunarPod } from "./pod.js"
 
+/**
+ * Executes a command on a pod
+ * @category Pod
+ * @example
+ * const result = await execute({
+ *   pod: pod,
+ *   command: 'connections',
+ *   args: { peerId: 'zdpuAqzv3...' }
+ * })
+ * console.log(result) // [{ peerId: 'zdpuAqzv3...', direction: 'inbound', ... }]
+ */
 const execute = async ({
     pod,
     command,
@@ -74,7 +85,7 @@ const execute = async ({
                 }
             case 'getjson':
                 if (pod.ipfs !== undefined) {
-                    return await pod.ipfs.getJson(args.data.cid);
+                    return await pod.ipfs.getJson(args.cid);
                 }
                 else {
                     throw new Error('IPFS component not available');
@@ -93,6 +104,17 @@ const execute = async ({
     }
 }
 
+/**
+ * Executes an operation on an open database
+ * @category Database
+ * @example
+ * const result = await operation({
+ *    openDb: openDb,
+ *    command: 'add',
+ *    args: { value: { name: 'Alice' } }
+ * })
+ * console.log(result) // 'zdpuAqzv3...'
+ */
 const operation = async ({
     openDb,
     command,

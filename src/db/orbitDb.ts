@@ -28,13 +28,8 @@ import { _BaseProcess, _IBaseProcess } from './base.js';
 
 
 /**
- * @function createIdentityProvider
- * @description Create an identity provider
+ * Create an identity provider
  * @category OrbitDb
- * @param {Uint8Array} identitySeed - The identity seed to use
- * @param {any} identityProvider - The identity provider to use
- * @returns {any} - The created identity provider
- * @public
  * @todo Add support for other identity providers
  * @todo Add support for other identity seeds
  */
@@ -68,15 +63,8 @@ const createIdentityProvider = ({
 }
 
 /**
-* @class _OrbitDbOptions
-* @classdesc The options for creating an OrbitDb process
+* The options for creating an OrbitDb process
 * @category OrbitDb
-* @property {IpfsProcess} ipfs - The Ipfs process to use
-* @property {boolean} enableDID - Whether to enable DID
-* @property {Uint8Array} identitySeed - The identity seed to use
-* @property {any} identityProvider - The identity provider to use
-* @property {string} directory - The directory to use
-* @public
 */
 class _OrbitDbOptions {
     ipfs: IpfsProcess;
@@ -117,12 +105,8 @@ class _OrbitDbOptions {
 }
 
 /**
- * @function createOrbitDbProcess
- * @description Create an OrbitDb process
+ * Create an OrbitDb process
  * @category OrbitDb
- * @param {any} options - The options for creating the process
- * @returns {Promise<OrbitDb>} - The created process
- * @public
  */
 const createOrbitDbProcess = async (options: _OrbitDbOptions): Promise<typeof OrbitDb> => {
     if (options.enableDID) {
@@ -141,14 +125,8 @@ const createOrbitDbProcess = async (options: _OrbitDbOptions): Promise<typeof Or
 }
 
 /**
- * @class OrbitDbProcess
- * @classdesc The OrbitDb process
+ * A class representing an OrbitDb process
  * @category OrbitDb
- * @property {OrbitDb} process - The OrbitDb instance
- * @property {_OrbitDbOptions} options - The options for creating the process
- * @public
- * @extends _BaseProcess
- * @implements _IBaseProcess
  */
 class OrbitDbProcess
     extends _BaseProcess
@@ -175,15 +153,7 @@ class OrbitDbProcess
     }
 
     /**
-     * @function init
-     * @description Initialize the OrbitDb process
-     * @category OrbitDb
-     * @returns {Promise<void>} - The result of the init
-     * @public
-     * @memberof OrbitDbProcess
-     * @instance
-     * @override
-     * @async 
+     * Initialize the OrbitDb process
      */
     public async init(): Promise<void> {
         if (this.process) {
@@ -206,15 +176,7 @@ class OrbitDbProcess
     }
 
     /**
-     * @function stop
-     * @description Stop the OrbitDb process
-     * @category OrbitDb
-     * @returns {Promise<void>} - The result of the stop
-     * @public
-     * @memberof OrbitDbProcess
-     * @instance
-     * @override
-     * @async
+     * Open an OrbitDb database
      */
     public async open({
         databaseName,
@@ -232,7 +194,6 @@ class OrbitDbProcess
                 code: ResponseCode.NOT_FOUND,
                 message: `No OrbitDb process found`
             })
-            // new Error(`No OrbitDb process found`)
         }
         else {
             try {
@@ -262,15 +223,7 @@ class OrbitDbProcess
     }
 
     /**
-     * @function stop
-     * @description Stop the OrbitDb process
-     * @category OrbitDb
-     * @returns {Promise<void>} - The result of the stop
-     * @public
-     * @memberof OrbitDbProcess
-     * @instance
-     * @override
-     * @async
+     * Stop the OrbitDb process
      */
     public async stop(): Promise<void> {
         if (this.process) {

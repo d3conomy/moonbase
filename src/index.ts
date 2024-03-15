@@ -6,11 +6,9 @@ import {
 import {
     PodBay
 } from './db/index.js';
-import { IdReferenceType } from './utils/index.js';
 
 import {
     Config,
-    IdReference,
     LogBooksManager,
     LogLevel,
     loadConfig,
@@ -21,13 +19,7 @@ import {
 
 /**
  * The main class for the Moonbase
- * @class
- * @classdesc The main class for the Moonbase
- * @property {ApiServer} api - The API server
- * @property {PodBay} podBay - The pod bay
- * @property {Config} config - The configuration
- * @property {LogBooksManager} logs - The log books manager
- * @public
+ * @category Moonbase
  */
 class Moonbase {
     public api: ApiServer;
@@ -71,22 +63,26 @@ class Moonbase {
 
     /**
      * Initialize the Moonbase
-     * @method
-     * @public
-     * @returns {void}
-     * @summary Initialize the Moonbase
      */
     public init() {
         this.api.start();
     }
 }
 
+
+
 let loadedConfig = await loadConfig();
+
 while (loadedConfig === null || loadedConfig === undefined) {
     setTimeout(() => {
         console.log('Waiting for config to load...');
     }, 100);
 }
+
+/**
+ * The main instance of the Moonbase
+ * @category Moonbase
+ */
 const moonbase = new Moonbase();
 moonbase.init();
 

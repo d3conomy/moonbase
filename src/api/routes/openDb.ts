@@ -7,6 +7,11 @@ import { OpenDb, _OpenDbOptions } from '../../db/open.js';
 import { operation } from '../../db/command.js';
 
 
+
+/**
+ * Handles the API routes for opening, managing, and running operations on databases
+ * @category API
+ */
 const router = express.Router();
 
 

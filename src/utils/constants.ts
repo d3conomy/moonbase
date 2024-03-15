@@ -4,24 +4,8 @@ import { logger } from './logBook.js';
 import { LunarPod } from '../db/pod.js';
 
 /**
- * Component enum
- * @description Enum for available components
- * @enum {string}
- * @property DB - Database
- * @property IPFS - IPFS
- * @property LIBP2P - Libp2p
- * @property ORBITDB - OrbitDB
- * @property PROCESS - Process
- * @property POD - Pod
- * @property SYSTEM - System
- * @summary '''Enum for available components
- *             DB: Open Database
- *             IPFS: IPFS Process
- *             LIBP2P: Libp2p Process
- *             ORBITDB: OrbitDB Process
- *             PROCESS: Generic or unknown/custom process
- *             POD: Pod managing a set of processes
- *             SYSTEM: System process'''   
+ * Moonbase Components
+ * @category Moonbase
  */
 enum Component {
     DB = 'opendb',
@@ -33,6 +17,10 @@ enum Component {
     SYSTEM = 'system'
 }
 
+/**
+ * Check if a string is a valid component
+ * @category Moonbase
+ */
 const isComponent = (component: string): Component => {
     if (Object.values(Component).includes(component as Component)) {
         return component as Component;
@@ -40,6 +28,10 @@ const isComponent = (component: string): Component => {
     throw new Error('Invalid component');
 }
 
+/**
+ * Log Levels
+ * @category Logging
+ */
 enum LogLevel {
     INFO = 'info',
     WARN = 'warn',
@@ -47,6 +39,10 @@ enum LogLevel {
     DEBUG = 'debug'
 }
 
+/**
+ * Check if a string is a valid log level
+ * @category Utils
+ */
 const isLogLevel = (level: string): LogLevel => {
     if (Object.values(LogLevel).includes(level as LogLevel)) {
         return level as LogLevel;
@@ -54,12 +50,20 @@ const isLogLevel = (level: string): LogLevel => {
     throw new Error('Invalid log level');
 }
 
+/**
+ * Id Reference Types
+ * @category Utils
+ */
 enum IdReferenceType {
     UUID = 'uuid',
     NAME = 'name',
     STRING = 'string'
 }
 
+/**
+ * Check if a string is a valid id reference type
+ * @category Utils
+ */
 const isIdReferenceType = (type?: string): IdReferenceType => {
     if (Object.values(IdReferenceType).includes(type as IdReferenceType)) {
         return type as IdReferenceType;
@@ -70,6 +74,12 @@ const isIdReferenceType = (type?: string): IdReferenceType => {
     throw new Error('Invalid id reference type');
 }
 
+/**
+ * Response Codes
+ * @category API
+ * @description Response codes for API
+ * @link https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+ */
 enum ResponseCode {
     SUCCESS = 200,
     FAILURE = 300,
@@ -82,6 +92,10 @@ enum ResponseCode {
     UNKNOWN = 520
 }
 
+/**
+ * Lunar Pod Process Stages
+ * @category Process
+ */
 enum ProcessStage {
     NEW = 'new',
     INIT = 'init',
@@ -96,6 +110,10 @@ enum ProcessStage {
     UNKNOWN = 'unknown',
 }
 
+/**
+ * Check if a string is a valid process stage
+ * @category Process
+ */
 const isProcessStage = (stage: string): ProcessStage => {
     if (Object.values(ProcessStage).includes(stage as ProcessStage)) {
         return stage as ProcessStage;
@@ -108,35 +126,68 @@ const isProcessStage = (stage: string): ProcessStage => {
 
 
 /**
- * Configuration class
- * @description Configuration class for moonbase
- * @class Config
- * @property logs - Configuration for logs
- * @property server - Configuration for server
- * @property general - General configuration
- * @method constructor - Constructor for Config
- * @summary '''Configuration class for moonbase
- *             ENV variables override config.json
- *             LOG_LEVEL: info | warn | error | debug
- *             LOG_DIR: path to log directory
- *             LOG_NAMES: uuid | name
- *             PORT: Moonbase API server port number'''
+ * Configuration class for moonbase
+ * @category Moonbase
  */
 class Config {
+    /**
+     * Configure logging
+     * @default level "info"
+     * @default dir "./logs"
+     */
     public logs: {
         level: string,
         dir: string,
     }
+
+    /**
+     * General configuration
+     * @default names "uuid"
+     * @example
+     * { "names": "uuid" | "name" | "string" }
+     */
     public general: {
         names: string
     }
+
+    /**
+     * API configuration
+     * @default port 4343
+     * @default corsOrigin "*"
+     * @example
+     * { "port": 4343, "corsOrigin": "*" }
+     */
     public api: {
         port: number
         corsOrigin: string
     }
+
+    /**
+     * Lunar Pods to include in the system
+     * @description Array of LunarPods to include in the system
+     * @default Array<LunarPod>
+     * @example
+     * const myPods = new Array<LunarPod>([
+        SystemPod,
+        AuthPod,
+        UserInfoPod
+    ])
+     * pods = myPods
+     */
     public pods?: Array<LunarPod> = undefined
 
-    // env variables override config.json
+    /**
+     * Creates a new instance of the Config class
+     * @description Can take a configuration object as an argument.
+     *  This will override the default configuration.
+     *  Environment variables will override the configuration object and the default configuration.
+     * @example
+     * const config = new Config({
+        "logs": { "level": "info", "dir": "./logs" },
+        "general": { "names": "uuid" },
+        "api": { "port": 4343, "corsOrigin": "*" } 
+    })
+     */
     constructor(config?: any) {
         this.logs = {
             level: process.env.LOG_LEVEL ? process.env.LOG_LEVEL : config?.logs?.level || LogLevel.INFO,
@@ -155,9 +206,9 @@ class Config {
 
 /**
  * Load configuration
- * @description Load configuration from config.json
- * @function loadConfig
- * @returns {Config} - Configuration object
+ * @description Load configuration from config.json file.
+ *  The default location for the config.json file is the root of the project.
+ * @category Moonbase
  */
 const loadConfig = async (): Promise<Config> => {
     const __dirname = path.resolve();

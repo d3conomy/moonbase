@@ -1,19 +1,19 @@
 import { v4 as uuidv4 } from 'uuid';
-// import * as randomWords from 'random-words';
 import chance from 'chance';
 
-import { Component, IdReferenceType, LogLevel, isIdReferenceType } from "./constants.js";
-// import { nameType as configNameType } from '../index.js';
+import {
+    Component,
+    IdReferenceType,
+    isIdReferenceType
+} from "./constants.js";
 
 
 /**
- * @function createRandomId
- * @returns {string} - A random id
- * @param overrideNameType - The type of name to generate
- * @summary '''Generates a random id'''
- * @description '''Generates a random id'''
- * @example    const id = createRandomId("names")
- *             console.log(id) // "johnny-zebra"
+ * Generates a random id
+ * @category Utils
+ * @example    
+ * const id = createRandomId("names")
+ * console.log(id) // "johnny-zebra"
  */
 const createRandomId = (overrideNameType?: string): string => {
     let nameType = isIdReferenceType(overrideNameType);
@@ -31,13 +31,8 @@ const createRandomId = (overrideNameType?: string): string => {
 }
 
 /**
- * @class IdReference
- * @property name - The name of the id reference
- * @property component - The component of the id reference
- * @method getId - Get the id reference
- * @method randomId - Get a random id
- * @summary '''Id reference class'''
- * @description '''Id reference class'''
+ * Id reference class
+ * @category Utils
  */
 class IdReference {
     public name: string;
@@ -64,14 +59,7 @@ class IdReference {
     }
 
     /**
-     * @function getId
-     * @param component - Whether to include the component in the id
-     * @returns {string} - The id reference
-     * @summary '''Get the id reference'''
-     * @description '''Get the id reference'''
-     * @example    const id = new IdReference({ component: Component.POD })
-     *             console.log(id.getId()) // "abcd-1234"
-     *             console.log(id.getId(true)) // "pod-abcd-1234"
+     * Get the id reference
      */
     public getId(component: boolean = false): string {
         if (component) {
@@ -82,17 +70,15 @@ class IdReference {
     }
 
     /**
-     * @function randomId
-     * @returns {string} - A random id
-     * @summary '''Get a random id'''
-     * @description '''Get a random id'''
-     * @example    const id = IdReference.randomId()
-     *             console.log(id) // "abcd-1234"
+     * Create a random Id reference
      */
     public static randomId(type?: string): string {
         return createRandomId(type);
     }
 
+    /**
+     * Create a new Id reference object
+     */
     public newId({
         component,
         id,

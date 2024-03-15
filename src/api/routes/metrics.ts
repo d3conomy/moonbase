@@ -2,7 +2,13 @@ import express, { Request, Response } from 'express';
 import { LogBooksManager, logBooksManager, logger } from '../../utils/logBook.js';
 import { LogLevel, ResponseCode } from '../../utils/constants.js';
 
+
+/**
+ * The metrics router
+ * @category API
+ */
 const router = express.Router();
+
 /**
  * @openapi
  * /api/v0/ping:

@@ -10,7 +10,8 @@ import { logger } from "../utils/logBook.js";
 
 /**
  * Represents a LunarPod, which is a container for managing various components and databases.
- */
+ * @category Pod
+*/
 class LunarPod {
     public id: IdReference;
     public libp2p?: Libp2pProcess;
@@ -19,12 +20,7 @@ class LunarPod {
     public db: Map<string, OpenDb> = new Map<string, OpenDb>();
 
     /**
-     * @constructor
-     * @category LunarPod
-     * @param {IdReference} id - The id of the pod
-     * @param {Libp2pProcess} libp2p - The libp2p process
-     * @param {IpfsProcess} ipfs - The ipfs process
-     * @param {OrbitDbProcess} orbitDb - The orbitdb process
+     * The Lunar Pod class constructor
      */
     constructor({
         id,
@@ -50,9 +46,7 @@ class LunarPod {
     }
 
     /**
-     * Get Components and statuses
-     * @category OrbitDb
-     * @returns {Array<{id: IdReference, status: ProcessStage}>} - An array of objects containing the id and status of each component
+     * The Lunar Pod class constructor
      */
     public getComponents(): Array<{id: IdReference, status: ProcessStage}> {
         const componentIds = [
@@ -78,10 +72,7 @@ class LunarPod {
     }
 
     /**
-     * Initialize all components
-     * @category LunarPod
-     * @returns {Promise<void>} - A promise that resolves when all components are initialized
-     * @async
+     * The Lunar Pod class constructor
      */
     private async initAll(): Promise<void> {
         if (!this.libp2p) {
@@ -96,11 +87,7 @@ class LunarPod {
     }
 
     /**
-     * Initialize a component
-     * @category LunarPod
-     * @param {string} component - The component to initialize
-     * @returns {Promise<void>} - A promise that resolves when the component is initialized
-     * @async
+     * The Lunar Pod class constructor
      */
     public async init(component?: string): Promise<void> {
         if (component) {
@@ -131,11 +118,7 @@ class LunarPod {
     }
 
     /**
-     * Start a component
-     * @category LunarPod, Libp2p
-     * @param {string} component - The component to start
-     * @returns {Promise<void>} - A promise that resolves when the component is started
-     * @async
+     * The Lunar Pod class constructor
      */
     public async initLibp2p({
         libp2pOptions
@@ -159,12 +142,7 @@ class LunarPod {
     }
 
     /**
-     * Initialize IPFS
-     * @category LunarPod, IPFS
-     * @param {object} options - The options for initializing IPFS
-     * @param {object} options.ipfsOptions - The options for initializing IPFS
-     * @returns {Promise<void>} - A promise that resolves when IPFS is initialized
-     * @async
+     * The Lunar Pod class constructor
      */
     public async initIpfs({
         ipfsOptions
@@ -201,12 +179,7 @@ class LunarPod {
     }
 
     /**
-     * Initialize OrbitDB
-     * @category LunarPod, OrbitDb
-     * @param {object} options - The options for initializing OrbitDB
-     * @param {object} options.orbitDbOptions - The options for initializing OrbitDB
-     * @returns {Promise<void>} - A promise that resolves when OrbitDB is initialized
-     * @async
+     * The Lunar Pod class constructor
      */
     public async initOrbitDb({
         orbitDbOptions
@@ -243,14 +216,7 @@ class LunarPod {
     }
 
     /**
-     * Initialize a database
-     * @category LunarPod, OrbitDb
-     * @param {object} options - The options for initializing the database
-     * @param {string} options.databaseName - The name of the database
-     * @param {string} options.databaseType - The type of the database
-     * @param {Map<string, string>} options.options - The options for initializing the database
-     * @returns {Promise<OpenDb | undefined>} - A promise that resolves to the opened database
-     * @async
+     * The Lunar Pod class constructor
      */
     public async initOpenDb({
         databaseName,
@@ -313,52 +279,32 @@ class LunarPod {
                 await this.stop()
                 throw error;
             }
-
-            
-
         }
-        // return `Database ${databaseName} not opened`;
     }
 
     /**
-     * Start a component
-     * @category LunarPod
-     * @param {string} component - The component to start
-     * @returns {Promise<void>} - A promise that resolves when the component is started
-     * @async
+     * The Lunar Pod class constructor
      */
     public getOpenDb(orbitDbName: string): OpenDb | undefined {
         return this.db.get(orbitDbName);
     }
 
     /**
-     * Start a component
-     * @category LunarPod
-     * @param {string} component - The component to start
-     * @returns {Promise<void>} - A promise that resolves when the component is started
-     * @async
+     * The Lunar Pod class constructor
      */
     public getAllOpenDbs(): Map<string, OpenDb> {
         return this.db;
     }
 
     /**
-     * Start a component
-     * @category LunarPod
-     * @param {string} component - The component to start
-     * @returns {Promise<void>} - A promise that resolves when the component is started
-     * @async
+     * The Lunar Pod class constructor
      */
     public getDbNames(): Array<string> {
         return Array.from(this.db.keys());
     }
 
     /**
-     * Start a component
-     * @category LunarPod
-     * @param {string} component - The component to start
-     * @returns {Promise<void>} - A promise that resolves when the component is started
-     * @async
+     * The Lunar Pod class constructor
      */
     public async stopOpenDb(orbitDbName: string): Promise<void> {
         const db = this.db.get(orbitDbName);
@@ -370,11 +316,7 @@ class LunarPod {
     }
 
     /**
-     * Start a component
-     * @category LunarPod
-     * @param {string} component - The component to start
-     * @returns {Promise<void>} - A promise that resolves when the component is started
-     * @async
+     * The Lunar Pod class constructor
      */
     public async stop(component: string = 'all'): Promise<void> {
         if (
@@ -409,10 +351,7 @@ class LunarPod {
     }
 
     /**
-     * Get the status of a component
-     * @category LunarPod
-     * @param {string} component - The component to check
-     * @returns {ProcessStage} - The status of the component
+     * The Lunar Pod class constructor
      */
     public status(): {
         libp2p?: ProcessStage,

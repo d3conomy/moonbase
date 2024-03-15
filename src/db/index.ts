@@ -160,7 +160,6 @@ class PodBay {
 
     /**
      * Gets the names of all open databases in the PodBay.
-     * @returns An array of database names.
      */
     public getAllOpenDbNames(): Array<string> {
         const dbNames: Array<string> = [];
@@ -174,11 +173,6 @@ class PodBay {
 
     /**
      * Opens a database in the PodBay.
-     * @param orbitDbId The ID of the OrbitDB.
-     * @param dbName The name of the database.
-     * @param dbType The type of the database.
-     * @param options Additional options for opening the database.
-     * @returns A promise that resolves to the opened database and related information, or undefined if the database cannot be opened.
      */
     public async openDb({
         orbitDbId,
@@ -251,7 +245,7 @@ class PodBay {
             orbitDbPod?.db?.size > 0
         ) {
             const podId = await this.newPod(new IdReference({component: Component.POD, type: this.options.nameType}), Component.ORBITDB);
-            // orbitDbPod = this.pods.find(pod => pod.id.getId() === podId?.getId());
+
             orbitDbPod = this.getPod(podId);
             logger({
                 level: LogLevel.INFO,
@@ -294,8 +288,6 @@ class PodBay {
 
     /**
      * Gets the open database with the specified name or ID.
-     * @param dbName The name or ID of the database.
-     * @returns The open database, or undefined if not found.
      */
     public getOpenDb(dbName: string | IdReference): OpenDb | undefined {
         let orbitDbId: string;
@@ -320,8 +312,6 @@ class PodBay {
 
     /**
      * Closes the open database with the specified name or ID.
-     * @param dbName The name or ID of the database.
-     * @returns A promise that resolves to the closed database name or ID, or undefined if the database cannot be closed.
      */
     public async closeDb(dbName: string | IdReference): Promise<string | undefined> {
         let orbitDbId: string;

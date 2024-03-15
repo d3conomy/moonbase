@@ -11,6 +11,7 @@ import { _BaseProcess, _IBaseProcess } from './base.js';
 
 /**
  * The Types of OrbitDb databases.
+ * @category Database
  */
 enum OrbitDbTypes {
     EVENTS = 'events',
@@ -21,6 +22,7 @@ enum OrbitDbTypes {
 
 /**
  * The options for opening a database.
+ * @category Database
  */
 class _OpenDbOptions {
     public orbitDb: OrbitDbProcess;
@@ -51,6 +53,7 @@ class _OpenDbOptions {
 
 /**
  * Opens a database.
+ * @category Database
  */
 const openDb = async ({
     orbitDb,
@@ -82,8 +85,12 @@ const openDb = async ({
 
 /**
  * Represents a class for opening a database.
+ * @category Database
  */
-class OpenDb extends _BaseProcess implements _IBaseProcess {
+class OpenDb
+    extends _BaseProcess
+    implements _IBaseProcess
+{
     public declare process?: typeof Database;
     public declare options?: _OpenDbOptions;
 

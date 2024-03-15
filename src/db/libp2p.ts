@@ -28,7 +28,7 @@ import { ProcessStage, isProcessStage } from '../utils/constants.js'
 
 /**
  * Default bootstrap configuration for libp2p
- * @category libp2p
+ * @category Libp2p
  */
 const defaultBootstrapConfig: any = {
     list: [
@@ -42,7 +42,7 @@ const defaultBootstrapConfig: any = {
 
 /**
  * Default libp2p options
- * @category libp2p
+ * @category Libp2p
  */
 const defaultLibp2pOptions = (): Libp2pOptions => {
     const libp2pOptions: Libp2pOptions = {
@@ -119,7 +119,7 @@ return libp2pOptions
 
 /**
  * Options for creating a libp2p process
- * @category libp2p
+ * @category Libp2p
  */
 class _Libp2pOptions {
     public start: boolean;
@@ -147,7 +147,7 @@ class _Libp2pOptions {
 
 /**
  * Create a libp2p process
- * @category libp2p
+ * @category Libp2p
  */
 const createLibp2pProcess = async (
     options?: _Libp2pOptions
@@ -173,7 +173,7 @@ const createLibp2pProcess = async (
 
 /**
  * A class for managing a libp2p process
- * @category libp2p
+ * @category Libp2p
  */
 class Libp2pProcess
     extends _BaseProcess

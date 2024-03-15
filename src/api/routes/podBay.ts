@@ -6,7 +6,14 @@ import { IdReference } from '../../utils/id.js';
 import { execute } from '../../db/command.js';
 import { PodBay } from '../../db/index.js';
 
+
+/**
+ * Handles the API routes for managing pods
+ * @category API
+ */
 const router = express.Router();
+
+
 const timeoutDuration = '7s';
 
 /**
@@ -308,7 +315,7 @@ router.post('/pod/:id', timeout(timeoutDuration), async function(req: Request, r
             command: command,
             error: e.message
         }
-        // next(result);
+        next(result);
         return
     }
     res.send(result);
