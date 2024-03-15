@@ -151,7 +151,7 @@ class ApiServer {
         this.app.listen(this.options.port, () => {
             logger({
                 level: LogLevel.INFO,
-                message: `API Server listening on port ${this.options.port}`
+                message: `Moonbase🌙⛺️ API Server listening on port ${this.options.port} `
             });
         })
     }
