@@ -20,9 +20,4 @@
 - Exposes the pods
 
 ## Docs
-
-Build the docs using typedoc:
-
-```sh
-npx typedoc --cleanOutputDir --plugin typedoc-plugin-inline-sources --plugin typedoc-plugin-coverage  --gitRemote https://github.com/d3conomy/moonbase --gitRevision setup --out docs src
-```
+- [Moonbase](https://docs.d3conomy.com)
