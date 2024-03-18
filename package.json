@@ -1,17 +1,21 @@
 {
-  "name": "moonbase",
+  "name": "moonbase-js",
   "version": "0.0.1",
   "description": "Server for OrbitDB, libp2p, and IPFS",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/d3conomy/moonbase.git"
+  },
   "scripts": {
     "remove": "rm -rf dist",
     "build": "tsc",
     "test": "tsc && mocha -r ts-node/register 'dist/tests/**/*.spec.js' --trace-warnings",
     "start": "tsc && node dist/index.js --trace-deprecation --trace-warnings"
   },
-  "author": "d3conomy",
+  "author": "d3",
   "license": "ISC",
   "devDependencies": {
     "@types/chai": "^4.3.11",
@@ -28,10 +32,7 @@
     "chai": "^5.1.0",
     "mocha": "^10.3.0",
     "ts-node": "^10.9.2",
-    "typedoc": "^0.25.12",
-    "typedoc-plugin-coverage": "^3.1.0",
-    "typedoc-plugin-inline-sources": "^1.0.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.4.2"
   },
   "dependencies": {
     "@chainsafe/libp2p-gossipsub": "^13.0.0",

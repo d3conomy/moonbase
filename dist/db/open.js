@@ -1,72 +1,47 @@
 import { Component, LogLevel } from '../utils/constants.js';
 import { IdReference } from '../utils/id.js';
 import { logger } from '../utils/logBook.js';
-
-
-import {
-    Database
-} from '@orbitdb/core';
-import { OrbitDbProcess } from './orbitDb.js';
-import { _BaseProcess, _IBaseProcess } from './base.js';
-
+import { _BaseProcess } from './base.js';
 /**
  * The Types of OrbitDb databases.
  * @category Database
  */
-enum OrbitDbTypes {
-    EVENTS = 'events',
-    DOCUMENTS = 'documents',
-    KEYVALUE = 'keyvalue',
-    KEYVALUEINDEXED = 'keyvalueindexed'
-}
-
+var OrbitDbTypes;
+(function (OrbitDbTypes) {
+    OrbitDbTypes["EVENTS"] = "events";
+    OrbitDbTypes["DOCUMENTS"] = "documents";
+    OrbitDbTypes["KEYVALUE"] = "keyvalue";
+    OrbitDbTypes["KEYVALUEINDEXED"] = "keyvalueindexed";
+})(OrbitDbTypes || (OrbitDbTypes = {}));
 /**
  * The options for opening a database.
  * @category Database
  */
 class _OpenDbOptions {
-    public orbitDb: OrbitDbProcess;
-    public databaseName: string;
-    public databaseType: OrbitDbTypes;
-    public options?: Map<string, string>;
-
+    orbitDb;
+    databaseName;
+    databaseType;
+    options;
     /**
      * Constructs a new instance of the _OpenDbOptions class.
      */
-    constructor({
-        orbitDb,
-        databaseName,
-        databaseType,
-        options
-    }: {
-        orbitDb: OrbitDbProcess,
-        databaseName?: string,
-        databaseType?: OrbitDbTypes | string,
-        options?: Map<string, string>
-    }) {
+    constructor({ orbitDb, databaseName, databaseType, options }) {
         this.orbitDb = orbitDb;
         this.databaseName = databaseName ? databaseName : new IdReference({ component: Component.DB }).getId();
-        this.databaseType = databaseType ? databaseType as OrbitDbTypes : OrbitDbTypes.EVENTS;
-        this.options = options ? options : new Map<string, string>();
+        this.databaseType = databaseType ? databaseType : OrbitDbTypes.EVENTS;
+        this.options = options ? options : new Map();
     }
 }
-
 /**
  * Opens a database.
  * @category Database
  */
-const openDb = async ({
-    orbitDb,
-    databaseName,
-    databaseType,
-    options
-}: _OpenDbOptions): Promise<typeof Database> => {
+const openDb = async ({ orbitDb, databaseName, databaseType, options }) => {
     logger({
         level: LogLevel.INFO,
         message: `Opening database: ${databaseName}\n` +
-                    `Type: ${databaseType}\n` +
-                    `process: ${orbitDb.id.getId()}`
-
+            `Type: ${databaseType}\n` +
+            `process: ${orbitDb.id.getId()}`
     });
     try {
         return await orbitDb.open({
@@ -81,43 +56,27 @@ const openDb = async ({
             message: `Error opening database: ${error}`
         });
     }
-}
-
+};
 /**
  * Represents a class for opening a database.
  * @category Database
  */
-class OpenDb
-    extends _BaseProcess
-    implements _IBaseProcess
-{
-    public declare process?: typeof Database;
-    public declare options?: _OpenDbOptions;
-
+class OpenDb extends _BaseProcess {
     /**
      * Constructs a new instance of the OpenDb class.
      */
-    constructor({
-        id,
-        process,
-        options
-    }: {
-        id?: IdReference;
-        process?: typeof Database;
-        options?: _OpenDbOptions;
-    }) {
+    constructor({ id, process, options }) {
         super({
-            id: id ? id : new IdReference({id: options?.databaseName, component: Component.DB }),
+            id: id ? id : new IdReference({ id: options?.databaseName, component: Component.DB }),
             component: Component.DB,
             process: process,
-            options: options as _OpenDbOptions
+            options: options
         });
     }
-
     /**
      * Initializes the database process.
      */
-    public async init(): Promise<void> {
+    async init() {
         if (this.checkProcess()) {
             logger({
                 level: LogLevel.WARN,
@@ -126,7 +85,6 @@ class OpenDb
             });
             return;
         }
-
         if (this.options) {
             this.process = await openDb({
                 orbitDb: this.options.orbitDb,
@@ -134,7 +92,8 @@ class OpenDb
                 databaseType: this.options.databaseType,
                 options: this.options.options
             });
-        } else {
+        }
+        else {
             logger({
                 level: LogLevel.ERROR,
                 processId: this.id,
@@ -148,11 +107,10 @@ class OpenDb
             message: `Database process created`
         });
     }
-
     /**
      * Stops the database process.
      */
-    public async stop(): Promise<void> {
+    async stop() {
         if (this.checkProcess()) {
             await this.process?.close();
             logger({
@@ -160,7 +118,8 @@ class OpenDb
                 processId: this.id,
                 message: `Database process stopped`
             });
-        } else {
+        }
+        else {
             logger({
                 level: LogLevel.ERROR,
                 processId: this.id,
@@ -169,70 +128,53 @@ class OpenDb
             throw new Error(`No database process found`);
         }
     }
-
     /**
      * Gets the address of the database process.
      */
-    public address(): string {
+    address() {
         return this.process?.address;
     }
-
     /**
      * Adds data to the database.
      */
-    public async add(data: any): Promise<string> {
+    async add(data) {
         return await this.process?.add(data);
     }
-
     /**
      * Retrieves all data from the database.
      */
-    public async all(): Promise<any> {
+    async all() {
         return await this.process?.all();
     }
-
     /**
      * Retrieves data from the database based on the given hash.
      */
-    public async get(hash: string): Promise<any> {
+    async get(hash) {
         return await this.process?.get(hash);
     }
-
     /**
      * Puts data into the database with the given key and value.
      */
-    public async put(key: string, value: any): Promise<string> {
+    async put(key, value) {
         return await this.process?.put(key, value);
     }
-
     /**
      * Puts a document into the database.
      */
-    public async putDoc(doc: any): Promise<string> {
+    async putDoc(doc) {
         return await this.process?.put(doc);
     }
-
     /**
      * Deletes data from the database based on the given key.
      */
-    public async del(key: string): Promise<void> {
+    async del(key) {
         await this.process?.del(key);
     }
-
     /**
      * Queries the database using the given mapper function.
      */
-    public async query(mapper: any): Promise<any> {
+    async query(mapper) {
         return await this.process?.query(mapper);
     }
 }
-
-
-
-export {
-    OrbitDbTypes,
-    _OpenDbOptions,
-    openDb,
-    OpenDb
-}
-
+export { OrbitDbTypes, _OpenDbOptions, openDb, OpenDb };

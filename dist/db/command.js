@@ -1,7 +1,3 @@
-import { LogLevel, logger } from "../utils/index.js"
-import { OpenDb, _OpenDbOptions } from "./open.js"
-import { LunarPod } from "./pod.js"
-
 /**
  * Executes a command on a pod
  * @category Pod
@@ -13,71 +9,61 @@ import { LunarPod } from "./pod.js"
  * })
  * console.log(result) // [{ peerId: 'zdpuAqzv3...', direction: 'inbound', ... }]
  */
-const execute = async ({
-    pod,
-    command,
-    args
-}: {
-    pod: LunarPod,
-    command: string,
-    args?: any
-}): Promise<any> => {
-
-    let output: any = "Command Timed Out"
-
+const execute = async ({ pod, command, args }) => {
+    let output = "Command Timed Out";
     try {
         switch (command) {
             case 'connections':
-                if(pod.libp2p) {
-                    return pod.libp2p.connections(args?.peerId)
+                if (pod.libp2p) {
+                    return pod.libp2p.connections(args?.peerId);
                 }
                 else {
-                    throw new Error('Libp2p component not available')
+                    throw new Error('Libp2p component not available');
                 }
             case 'multiaddrs':
-                if(pod.libp2p) {
-                    return pod.libp2p.getMultiaddrs()
+                if (pod.libp2p) {
+                    return pod.libp2p.getMultiaddrs();
                 }
                 else {
-                    throw new Error('Libp2p component not available')
+                    throw new Error('Libp2p component not available');
                 }
             case 'peerid':
-                if(pod.libp2p) {
-                    return pod.libp2p.peerId()
+                if (pod.libp2p) {
+                    return pod.libp2p.peerId();
                 }
                 else {
-                    throw new Error('Libp2p component not available')
+                    throw new Error('Libp2p component not available');
                 }
             case 'peers':
-                if(pod.libp2p) {
-                    return pod.libp2p.peers()
+                if (pod.libp2p) {
+                    return pod.libp2p.peers();
                 }
                 else {
-                    throw new Error('Libp2p component not available')
+                    throw new Error('Libp2p component not available');
                 }
             case 'protocols':
-                if(pod.libp2p) {
-                    return pod.libp2p.getProtocols()
+                if (pod.libp2p) {
+                    return pod.libp2p.getProtocols();
                 }
                 else {
-                    throw new Error('Libp2p component not available')
+                    throw new Error('Libp2p component not available');
                 }
             case 'dial':
-                if(pod.libp2p) {
-                    return await pod.libp2p.dial(args?.address)
+                if (pod.libp2p) {
+                    return await pod.libp2p.dial(args?.address);
                 }
                 else {
-                    throw new Error('Libp2p component not available')
+                    throw new Error('Libp2p component not available');
                 }
             case 'dialprotocol':
                 if (pod.libp2p) {
                     return await pod.libp2p.dialProtocol(args.address, args.protocol);
                 }
                 else {
-                    throw new Error('Libp2p component not available')
+                    throw new Error('Libp2p component not available');
                 }
             case 'addjson':
-                if (pod.ipfs !== undefined ) {
+                if (pod.ipfs !== undefined) {
                     return await pod.ipfs.addJson(args.data);
                 }
                 else {
@@ -92,18 +78,18 @@ const execute = async ({
                 }
             default:
                 throw new Error('Command not found');
-        };
+        }
+        ;
     }
-    catch (e: any) {
+    catch (e) {
         return {
             message: `Command failed`,
             podId: pod.id,
             command: command,
             error: e.message
-        }
+        };
     }
-}
-
+};
 /**
  * Executes an operation on an open database
  * @category Database
@@ -115,45 +101,33 @@ const execute = async ({
  * })
  * console.log(result) // 'zdpuAqzv3...'
  */
-const operation = async ({
-    openDb,
-    command,
-    args
-}: {
-    openDb: OpenDb,
-    command: string,
-    args?: any
-}): Promise<any> => {
-
+const operation = async ({ openDb, command, args }) => {
     try {
         switch (command) {
             case 'add':
-                return await openDb.add(args.value)
+                return await openDb.add(args.value);
             case 'put':
-                return await openDb.put(args.key, args.value)
+                return await openDb.put(args.key, args.value);
             case 'get':
-                return await openDb.get(args.key)
+                return await openDb.get(args.key);
             case 'del':
-                return await openDb.del(args.key)
+                return await openDb.del(args.key);
             case 'all':
-                return await openDb.all()
+                return await openDb.all();
             case 'query':
-                return await openDb.query(args.query)
+                return await openDb.query(args.query);
             default:
                 throw new Error('Command not found');
-        };
+        }
+        ;
     }
-    catch (e: any) {
+    catch (e) {
         return {
             message: `Command failed`,
             dbId: openDb.id,
             command: command,
             error: e.message
-        }
+        };
     }
-}
-
-export {
-    execute,
-    operation
-}
+};
+export { execute, operation };

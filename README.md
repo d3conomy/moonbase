@@ -2,6 +2,33 @@
 
 > API server backend for OrbtiDB, IPFS, and Libp2p
 
+## Quick Start
+
+### Installation
+
+```bash
+npm install moonbase-js
+```
+
+### Usage
+
+Start the Moonbase API server:
+```typescript
+import { Moonbase } from 'moonbase-js';
+
+const moonbase = new Moonbase();
+moonbase.init();
+```
+
+Confirm that the server is running by checking the console output:
+```text
+Moonbase🌙⛺️ API Server listening on port 4343
+```
+
+Open your web browser to `http://localhost:4343/api/v0/docs` to see the API documentation.
+
+
+
 ## Components
 
 ### Processes
@@ -20,4 +47,4 @@
 - Exposes the pods
 
 ## Docs
-- [Moonbase](https://docs.d3conomy.com)
+- [Moonbase](https://docs.d3conomy.com/modules/Moonbase.html)
