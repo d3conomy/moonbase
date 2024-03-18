@@ -88,8 +88,7 @@ moonbase.init();
 
 export {
     Moonbase,
-    moonbase,
-    // nameType,
+    moonbase
 }
 
 export * from './utils/index.js';

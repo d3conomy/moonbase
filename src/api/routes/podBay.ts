@@ -5,6 +5,7 @@ import { Component } from '../../utils/constants.js';
 import { IdReference } from '../../utils/id.js';
 import { execute } from '../../db/command.js';
 import { PodBay } from '../../db/index.js';
+import { LogLevel, logger } from '../../utils/index.js';
 
 
 /**
@@ -306,7 +307,11 @@ router.post('/pod/:id', timeout(timeoutDuration), async function(req: Request, r
     let result;
     try {
         result = await execute({pod, command, args});
-
+        logger({
+            level: LogLevel.INFO,
+            message: `Command [${command}] succeeded: ${JSON.stringify(result)}`,
+            podId: pod.id
+        })
     }
     catch (e: any) {
         result = {

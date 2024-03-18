@@ -212,29 +212,39 @@ class IpfsProcess
                 throw error
             }
         }
+        logger({
+            level: LogLevel.INFO,
+            processId: this.id,
+            message: `Added JSON to Ipfs: ${cid}`
+        })
         return cid
     }
 
     /**
      * Get a JSON object from IPFS
      */
-    public async getJson(cid: string): Promise<any | Error | undefined> {
+    public async getJson(cid: string): Promise<any | undefined> {
         let result: any
         if (this.process) {
             try {
                 const dj = dagJson(this.process)
                 result = await dj.get(CID.parse(cid));
             }
-            catch (err: any) {
+            catch (error: any) {
                 logger({
                     level: LogLevel.ERROR,
                     processId: this.id,
-                    message: `Error getting JSON from Ipfs: ${err.message}`,
-                    error: err
+                    message: `Error getting JSON from Ipfs: ${error.message}`,
+                    error: error
                 })
-                throw err
+                throw error
             }
         }
+        logger({
+            level: LogLevel.INFO,
+            processId: this.id,
+            message: `Got JSON from Ipfs: ${JSON.stringify(result)}`
+        })
         return result
     }
 }
