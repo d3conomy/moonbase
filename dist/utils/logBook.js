@@ -196,9 +196,9 @@ class LogBooksManager {
      * Creates a new log book and adds it to the collection
      */
     create(logBookName) {
-        if (this.books.has(logBookName)) {
-            throw new Error("Log book already exists");
-        }
+        // if (this.books.has(logBookName)) {
+        //     throw new Error("Log book already exists");
+        // }
         const newLogBook = new LogBook(logBookName, this.printLevel);
         this.books.set(newLogBook.name, newLogBook);
     }
