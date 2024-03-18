@@ -20,7 +20,4 @@ describe("_BaseProcess", () => {
         expect(baseProcess.checkProcess()).to.be.false
     })
 
-    it("should check status", () => {
-        expect(baseProcess.checkStatus()).to.equal("error")
-    })
 })

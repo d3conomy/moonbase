@@ -31,7 +31,7 @@ declare enum LogLevel {
  * Check if a string is a valid log level
  * @category Utils
  */
-declare const isLogLevel: (level: string) => LogLevel;
+declare const isLogLevel: (level?: string | LogLevel) => LogLevel;
 /**
  * Id Reference Types
  * @category Utils

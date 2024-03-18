@@ -58,11 +58,11 @@ class LogEntry
         stage,
         error
     }: {
-        printLevel?: LogLevel,
+        printLevel?: LogLevel | string,
         podId?: IdReference,
         processId?: IdReference
         message: string,
-        level?: LogLevel,
+        level?: LogLevel | string,
         code?: ResponseCode,
         stage?: ProcessStage | string,
         error?: Error
@@ -70,12 +70,12 @@ class LogEntry
         this.podId = podId;
         this.processId = processId;
         this.message = message;
-        this.level = level ? level : LogLevel.INFO;
+        this.level = level ? isLogLevel(level) : LogLevel.INFO;
         this.code = code;
         this.stage = stage;
         this.timestamp = new Date();
         this.error = error;
-        this.printLevel = printLevel ? printLevel : LogLevel.INFO;
+        this.printLevel = printLevel ? isLogLevel(printLevel) : LogLevel.INFO;
 
         this.print(this.printLevel);
     }
@@ -152,11 +152,11 @@ class LogBook
 {
     public name: string;
     public entries: Map<number, LogEntry>;
-    public printLevel: LogLevel = LogLevel.INFO;
+    public printLevel: LogLevel;
 
-    public constructor(name: string, printLevel: LogLevel = LogLevel.INFO) {
+    public constructor(name: string, printLevel: LogLevel | string = "info") {
         this.name = name
-        this.printLevel = printLevel;
+        this.printLevel = isLogLevel(printLevel);
         this.entries = new Map<number, LogEntry>();
     }
 
@@ -269,7 +269,7 @@ class LogBook
  */
 interface ILogBooksManager {
     books: Map<string, ILogBook>;
-    printLevel: LogLevel;
+    printLevel: LogLevel | string;
 
     init: (config: {
         dir: string,
@@ -294,7 +294,7 @@ class LogBooksManager
     public books: Map<string, LogBook> = new Map<string, LogBook>();
 
     /* The log level to print */
-    public printLevel: LogLevel = LogLevel.INFO;
+    public printLevel: LogLevel | string = 'info';
 
     /* The directory to store the log files 
     * TODO: Implement file storage
@@ -303,6 +303,7 @@ class LogBooksManager
 
     public constructor() {
         this.books = new Map<string, LogBook>();
+        this.printLevel = 'info';
     }
 
     /**
@@ -310,12 +311,12 @@ class LogBooksManager
      */
     public init({
         dir,
-        level,
+        level
     }: {
         dir?: string,
-        level?: string,
-    }) {
-        this.printLevel = isLogLevel(level ? level : LogLevel.INFO);
+        level?: string
+    } = {}) {
+        this.printLevel = isLogLevel(level)
         this.dir = dir ? dir : "";
         this.create(Component.SYSTEM);
     }
@@ -326,6 +327,12 @@ class LogBooksManager
     public create(
         logBookName: string,
     ) {
+        if (this.books.has(logBookName)) {
+            throw new Error("Log book already exists");
+        }
+        
+
+
         const newLogBook = new LogBook(logBookName, this.printLevel);
         this.books.set(newLogBook.name, newLogBook);
     }

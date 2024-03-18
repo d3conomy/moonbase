@@ -47,9 +47,13 @@ while (loadedConfig === null || loadedConfig === undefined) {
         console.log('Waiting for config to load...');
     }, 100);
 }
-export { Moonbase,
-// moonbase
- };
+/**
+ * The main instance of the Moonbase
+ * @category Moonbase
+ */
+const moonbase = new Moonbase();
+moonbase.init();
+export { Moonbase, moonbase };
 export * from './utils/index.js';
 export * from './db/index.js';
 export * from './api/index.js';

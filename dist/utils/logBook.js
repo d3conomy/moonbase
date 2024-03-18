@@ -17,12 +17,12 @@ class LogEntry {
         this.podId = podId;
         this.processId = processId;
         this.message = message;
-        this.level = level ? level : LogLevel.INFO;
+        this.level = level ? isLogLevel(level) : LogLevel.INFO;
         this.code = code;
         this.stage = stage;
         this.timestamp = new Date();
         this.error = error;
-        this.printLevel = printLevel ? printLevel : LogLevel.INFO;
+        this.printLevel = printLevel ? isLogLevel(printLevel) : LogLevel.INFO;
         this.print(this.printLevel);
     }
     /**
@@ -70,10 +70,10 @@ class LogEntry {
 class LogBook {
     name;
     entries;
-    printLevel = LogLevel.INFO;
-    constructor(name, printLevel = LogLevel.INFO) {
+    printLevel;
+    constructor(name, printLevel = "info") {
         this.name = name;
-        this.printLevel = printLevel;
+        this.printLevel = isLogLevel(printLevel);
         this.entries = new Map();
     }
     /**
@@ -175,19 +175,20 @@ class LogBooksManager {
     /* The collection of log books */
     books = new Map();
     /* The log level to print */
-    printLevel = LogLevel.INFO;
+    printLevel = 'info';
     /* The directory to store the log files
     * TODO: Implement file storage
     */
     dir = "";
     constructor() {
         this.books = new Map();
+        this.printLevel = 'info';
     }
     /**
      * Initializes the log books manager
      */
-    init({ dir, level, }) {
-        this.printLevel = isLogLevel(level ? level : LogLevel.INFO);
+    init({ dir, level } = {}) {
+        this.printLevel = isLogLevel(level);
         this.dir = dir ? dir : "";
         this.create(Component.SYSTEM);
     }
@@ -195,6 +196,9 @@ class LogBooksManager {
      * Creates a new log book and adds it to the collection
      */
     create(logBookName) {
+        if (this.books.has(logBookName)) {
+            throw new Error("Log book already exists");
+        }
         const newLogBook = new LogBook(logBookName, this.printLevel);
         this.books.set(newLogBook.name, newLogBook);
     }

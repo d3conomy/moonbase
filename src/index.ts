@@ -70,6 +70,7 @@ class Moonbase {
 }
 
 
+
 let loadedConfig = await loadConfig();
 
 while (loadedConfig === null || loadedConfig === undefined) {
@@ -78,10 +79,16 @@ while (loadedConfig === null || loadedConfig === undefined) {
     }, 100);
 }
 
+/**
+ * The main instance of the Moonbase
+ * @category Moonbase
+ */
+const moonbase = new Moonbase();
+moonbase.init();
 
 export {
     Moonbase,
-    // moonbase
+    moonbase
 }
 
 export * from './utils/index.js';

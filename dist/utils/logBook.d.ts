@@ -31,11 +31,11 @@ declare class LogEntry implements ILogEntry {
     error?: Error;
     printLevel: LogLevel;
     constructor({ printLevel, podId, processId, message, level, code, stage, error }: {
-        printLevel?: LogLevel;
+        printLevel?: LogLevel | string;
         podId?: IdReference;
         processId?: IdReference;
         message: string;
-        level?: LogLevel;
+        level?: LogLevel | string;
         code?: ResponseCode;
         stage?: ProcessStage | string;
         error?: Error;
@@ -69,7 +69,7 @@ declare class LogBook implements ILogBook {
     name: string;
     entries: Map<number, LogEntry>;
     printLevel: LogLevel;
-    constructor(name: string, printLevel?: LogLevel);
+    constructor(name: string, printLevel?: LogLevel | string);
     /**
      * Adds an entry to the log book
      */
@@ -113,7 +113,7 @@ declare class LogBook implements ILogBook {
  */
 interface ILogBooksManager {
     books: Map<string, ILogBook>;
-    printLevel: LogLevel;
+    printLevel: LogLevel | string;
     init: (config: {
         dir: string;
         level: string;
@@ -131,13 +131,13 @@ interface ILogBooksManager {
  */
 declare class LogBooksManager implements ILogBooksManager {
     books: Map<string, LogBook>;
-    printLevel: LogLevel;
+    printLevel: LogLevel | string;
     dir: string;
     constructor();
     /**
      * Initializes the log books manager
      */
-    init({ dir, level, }: {
+    init({ dir, level }?: {
         dir?: string;
         level?: string;
     }): void;

@@ -240,24 +240,24 @@ describe('Utils::LogBook::LogBooksManager', () => {
     let processId;
     let error;
     let stage;
+    let logBookManager;
     beforeEach(() => {
         testMessage = 'This is a test message: ' + createRandomId();
         podId = new IdReference({ component: Component.POD });
         processId = new IdReference({ component: Component.PROCESS });
         error = new Error('This is a test error');
         stage = ProcessStage.NEW;
+        logBookManager = new LogBooksManager();
+        logBookManager.init();
     });
     it('should create a new log book manager', () => {
-        const logBookManager = new LogBooksManager();
         expect(logBookManager).instanceOf(LogBooksManager);
     });
     it('should get a log book', () => {
-        const logBookManager = new LogBooksManager();
         const logBook = logBookManager.get(Component.SYSTEM);
         expect(logBook).instanceOf(LogBook);
     });
     it('should get all log books', () => {
-        const logBookManager = new LogBooksManager();
         const entry = new LogEntry({
             level: LogLevel.INFO,
             code: 200,
@@ -272,7 +272,6 @@ describe('Utils::LogBook::LogBooksManager', () => {
         expect(logBooks.size).equal(1);
     });
     it('should create a new log entry', () => {
-        const logBookManager = new LogBooksManager();
         const entry = new LogEntry({
             level: LogLevel.INFO,
             code: 200,

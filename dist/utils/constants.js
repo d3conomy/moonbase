@@ -40,7 +40,10 @@ var LogLevel;
  * Check if a string is a valid log level
  * @category Utils
  */
-const isLogLevel = (level) => {
+const isLogLevel = (level = 'info') => {
+    if (typeof level === 'string') {
+        level = level.toLowerCase();
+    }
     if (Object.values(LogLevel).includes(level)) {
         return level;
     }

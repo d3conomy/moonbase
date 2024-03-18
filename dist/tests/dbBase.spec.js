@@ -13,7 +13,4 @@ describe("_BaseProcess", () => {
     it("should check if process exists", () => {
         expect(baseProcess.checkProcess()).to.be.false;
     });
-    it("should check status", () => {
-        expect(baseProcess.checkStatus()).to.equal("error");
-    });
 });

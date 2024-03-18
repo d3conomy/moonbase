@@ -16,7 +16,12 @@ declare class Moonbase {
      */
     init(): void;
 }
-export { Moonbase, };
+/**
+ * The main instance of the Moonbase
+ * @category Moonbase
+ */
+declare const moonbase: Moonbase;
+export { Moonbase, moonbase };
 export * from './utils/index.js';
 export * from './db/index.js';
 export * from './api/index.js';
