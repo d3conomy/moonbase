@@ -27,6 +27,10 @@ const execute = async ({
 
     try {
         switch (command) {
+            case 'status':
+                if(pod.libp2p) {
+                    return pod.status()
+                }
             case 'connections':
                 if(pod.libp2p) {
                     return pod.libp2p.connections(args?.peerId)
