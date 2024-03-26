@@ -1,6 +1,6 @@
 import { Helia } from "helia";
 import { CID } from "multiformats";
-import { Libp2pProcess } from "./libp2p.js";
+import { Libp2pProcess } from "./libp2p/index.js";
 import { IdReference } from "../utils/id.js";
 import { _BaseProcess, _IBaseProcess } from "./base.js";
 /**

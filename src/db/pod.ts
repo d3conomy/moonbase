@@ -1,5 +1,5 @@
 
-import { Libp2pProcess, _Libp2pOptions } from "./libp2p.js";
+import { Libp2pProcess, Libp2pProcessOptions } from "./libp2p/index.js";
 import { _IpfsOptions, IpfsProcess } from "./ipfs.js";
 import { Component, LogLevel, ProcessStage, isComponent } from "../utils/constants.js";
 import { IdReference } from "../utils/id.js";
@@ -131,7 +131,7 @@ class LunarPod {
     public async initLibp2p({
         libp2pOptions
     }: {
-        libp2pOptions?: _Libp2pOptions,
+        libp2pOptions?: Libp2pProcessOptions,
     } = {}): Promise<void> {
         if (!this.libp2p) {
             this.libp2p = new Libp2pProcess({
@@ -144,7 +144,7 @@ class LunarPod {
         }
         await this.libp2p.init();
 
-        if (libp2pOptions?.start) {
+        if (libp2pOptions?.processConfig?.autoStart) {
             await this.libp2p.start();
         }
     }

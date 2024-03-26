@@ -1,5 +1,5 @@
 import { createIpfsProcess, _IpfsOptions, IpfsProcess } from "../db/ipfs.js";
-import { createLibp2pProcess, Libp2pProcess } from "../db/libp2p.js";
+import { createLibp2pProcess, Libp2pProcess } from "../db/libp2p/index.js";
 
 import { expect } from "chai";
 

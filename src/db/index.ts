@@ -346,6 +346,6 @@ export * from "./open.js";
 export * from "./pod.js";
 export * from "./orbitDb.js";
 export * from "./ipfs.js";
-export * from "./libp2p.js";
+export * from "./libp2p/index.js";
 export * from "./command.js";
 export * from "./base.js"

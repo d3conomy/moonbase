@@ -1,6 +1,6 @@
 import { _OrbitDbOptions, OrbitDbProcess } from '../db/orbitDb.js';
 import { _IpfsOptions, IpfsProcess } from '../db/ipfs.js';
-import { Libp2pProcess } from '../db/libp2p.js';
+import { Libp2pProcess } from '../db/libp2p/index.js';
 
 import { expect } from 'chai';
 import { logger } from '../utils/logBook.js';

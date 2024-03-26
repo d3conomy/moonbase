@@ -10,6 +10,7 @@ import { autoNAT } from '@libp2p/autonat';
 import { tcp } from '@libp2p/tcp';
 import { kadDHT, removePublicAddressesMapper } from '@libp2p/kad-dht';
 import { uPnPNAT } from '@libp2p/upnp-nat';
+import { webRTC } from '@libp2p/webrtc';
 import { bootstrap } from '@libp2p/bootstrap';
 import { peerIdFromString } from '@libp2p/peer-id';
 import { ipnsValidator } from 'ipns/validator';
@@ -61,7 +62,7 @@ const defaultLibp2pOptions = () => {
             webSockets(),
             webTransport(),
             tcp(),
-            // webRTC(),
+            webRTC(),
             circuitRelayTransport({
                 discoverRelays: 2
             }),

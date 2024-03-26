@@ -1,4 +1,4 @@
-import { Libp2pProcess, _Libp2pOptions } from "./libp2p.js";
+import { Libp2pProcess, Libp2pProcessOptions } from "./libp2p/index.js";
 import { _IpfsOptions, IpfsProcess } from "./ipfs.js";
 import { ProcessStage } from "../utils/constants.js";
 import { IdReference } from "../utils/id.js";
@@ -42,7 +42,7 @@ declare class LunarPod {
      * Start the Libp2p process in the pod.
      */
     initLibp2p({ libp2pOptions }?: {
-        libp2pOptions?: _Libp2pOptions;
+        libp2pOptions?: Libp2pProcessOptions;
     }): Promise<void>;
     /**
      * Start the IPFS process in the pod.

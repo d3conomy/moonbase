@@ -1,159 +1,24 @@
-import { noise } from '@chainsafe/libp2p-noise'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { circuitRelayServer, circuitRelayTransport } from '@libp2p/circuit-relay-v2'
-import { dcutr } from '@libp2p/dcutr'
-import { identify } from '@libp2p/identify'
-import { webSockets } from '@libp2p/websockets'
-import { webTransport } from '@libp2p/webtransport'
-import { gossipsub } from '@chainsafe/libp2p-gossipsub'
-import { autoNAT } from '@libp2p/autonat'
-import { tcp } from '@libp2p/tcp'
-import { kadDHT, removePublicAddressesMapper } from '@libp2p/kad-dht'
-import { uPnPNAT } from '@libp2p/upnp-nat'
-import { webRTC } from '@libp2p/webrtc'
-import { bootstrap } from '@libp2p/bootstrap'
-import { peerIdFromString } from '@libp2p/peer-id'
-import { ipnsValidator } from 'ipns/validator'
-import { ipnsSelector } from 'ipns/selector'
-import { mdns } from '@libp2p/mdns'
-// import { mplex } from '@libp2p/mplex'
-import { Libp2p, Libp2pOptions, createLibp2p } from 'libp2p'
-import { Libp2pStatus, PeerId, Connection, Stream } from '@libp2p/interface'
-import { IdReference } from '../utils/id.js'
-import { Component, LogLevel, logger } from '../utils/index.js'
+import { PeerId, Connection, Stream } from '@libp2p/interface'
+
+import { Libp2p, createLibp2p } from 'libp2p'
+import { IdReference } from '../../utils/id.js'
+import { Component, LogLevel, logger } from '../../utils/index.js'
+import { _BaseProcess, _IBaseProcess } from '../base.js'
 import { Multiaddr, multiaddr } from '@multiformats/multiaddr'
-import { _BaseProcess, _IBaseProcess } from './base.js'
-import { ProcessStage, isProcessStage } from '../utils/constants.js'
+import { peerIdFromString } from '@libp2p/peer-id'
+import { ProcessStage } from '../../utils/constants.js'
+import { Libp2pProcessOptions } from './processOptions.js'
 
-
-/**
- * Default bootstrap configuration for libp2p
- * @category Libp2p
- */
-const defaultBootstrapConfig: any = {
-    list: [
-        "/dnsaddr/bootstrap.libp2p.io/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
-        "/dnsaddr/bootstrap.libp2p.io/p2p/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa",
-        "/dnsaddr/bootstrap.libp2p.io/p2p/QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb",
-        "/dnsaddr/bootstrap.libp2p.io/p2p/QmcZf59bWwK5XFi76CZX8cbJ4BhTzzA3gU1ZjYZcYW3dwt",
-        "/ip4/104.131.131.82/tcp/4001/p2p/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ",
-    ]
-}
-
-/**
- * Default libp2p options
- * @category Libp2p
- */
-const defaultLibp2pOptions = (): Libp2pOptions => {
-    const libp2pOptions: Libp2pOptions = {
-        start: false,
-        addresses: {
-            listen: [
-                '/ip4/0.0.0.0/udp/0/',
-                '/ip4/0.0.0.0/udp/0/quic-v1',
-                '/ip4/0.0.0.0/udp/0/quic-v1/webtransport',
-                '/ip4/0.0.0.0/tcp/0/ws/',
-                '/ip4/0.0.0.0/tcp/0',
-                '/webrtc',
-                '/ip6/::/udp/0/',
-                '/ip6/::/udp/0/quic-v1',
-                '/ip6/::/udp/0/quic-v1/webtransport',
-                '/ip6/::/tcp/0/ws/',
-                '/ip6/::/tcp/0'
-            ],
-        },
-        transports: [
-            webSockets(),
-            webTransport(),
-            tcp(),
-            // webRTC(),
-            circuitRelayTransport({
-                discoverRelays: 2
-            }),
-        ],
-        connectionEncryption: [
-            noise()
-        ],
-        streamMuxers: [
-            yamux(),
-            // mplex()
-        ],
-        services: {
-            pubsub: gossipsub({
-                allowPublishToZeroTopicPeers: true
-            }),
-            autonat: autoNAT(),
-            identify: identify(),
-            upnpNAT: uPnPNAT(),
-            dht: kadDHT({
-                clientMode: false,
-                validators: {
-                    ipns: ipnsValidator
-                },
-                selectors: {
-                    ipns: ipnsSelector
-                }
-            }),
-            lanDHT: kadDHT({
-                protocol: '/ipfs/lan/kad/1.0.0',
-                peerInfoMapper: removePublicAddressesMapper,
-                clientMode: false
-            }),
-            relay: circuitRelayServer({
-                advertise: true
-            }),
-            dcutr: dcutr(),
-        },
-        peerDiscovery: [
-            bootstrap(defaultBootstrapConfig),
-            mdns(),
-        ],
-        connectionGater: {
-            denyDialMultiaddr: async () => {
-                return false
-            }
-        }
-    }
-return libp2pOptions
-}
-
-/**
- * Options for creating a libp2p process
- * @category Libp2p
- */
-class _Libp2pOptions {
-    public start: boolean;
-    public processOptions: Libp2pOptions
-
-    constructor({
-        processOptions,
-        start
-    }: {
-        processOptions?: Libp2pOptions,
-        start?: boolean
-    } = {}) {
-        this.start = start ? start : false
-        this.processOptions = processOptions ? processOptions : defaultLibp2pOptions()
-        this.processOptions.start = this.start
-
-        logger({
-            stage: ProcessStage.NEW,
-            level: LogLevel.INFO,
-            processId: new IdReference({component: Component.LIBP2P}),
-            message: `Libp2p options loaded`,
-        })
-    }
-}
 
 /**
  * Create a libp2p process
  * @category Libp2p
  */
 const createLibp2pProcess = async (
-    options?: _Libp2pOptions
+    options?: Libp2pProcessOptions
 ): Promise<Libp2p> => {
     if (!options) {
-        options = new _Libp2pOptions({start: false})
+        options = new Libp2pProcessOptions()
     }
 
     try {
@@ -180,7 +45,7 @@ class Libp2pProcess
     implements _IBaseProcess
 {
     public declare process?: Libp2p
-    public declare options?: _Libp2pOptions
+    public declare options?: Libp2pProcessOptions
 
     /**
      * Create a new libp2p process
@@ -192,7 +57,7 @@ class Libp2pProcess
     }: {
         id?: IdReference,
         process?: Libp2p,
-        options?: _Libp2pOptions
+        options?: Libp2pProcessOptions
     } = {}) {
         super({
             id: id,
@@ -228,6 +93,7 @@ class Libp2pProcess
             })
         }
     }
+
 
     /**
      * Get the PeerId for the libp2p process
@@ -419,8 +285,6 @@ class Libp2pProcess
 }
 
 export {
-    defaultLibp2pOptions,
     createLibp2pProcess,
-    _Libp2pOptions,
     Libp2pProcess
 }

@@ -5,7 +5,7 @@ import { dagJson } from "@helia/dag-json";
 import { dagCbor } from "@helia/dag-cbor";
 import { CID } from "multiformats";
 import { Component, LogLevel, ProcessStage, logger } from "../utils/index.js";
-import { Libp2pProcess } from "./libp2p.js";
+import { Libp2pProcess } from "./libp2p/index.js";
 import { IdReference } from "../utils/id.js";
 import { _BaseProcess, _IBaseProcess } from "./base.js";
 

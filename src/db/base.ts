@@ -3,7 +3,7 @@ import { Component, LogLevel, ProcessStage, isProcessStage } from "../utils/cons
 import { IdReference } from "../utils/id.js"
 import { Helia } from "helia"
 import { OrbitDb, Database } from "@orbitdb/core"
-import { _Libp2pOptions } from "./libp2p.js"
+import { Libp2pProcessOptions } from "./libp2p/index.js"
 import { _IpfsOptions } from "./ipfs.js"
 import { _OrbitDbOptions } from "./orbitDb.js"
 import { _OpenDbOptions } from "./open.js"
@@ -36,7 +36,7 @@ type _ProcessType = Libp2p | Helia | typeof OrbitDb | typeof Database
  * Type for process options
  * @category Process
  */
-type _ProcessOptions = _Libp2pOptions | _IpfsOptions | _OrbitDbOptions | _OpenDbOptions
+type _ProcessOptions = Libp2pProcessOptions | _IpfsOptions | _OrbitDbOptions | _OpenDbOptions
 
 /**
  * Base class for process containers

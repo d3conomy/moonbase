@@ -4,7 +4,7 @@ import { Component, LogLevel } from '../utils/constants.js';
 import { logger } from '../utils/logBook.js';
 import { IdReference } from '../utils/id.js';
 import { OrbitDbProcess, _OrbitDbOptions } from '../db/orbitDb.js';
-import { Libp2pProcess } from '../db/libp2p.js';
+import { Libp2pProcess } from '../db/libp2p/index.js';
 import { IpfsProcess, _IpfsOptions } from '../db/ipfs.js';
 describe('OpenDb', () => {
     let db;

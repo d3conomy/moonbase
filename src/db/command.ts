@@ -1,4 +1,3 @@
-import { LogLevel, logger } from "../utils/index.js"
 import { OpenDb, _OpenDbOptions } from "./open.js"
 import { LunarPod } from "./pod.js"
 

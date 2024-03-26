@@ -1,4 +1,4 @@
-import { Libp2pProcess, _Libp2pOptions, createLibp2pProcess, defaultLibp2pOptions } from '../db/libp2p.js';
+import { Libp2pProcess, Libp2pProcessOptions, createLibp2pProcess } from '../db/libp2p/index.js';
 import { Libp2p } from 'libp2p';
 import { expect } from 'chai';
 import { logger } from '../utils/logBook.js';
@@ -36,24 +36,24 @@ describe('Libp2p::createLibp2pProcess', () => {
 
 describe('Libp2p::defaultLibp2pOptions', () => {
     it('should have default options', () => {
-        const options = defaultLibp2pOptions();
+        const options = new Libp2pProcessOptions();
         expect(options).to.be.an('Object');
         // Add more assertions to validate the default options
     });
 
     it('shoulld have default start property of false', () => {
-        const options = defaultLibp2pOptions();
-        expect(options.start).to.be.false;
+        const options = new Libp2pProcessOptions();
+        expect(options.processConfig?.autoStart).to.be.false;
         // Add more assertions to validate the default options
     });
 });
 
 
-describe('Libp2p::_Libp2pOptions', () => {
+describe('Libp2p::Libp2pProcessOptions', () => {
     it('should have default options', () => {
-        const options = new _Libp2pOptions();
+        const options = new Libp2pProcessOptions();
         expect(options.processOptions).to.be.an('Object');
-        expect(options.start).to.be.false;
+        expect(options.processConfig?.autoStart).to.be.false;
     });
 });
 
