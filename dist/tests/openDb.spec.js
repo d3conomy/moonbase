@@ -12,7 +12,7 @@ describe('OpenDb', () => {
     let orbitDb;
     let libp2p;
     beforeEach(async () => {
-        libp2p = new Libp2pProcess({});
+        libp2p = new Libp2pProcess();
         await libp2p.init();
         ipfs = new IpfsProcess({
             options: new _IpfsOptions({
@@ -110,7 +110,7 @@ describe('OpenDb', () => {
         await db.del('hello');
     });
     afterEach(async () => {
-        await db.stop();
+        await db?.stop();
         await orbitDb.stop();
         await ipfs.stop();
         await libp2p.stop();

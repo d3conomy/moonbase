@@ -32,7 +32,7 @@ describe('OpenDb', () => {
     let libp2p: Libp2pProcess;
 
     beforeEach( async () => {
-        libp2p = new Libp2pProcess({});
+        libp2p = new Libp2pProcess();
 
         await libp2p.init();
 
@@ -161,7 +161,7 @@ describe('OpenDb', () => {
     });
 
     afterEach(async () => {
-        await db.stop();
+        await db?.stop();
         await orbitDb.stop();
         await ipfs.stop();
         await libp2p.stop();

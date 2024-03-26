@@ -71,11 +71,11 @@ describe('LunarPod', () => {
         await peer?.libp2p?.stop();
     });
     it('should open a database', async () => {
-        await peer?.initLibp2p({});
+        await peer?.initLibp2p();
         await peer?.libp2p?.start();
-        await peer?.initIpfs({});
-        await peer?.initOrbitDb({});
-        await peer?.initOpenDb({});
+        await peer?.initIpfs();
+        await peer?.initOrbitDb();
+        await peer?.initOpenDb();
         expect(peer).to.be.not.null;
         expect(peer?.id).to.be.not.null;
         expect(peer?.libp2p).to.be.not.null;

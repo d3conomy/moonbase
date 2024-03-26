@@ -205,14 +205,14 @@ class PodBay {
                 options: options ? options : new Map()
             };
             try {
-                openDb = await orbitDbPod?.initOpenDb(openDbOptions);
+                openDb = await orbitDbPod.initOpenDb(openDbOptions);
             }
             catch (error) {
                 logger({
                     level: LogLevel.ERROR,
                     message: `Error opening database: ${error}`
                 });
-                await this.closeDb(openDbOptions.databaseName);
+                // await this.closeDb(openDbOptions.databaseName);
                 await this.removePod(orbitDbPod.id);
                 return;
             }

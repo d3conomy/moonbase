@@ -44,6 +44,7 @@ const openDb = async ({ orbitDb, databaseName, databaseType, options }) => {
             `process: ${orbitDb.id.getId()}`
     });
     try {
+        // await orbitDb.start();
         return await orbitDb.open({
             databaseName,
             databaseType,

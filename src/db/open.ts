@@ -69,6 +69,7 @@ const openDb = async ({
 
     });
     try {
+        // await orbitDb.start();
         return await orbitDb.open({
             databaseName,
             databaseType,

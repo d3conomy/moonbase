@@ -178,9 +178,9 @@ class LunarPod {
     /**
      * Start the OrbitDb process in the pod.
      */
-    async initOpenDb({ databaseName, databaseType, options }) {
+    async initOpenDb({ databaseName, databaseType, options } = {}) {
         if (!this.orbitDb) {
-            await this.initOrbitDb({});
+            await this.initOrbitDb();
         }
         if (this.orbitDb) {
             const openDbOptions = new _OpenDbOptions({

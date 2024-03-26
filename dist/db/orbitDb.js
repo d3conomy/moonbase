@@ -131,7 +131,7 @@ class OrbitDbProcess extends _BaseProcess {
                 ;
                 return await this.process.open(databaseName, {
                     type: databaseType
-                }, options?.entries());
+                });
             }
             catch (error) {
                 logger({

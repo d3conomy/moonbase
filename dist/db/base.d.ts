@@ -42,7 +42,7 @@ declare class _BaseProcess {
     process?: _ProcessType;
     options?: _ProcessOptions;
     status: ProcessStage;
-    constructor({ id, process, options }?: {
+    constructor({ component, id, process, options }?: {
         component?: Component;
         id?: IdReference;
         process?: _ProcessType;

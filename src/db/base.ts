@@ -49,6 +49,7 @@ class _BaseProcess {
     public status: ProcessStage = ProcessStage.UNKNOWN;
 
     constructor({
+        component,
         id,
         process,
         options
@@ -58,7 +59,7 @@ class _BaseProcess {
         process?: _ProcessType
         options?: _ProcessOptions
     } = {}) {
-        this.id = id ? id : new IdReference({ component: Component.PROCESS });
+        this.id = id ? id : new IdReference({ component: component ? component : Component.PROCESS});
         this.process = process
         this.options = options
         logger({
@@ -136,7 +137,7 @@ class _BaseProcess {
     public async start(): Promise<void> {
         if (
             this.process &&
-            this.checkStatus() === "stopped"
+            this.checkStatus() === "stopped" || "stopping"
         ) {
             try {
                 await this.process.start()
@@ -149,7 +150,7 @@ class _BaseProcess {
                     message: `Error starting process for ${this.id.component}-${this.id.name}: ${error.message}`,
                     error: error
                 })
-                throw error
+                // throw error
             }
             logger(({
                 level: LogLevel.INFO,
@@ -160,7 +161,7 @@ class _BaseProcess {
         }
         else if (
             this.process &&
-            this.checkStatus() === "starting"
+            this.checkStatus() === "starting" || "started"
         ) {
             logger({
                 level: LogLevel.WARN,
@@ -169,14 +170,14 @@ class _BaseProcess {
                 message: `Process already starting for ${this.id.component}-${this.id.name}`
             })
         }
-        else {
+        else if (!this.process) {
             logger({
                 level: LogLevel.ERROR,
                 stage: ProcessStage.ERROR,
                 processId: this.id,
                 message: `Process not found for ${this.id.component}-${this.id.name}`
             })
-            throw new Error(`Process not found for ${this.id.component}-${this.id.name}`)
+            // throw new Error(`Process not found for ${this.id.component}-${this.id.name}`)
         }
     }
 

@@ -234,9 +234,9 @@ class LunarPod {
         databaseName?: string,
         databaseType?: string,
         options?: Map<string, string>
-    }): Promise<OpenDb | undefined> {
+    } = {}): Promise<OpenDb | undefined> {
         if (!this.orbitDb) {
-            await this.initOrbitDb({});
+            await this.initOrbitDb();
         }
 
         if (this.orbitDb) {

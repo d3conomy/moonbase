@@ -59,7 +59,7 @@ declare class LunarPod {
     /**
      * Start the OrbitDb process in the pod.
      */
-    initOpenDb({ databaseName, databaseType, options }: {
+    initOpenDb({ databaseName, databaseType, options }?: {
         databaseName?: string;
         databaseType?: string;
         options?: Map<string, string>;
