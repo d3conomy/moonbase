@@ -107,7 +107,7 @@
   },
   "include": [
     "./src"
-// , "src/tests" 
+, "../artifacts-ts/src/process-interface"// , "src/tests" 
   ],
   "exclude": [
     "node_modules",

@@ -57,6 +57,7 @@
     "@orbitdb/identity-provider-did": "^1.0.2",
     "blockstore-core": "^4.4.0",
     "chance": "^1.1.11",
+    "d3-artifacts": "^0.0.1",
     "connect-timeout": "^1.9.0",
     "cors": "^2.8.5",
     "datastore-core": "^9.2.9",

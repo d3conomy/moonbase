@@ -1,6 +1,6 @@
-import { ApiServer } from './api/index.js';
-import { PodBay } from './db/index.js';
-import { Config, LogBooksManager } from './utils/index.js';
+import { ApiServer } from './moonbase-api-server/index.js';
+import { PodBay } from './pod-bay/index.js';
+import { Config, LogBooksManager } from 'd3-artifacts';
 /**
  * The main class for the Moonbase
  * @category Moonbase
@@ -24,5 +24,5 @@ declare const moonbase: Moonbase;
 export { Moonbase, moonbase };
 export * from './utils/index.js';
 export * from './db/index.js';
-export * from './api/index.js';
+export * from './moonbase-api-server/index.js';
 //# sourceMappingURL=index.d.ts.map

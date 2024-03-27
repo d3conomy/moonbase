@@ -1,6 +1,6 @@
-import { ApiServer, ApiServerOptions } from './api/index.js';
-import { PodBay } from './db/index.js';
-import { LogLevel, loadConfig, logBooksManager, logger, } from './utils/index.js';
+import { ApiServer, ApiServerOptions } from './moonbase-api-server/index.js';
+import { PodBay } from './pod-bay/index.js';
+import { LogLevel, loadConfig, logBooksManager, logger, } from 'd3-artifacts';
 /**
  * The main class for the Moonbase
  * @category Moonbase
@@ -56,4 +56,4 @@ moonbase.init();
 export { Moonbase, moonbase };
 export * from './utils/index.js';
 export * from './db/index.js';
-export * from './api/index.js';
+export * from './moonbase-api-server/index.js';
