@@ -1,9 +1,8 @@
 import { createLibp2p } from 'libp2p';
-import { Component, LogLevel, logger } from '../utils/index.js';
-import { _BaseProcess } from '../moonbase-interfaces/base.js';
+import { LogLevel, logger } from '../utils/index.js';
 import { multiaddr } from '@multiformats/multiaddr';
 import { peerIdFromString } from '@libp2p/peer-id';
-import { ProcessStage } from '../utils/constants.js';
+import { ProcessStage } from 'd3-artifacts';
 import { Libp2pProcessOptions } from './processOptions.js';
 /**
  * Create a libp2p process
@@ -30,17 +29,20 @@ const createLibp2pProcess = async (options) => {
  * A class for managing a libp2p process
  * @category Libp2p
  */
-class Libp2pProcess extends _BaseProcess {
+class Libp2pProcess {
     /**
      * Create a new libp2p process
      */
-    constructor({ id, process, options } = {}) {
-        super({
-            id: id,
-            component: Component.LIBP2P,
-            process: process,
-            options: options
-        });
+    constructor({ id, process, options }) {
+        this.id = id;
+        this.process = process;
+        this.options = options;
+    }
+    /**
+     * Check if a process exists
+     */
+    checkProcess() {
+        return this.process ? true : false;
     }
     /**
      * Initialize the libp2p process

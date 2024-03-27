@@ -1,8 +1,7 @@
 import { PeerId, Connection, Stream } from '@libp2p/interface';
 import { Libp2p } from 'libp2p';
-import { IdReference } from '../utils/id.js';
-import { _BaseProcess, _IBaseProcess } from '../moonbase-interfaces/base.js';
 import { Multiaddr } from '@multiformats/multiaddr';
+import { IProcess, IdReference } from 'd3-artifacts';
 import { Libp2pProcessOptions } from './processOptions.js';
 /**
  * Create a libp2p process
@@ -13,17 +12,22 @@ declare const createLibp2pProcess: (options?: Libp2pProcessOptions) => Promise<L
  * A class for managing a libp2p process
  * @category Libp2p
  */
-declare class Libp2pProcess extends _BaseProcess implements _IBaseProcess {
+declare class Libp2pProcess implements IProcess {
+    id: IdReference;
     process?: Libp2p;
     options?: Libp2pProcessOptions;
     /**
      * Create a new libp2p process
      */
-    constructor({ id, process, options }?: {
-        id?: IdReference;
+    constructor({ id, process, options }: {
+        id: IdReference;
         process?: Libp2p;
         options?: Libp2pProcessOptions;
     });
+    /**
+     * Check if a process exists
+     */
+    checkProcess(): boolean;
     /**
      * Initialize the libp2p process
      */
