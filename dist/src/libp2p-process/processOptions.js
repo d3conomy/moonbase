@@ -6,20 +6,27 @@ class Libp2pProcessOptions {
     peerId;
     constructor({ processOptions, processConfig, peerId } = {}) {
         this.processConfig = processConfig;
+        this.peerId = peerId;
+        this.processOptions = processOptions;
+    }
+    async init() {
+        this.peerId = await libp2pPeerId({ id: this.peerId });
         if (!this.processConfig) {
-            this.processConfig = new Libp2pProcessConfig();
+            this.processConfig = new Libp2pProcessConfig({ peerId: this.peerId });
+            this.processConfig.peerId = this.peerId;
         }
-        if (peerId) {
-            this.peerId = this.processConfig.peerId = libp2pPeerId({ id: peerId });
+        if (!this.processOptions && this.processConfig) {
+            this.processOptions = createLibp2pProcessOptions(this.processConfig);
         }
-        this.processOptions = processOptions ? processOptions : createLibp2pProcessOptions(this.processConfig);
     }
 }
-const libp2pProcessOptions = ({ processOptions, processConfig, peerId } = {}) => {
-    return new Libp2pProcessOptions({
+const libp2pProcessOptions = async ({ processOptions, processConfig, peerId } = {}) => {
+    const options = new Libp2pProcessOptions({
         processOptions: processOptions,
         processConfig: processConfig,
         peerId: peerId
     });
+    await options.init();
+    return options;
 };
-export { Libp2pProcessOptions };
+export { Libp2pProcessOptions, libp2pProcessOptions };

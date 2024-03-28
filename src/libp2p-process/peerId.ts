@@ -7,12 +7,12 @@ import { PeerId } from '@libp2p/interface';
  * Create a PeerId
  * @category Libp2p
  */
-const libp2pPeerId = ({
+const libp2pPeerId = async ({
     id
 }: {
     id?: string | PeerId
-} = {}): PeerId | undefined => {
-    let peerId: PeerId | undefined = undefined;
+} = {}): Promise<PeerId | undefined> => {
+    let peerId: PeerId;
 
     if (typeof id === 'string') {
         peerId = peerIdFromString(id)
@@ -21,9 +21,7 @@ const libp2pPeerId = ({
         peerId = peerIdFromPeerId(id)
     }
     else {
-        createEd25519PeerId().then((newPeerId: PeerId) => {
-            peerId = newPeerId;
-        });
+        peerId = await createEd25519PeerId()
     }
 
     return peerId;

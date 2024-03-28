@@ -49,6 +49,49 @@ class Libp2pProcessConfig {
     denyDialMultiaddr = false;
     enableYamux = true;
     enableMplex = false;
+    constructor({ autoStart, peerId, enableTcp, tcpPort, enableIp4, ip4Domain, enableUdp, udpPort, enableIp6, ip6Domain, enableQuicv1, enableWebTransport, enableWebSockets, enableWebRTC, enableWebRTCStar, webRTCStarAddress, enableCircuitRelayTransport, enableNoise, enableBootstrap, bootstrapMultiaddrs, enableMDNS, enableGossipSub, enablePublishToZeroTopicPeers, enableAutoNAT, enableIdentify, enableUPnPNAT, enableDHT, enableDHTClient, enableIpnsValidator, enableIpnsSelector, enableLanDHT, lanDhtProtocol, lanDhtPeerInfoMapperRemovePublicAddresses, lanDhtClientMode, enableRelay, enableDCUTR, enablePing, enableDenyDialMultiaddr, denyDialMultiaddr, enableYamux, enableMplex } = {}) {
+        this.autoStart = autoStart ? autoStart : this.autoStart;
+        this.peerId = peerId ? peerId : this.peerId;
+        this.enableTcp = enableTcp ? enableTcp : this.enableTcp;
+        this.tcpPort = tcpPort ? tcpPort : this.tcpPort;
+        this.enableIp4 = enableIp4 ? enableIp4 : this.enableIp4;
+        this.ip4Domain = ip4Domain ? ip4Domain : this.ip4Domain;
+        this.enableUdp = enableUdp ? enableUdp : this.enableUdp;
+        this.udpPort = udpPort ? udpPort : this.udpPort;
+        this.enableIp6 = enableIp6 ? enableIp6 : this.enableIp6;
+        this.ip6Domain = ip6Domain ? ip6Domain : this.ip6Domain;
+        this.enableQuicv1 = enableQuicv1 ? enableQuicv1 : this.enableQuicv1;
+        this.enableWebTransport = enableWebTransport ? enableWebTransport : this.enableWebTransport;
+        this.enableWebSockets = enableWebSockets ? enableWebSockets : this.enableWebSockets;
+        this.enableWebRTC = enableWebRTC ? enableWebRTC : this.enableWebRTC;
+        this.enableWebRTCStar = enableWebRTCStar ? enableWebRTCStar : this.enableWebRTCStar;
+        this.webRTCStarAddress = webRTCStarAddress ? webRTCStarAddress : this.webRTCStarAddress;
+        this.enableCircuitRelayTransport = enableCircuitRelayTransport ? enableCircuitRelayTransport : this.enableCircuitRelayTransport;
+        this.enableNoise = enableNoise ? enableNoise : this.enableNoise;
+        this.enableBootstrap = enableBootstrap ? enableBootstrap : this.enableBootstrap;
+        this.bootstrapMultiaddrs = bootstrapMultiaddrs ? bootstrapMultiaddrs : this.bootstrapMultiaddrs;
+        this.enableMDNS = enableMDNS ? enableMDNS : this.enableMDNS;
+        this.enableGossipSub = enableGossipSub ? enableGossipSub : this.enableGossipSub;
+        this.enablePublishToZeroTopicPeers = enablePublishToZeroTopicPeers ? enablePublishToZeroTopicPeers : this.enablePublishToZeroTopicPeers;
+        this.enableAutoNAT = enableAutoNAT ? enableAutoNAT : this.enableAutoNAT;
+        this.enableIdentify = enableIdentify ? enableIdentify : this.enableIdentify;
+        this.enableUPnPNAT = enableUPnPNAT ? enableUPnPNAT : this.enableUPnPNAT;
+        this.enableDHT = enableDHT ? enableDHT : this.enableDHT;
+        this.enableDHTClient = enableDHTClient ? enableDHTClient : this.enableDHTClient;
+        this.enableIpnsValidator = enableIpnsValidator ? enableIpnsValidator : this.enableIpnsValidator;
+        this.enableIpnsSelector = enableIpnsSelector ? enableIpnsSelector : this.enableIpnsSelector;
+        this.enableLanDHT = enableLanDHT ? enableLanDHT : this.enableLanDHT;
+        this.lanDhtProtocol = lanDhtProtocol ? lanDhtProtocol : this.lanDhtProtocol;
+        this.lanDhtPeerInfoMapperRemovePublicAddresses = lanDhtPeerInfoMapperRemovePublicAddresses ? lanDhtPeerInfoMapperRemovePublicAddresses : this.lanDhtPeerInfoMapperRemovePublicAddresses;
+        this.lanDhtClientMode = lanDhtClientMode ? lanDhtClientMode : this.lanDhtClientMode;
+        this.enableRelay = enableRelay ? enableRelay : this.enableRelay;
+        this.enableDCUTR = enableDCUTR ? enableDCUTR : this.enableDCUTR;
+        this.enablePing = enablePing ? enablePing : this.enablePing;
+        this.enableDenyDialMultiaddr = enableDenyDialMultiaddr ? enableDenyDialMultiaddr : this.enableDenyDialMultiaddr;
+        this.denyDialMultiaddr = denyDialMultiaddr ? denyDialMultiaddr : this.denyDialMultiaddr;
+        this.enableYamux = enableYamux ? enableYamux : this.enableYamux;
+        this.enableMplex = enableMplex ? enableMplex : this.enableMplex;
+    }
 }
 /**
  * Create a libp2p process configuration
@@ -120,7 +163,9 @@ const createLibp2pProcessOptions = ({ autoStart, peerId, enableTcp, tcpPort, ena
         }),
     };
     if (peerId) {
-        options.peerId = libp2pPeerId({ id: peerId });
+        libp2pPeerId({ id: peerId }).then((peerId) => {
+            options.peerId = peerId;
+        });
     }
     return options;
 };

@@ -20,7 +20,7 @@ const transports = ({
     enableCircuitRelayTransport?: boolean,
     enableCircuitRelayTransportDiscoverRelays?: number
 } = {}): Array<any> => {
-    let transportOptions: Array<any> = Array<any>()
+    let transportOptions: Array<any> = new Array<any>()
 
     if (enableWebSockets) {
         transportOptions.push(webSockets())

@@ -4,7 +4,7 @@ import { webTransport } from '@libp2p/webtransport';
 import { tcp } from '@libp2p/tcp';
 import { webRTC } from '@libp2p/webrtc';
 const transports = ({ enableWebSockets = true, enableWebTransport = true, enableTcp = true, enableWebRTC = false, enableCircuitRelayTransport = true, enableCircuitRelayTransportDiscoverRelays = 2, } = {}) => {
-    let transportOptions = Array();
+    let transportOptions = new Array();
     if (enableWebSockets) {
         transportOptions.push(webSockets());
     }
