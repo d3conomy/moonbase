@@ -16,10 +16,12 @@ const defaultBootstrapConfig: Array<string> = [
 
 const libp2pBootstrap = ({
     defaultConfig = true,
-    multiaddrs
+    multiaddrs,
+    list = false
 }: {
     defaultConfig?: boolean,
     multiaddrs?: Array<string | Multiaddr>
+    list?: boolean
 } = {}): any => {
     let addrs: Array<string> = new Array<string>()
 
@@ -38,6 +40,10 @@ const libp2pBootstrap = ({
                 addrs.push(multiaddr(addr).toString())
             }
         })
+    }
+
+    if (list) {
+        return addrs
     }
 
     return bootstrap({ list: addrs })

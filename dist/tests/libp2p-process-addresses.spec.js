@@ -33,4 +33,35 @@ describe("listenAddressesConfig", () => {
             ],
         });
     });
+    it("should return an object with listen addresses with all values enabled", () => {
+        const result = listenAddressesConfig({
+            ip4Domain: "0.0.0.0",
+            tcpPort: 0,
+            udpPort: 0,
+            ip6Domain: "::",
+            enableTcp: true,
+            enableIp4: true,
+            enableIp6: true,
+            enableQuicv1: true,
+            enableWebTransport: true,
+            enableWebSockets: true,
+            enableWebRTC: true,
+            enableWebRTCStar: true,
+            webRTCStarAddress: "/dns4/webrtc-star.trnk.xyz/tcp/443/wss/p2p-webrtc-star",
+            enableCircuitRelayTransport: true,
+        });
+        console.log(result);
+        expect(result).to.deep.equal({
+            listen: [
+                "/ip4/0.0.0.0/tcp/0",
+                "/ip4/0.0.0.0/udp/0/quic-v1",
+                "/ip4/0.0.0.0/tcp/0/ws/",
+                "/ip6/::/tcp/0",
+                "/ip6/::/udp/0/quic-v1",
+                "/ip6/::/tcp/0/ws/",
+                "/webrtc",
+                "/dns4/webrtc-star.trnk.xyz/tcp/443/wss/p2p-webrtc-star"
+            ],
+        });
+    });
 });

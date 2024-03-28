@@ -1,12 +1,12 @@
 import { PeerId, Connection, Stream } from '@libp2p/interface'
 
 import { Libp2p, createLibp2p } from 'libp2p'
-import { Component, LogLevel, logger } from '../utils/index.js'
+
 import { Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import { peerIdFromString } from '@libp2p/peer-id'
 
 
-import { IProcess, IdReference, ProcessStage } from 'd3-artifacts'
+import { IProcess, IdReference, LogLevel, PodProcessId, ProcessStage, isProcessStage, logger } from 'd3-artifacts'
 import { Libp2pProcessOptions } from './processOptions.js'
 
 
@@ -43,7 +43,7 @@ const createLibp2pProcess = async (
 class Libp2pProcess
     implements IProcess
 {
-    public declare id: IdReference
+    public declare id: PodProcessId
     public declare process?: Libp2p
     public declare options?: Libp2pProcessOptions
 
@@ -55,7 +55,7 @@ class Libp2pProcess
         process,
         options
     }: {
-        id: IdReference,
+        id: PodProcessId,
         process?: Libp2p,
         options?: Libp2pProcessOptions
     }) {
@@ -68,19 +68,28 @@ class Libp2pProcess
      * Check if a process exists
      */
     public checkProcess(): boolean {
-        return this.process ? true : false
+        if (!this.process) {
+            logger({
+                level: LogLevel.ERROR,
+                stage: ProcessStage.ERROR,
+                processId: this.id,
+                message: `No process found for ${this.id.podId.name}`
+            })
+            return false
+        }
+        return true
     }
 
     /**
      * Initialize the libp2p process
      */
     public async init(): Promise<void> {
-        if (!this.process) {
+        if (!this.checkProcess()) {
             try {
                 this.process = await createLibp2pProcess(this.options)
             }
             catch {
-                const message = `Error initializing process for ${this.id.component}-${this.id.name}`
+                const message = `Error initializing process for ${this.id.name}`
                 logger({
                     level: LogLevel.ERROR,
                     stage: ProcessStage.ERROR,
@@ -93,11 +102,107 @@ class Libp2pProcess
                 level: LogLevel.INFO,
                 stage: ProcessStage.INIT,
                 processId: this.id,
-                message: `Process initialized for ${this.id.component}-${this.id.name}`
+                message: `Process initialized for ${this.id.podId.name}-${this.id.name}`
             })
         }
     }
 
+
+    public status(): ProcessStage {
+        
+        const updatedStatus = this.process?.status
+        return updatedStatus ? isProcessStage(updatedStatus) : ProcessStage.UNKNOWN
+    }
+
+    /**
+     * Start the libp2p process
+     */
+    public async start(): Promise<void> {
+        if (
+            this.checkProcess() &&
+            this.status() !== ProcessStage.STARTED &&
+            this.status() !== ProcessStage.STARTING
+        ) {
+            try {
+                await this.process?.start()
+            }
+            catch {
+                const message = `Error starting process for ${this.id.name}`
+                logger({
+                    level: LogLevel.ERROR,
+                    stage: ProcessStage.ERROR,
+                    processId: this.id,
+                    message: message
+                })
+                throw new Error(message)
+            }
+        }
+        logger({
+            level: LogLevel.INFO,
+            stage: ProcessStage.STARTING,
+            processId: this.id,
+            message: `Process started for ${this.id.podId.name}-${this.id.name}`
+        })
+    }
+
+    /**
+     * Stop the libp2p process
+     */
+    public async stop(): Promise<void> {
+        if (
+            this.checkProcess() &&
+            this.status() !== ProcessStage.STOPPED &&
+            this.status() !== ProcessStage.STOPPING
+        ) {
+            try {
+                await this.process?.stop()
+            }
+            catch {
+                const message = `Error stopping process for ${this.id.name}`
+                logger({
+                    level: LogLevel.ERROR,
+                    stage: ProcessStage.ERROR,
+                    processId: this.id,
+                    message: message
+                })
+                throw new Error(message)
+            }
+        }
+        logger({
+            level: LogLevel.INFO,
+            stage: ProcessStage.STOPPING,
+            processId: this.id,
+            message: `Process stopped for ${this.id.podId.name}-${this.id.name}`
+        })
+    }
+
+    /**
+     * Restart the libp2p process
+     */
+    public async restart(): Promise<void> {
+        if (this.checkProcess()) {
+            try {
+                await this.stop()
+                await this.start()
+            }
+            catch {
+                const message = `Error restarting process for ${this.id.name}`
+                logger({
+                    level: LogLevel.ERROR,
+                    stage: ProcessStage.ERROR,
+                    processId: this.id,
+                    message: message
+                })
+                throw new Error(message)
+            }
+        }
+        logger({
+            level: LogLevel.INFO,
+            stage: ProcessStage.RESTARTING,
+            processId: this.id,
+            message: `Process restarted for ${this.id.podId.name}-${this.id.name}`
+        })
+    }
 
     /**
      * Get the PeerId for the libp2p process
@@ -106,7 +211,7 @@ class Libp2pProcess
         let peerId: PeerId;
         try {
             if (!this.process) {
-                throw new Error(`No process found for ${this.id.component}`)
+                throw new Error(`No process found for ${this.id.podId.name}`)
             }
             peerId = this.process.peerId
         }
@@ -115,7 +220,7 @@ class Libp2pProcess
                 level: LogLevel.ERROR,
                 stage: ProcessStage.ERROR,
                 processId: this.id,
-                message: `Error getting PeerId for ${this.id.component}-${this.id.name}: ${error.message}`,
+                message: `Error getting PeerId for ${this.id.podId.name}-${this.id.name}: ${error.message}`,
                 error: error
             })
             throw error
@@ -130,7 +235,7 @@ class Libp2pProcess
         let multiaddrs: Multiaddr[];
         try {
             if (!this.process) {
-                throw new Error(`No process found for ${this.id.component}`)
+                throw new Error(`No process found for ${this.id.podId.name}`)
             }
             multiaddrs = this.process.getMultiaddrs()
         }
@@ -139,7 +244,7 @@ class Libp2pProcess
                 level: LogLevel.ERROR,
                 stage: ProcessStage.ERROR,
                 processId: this.id,
-                message: `Error getting multiaddrs for ${this.id.component}-${this.id.name}: ${error.message}`,
+                message: `Error getting multiaddrs for ${this.id.podId.name}-${this.id.name}: ${error.message}`,
                 error: error
             })
             throw error
@@ -154,7 +259,7 @@ class Libp2pProcess
         let peers: PeerId[];
         try {
             if (!this.process) {
-                throw new Error(`No process found for ${this.id.component}`)
+                throw new Error(`No process found for ${this.id.podId.name}`)
             }
             peers = this.process.getPeers()
         }
@@ -163,7 +268,7 @@ class Libp2pProcess
                 level: LogLevel.ERROR,
                 stage: ProcessStage.ERROR,
                 processId: this.id,
-                message: `Error getting peers for ${this.id.component}-${this.id.name}: ${error.message}`,
+                message: `Error getting peers for ${this.id.podId.name}-${this.id.name}: ${error.message}`,
                 error: error
             })
             throw error
@@ -211,7 +316,7 @@ class Libp2pProcess
     public getProtocols(): string[] {
         let protocols;
         if (!this.process) {
-            throw new Error(`No process found for ${this.id.component}`)
+            throw new Error(`No process found for ${this.id.podId.name}`)
         }
         try {
             protocols = this.process.getProtocols()
@@ -221,7 +326,7 @@ class Libp2pProcess
                 level: LogLevel.ERROR,
                 stage: ProcessStage.ERROR,
                 processId: this.id,
-                message: `Error getting protocols for ${this.id.component}-${this.id.name}: ${error.message}`,
+                message: `Error getting protocols for ${this.id.podId.name}-${this.id.name}: ${error.message}`,
                 error: error
             })
             throw error
@@ -242,7 +347,7 @@ class Libp2pProcess
                 level: LogLevel.ERROR,
                 stage: ProcessStage.ERROR,
                 processId: this.id,
-                message: `Error dialing for ${this.id.component}-${this.id.name}: ${error.message}`,
+                message: `Error dialing for ${this.id.podId.name}-${this.id.name}: ${error.message}`,
                 error: error
             })
             throw error
@@ -252,7 +357,7 @@ class Libp2pProcess
                 level: LogLevel.ERROR,
                 stage: ProcessStage.ERROR,
                 processId: this.id,
-                message: `Dialed but no Connection was return for ${this.id.component}-${this.id.name}: unknown error`
+                message: `Dialed but no Connection was return for ${this.id.podId.name}-${this.id.name}: unknown error`
             })
         }
         return output
@@ -271,7 +376,7 @@ class Libp2pProcess
                 level: LogLevel.ERROR,
                 stage: ProcessStage.ERROR,
                 processId: this.id,
-                message: `Error dialing protocol for ${this.id.component}-${this.id.name}: ${error.message}`,
+                message: `Error dialing protocol for ${this.id.podId.name}-${this.id.name}: ${error.message}`,
                 error: error
             })
             throw error
@@ -281,7 +386,7 @@ class Libp2pProcess
                 level: LogLevel.ERROR,
                 stage: ProcessStage.ERROR,
                 processId: this.id,
-                message: `Dialed protocol but no Stream was return for ${this.id.component}-${this.id.name}: unknown error`
+                message: `Dialed protocol but no Stream was return for ${this.id.podId.name}-${this.id.name}: unknown error`
             })
         }
         return output

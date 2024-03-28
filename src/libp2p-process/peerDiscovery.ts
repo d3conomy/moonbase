@@ -11,16 +11,18 @@ import { libp2pBootstrap } from './bootstrap.js'
 const peerDiscovery = ({
     enableMDNS = false,
     enableBootstrap = true,
+    useDefaultBootstrap = false,
     bootstrapMultiaddrs = new Array<string | Multiaddr>()
 }: {
     enableMDNS?: boolean,
     enableBootstrap?: boolean,
+    useDefaultBootstrap?: boolean,
     bootstrapMultiaddrs?: Array<string | Multiaddr>
 } = {}) => {
     let peerDiscovery: Array<any> = new Array<any>();
-    if (enableBootstrap) {
+    if (enableBootstrap && (useDefaultBootstrap || bootstrapMultiaddrs.length > 0)) {
         peerDiscovery.push(libp2pBootstrap({
-            defaultConfig: true,
+            defaultConfig: useDefaultBootstrap,
             multiaddrs: bootstrapMultiaddrs
         }))
     }
